@@ -1,6 +1,6 @@
 /* Подсказки клавиш в углах кнопок карточек — только на компьютере (мышь + клавиатура) */
 @media (hover: hover) and (pointer: fine) {
-  .grade, .fc-know, .fc-back, .m-btn.show { position: relative; }
+  .grade, .fc-know, .fc-back { position: relative; }
   .grade::after, .fc-know::after, .fc-back::after, .m-btn.show::after {
     position: absolute; right: 7px; bottom: 6px;
     font: 600 .62rem/1 'IBM Plex Mono', monospace;
@@ -19,4 +19,24 @@
     font: 600 .62rem/1 'IBM Plex Mono', monospace;
     padding: 2px 5px; border: 1px solid currentColor; border-radius: 5px; opacity: .6;
   }
+}
+
+/* Блок «Повторение слов» на широком экране: две колонки и ограниченная ширина */
+@media (min-width: 1000px) {
+  .review-panel:not(.practice-panel) {
+    display: grid;
+    grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+    grid-template-areas: "head stats" "lvls acts";
+    grid-template-rows: auto auto;
+    column-gap: 28px; row-gap: 12px;
+    max-width: 1080px;
+  }
+  .review-panel:not(.practice-panel) .rv-head { grid-area: head; }
+  .review-panel:not(.practice-panel) .rv-lvls { grid-area: lvls; grid-template-columns: repeat(4, minmax(0, 1fr)); align-content: start; }
+  .review-panel:not(.practice-panel) .rv-tg span { display: none; }
+  .review-panel:not(.practice-panel) .rv-stats,
+  .review-panel:not(.practice-panel) .rv-none { grid-area: stats; align-self: start; }
+  .review-panel:not(.practice-panel) .rv-acts { grid-area: acts; align-self: start; }
+  .review-panel:not(.practice-panel) .rv-tg { padding: 10px 6px; align-items: center; }
+  .review-panel:not(.practice-panel) .rv-acts .m-btn { padding: 10px 12px; }
 }
