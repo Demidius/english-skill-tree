@@ -82,23 +82,98 @@ if (typeof WORD_TR !== 'undefined') {
   }, true);
 })();
 
-// Общая полоса прогресса («выучено … из …») — под блоком «Повторение слов» / «Отработка читанного»
+// Единый блок на ПК: «я и мой прогресс» + повторение; на телефоне — полоса прогресса под блоком повторения.
+// Аккаунты — выпадающий список (там же «Выйти»). Фильтры — по кнопке.
 (function () {
-  function move() {
-    let done = 0;
-    ['mode-w', 'mode-g'].forEach(id => {
-      const m = document.getElementById(id); if (!m) return;
-      const row = m.querySelector('.stats-row');
-      const panel = m.querySelector('.review-panel');
-      if (row && panel && panel.parentNode === row.parentNode) {
-        if (row.nextElementSibling === panel) panel.after(row);
-        done++;
+  const MQ = window.matchMedia('(min-width: 1000px)');
+  const MODES = ['mode-w', 'mode-g'];
+
+  // ---- выпадающий список аккаунтов ----
+  function accLabel() {
+    const a = document.querySelector('#profList .pchip[data-active="1"]');
+    if (a) return a.textContent.replace(/\s*\(я\)\s*$/, '');
+    return 'Гость';
+  }
+  function makeAcc() {
+    const w = document.createElement('div'); w.className = 'acc';
+    w.innerHTML = '<button type="button" class="acc-btn" aria-haspopup="true" aria-expanded="false"><span class="acc-name"></span> <span class="acc-car">▾</span></button><div class="acc-menu" role="menu" hidden></div>';
+    const btn = w.querySelector('.acc-btn'), menu = w.querySelector('.acc-menu');
+    function fill() {
+      menu.innerHTML = '';
+      const chips = [...document.querySelectorAll('#profList .pchip')];
+      chips.forEach(ch => {
+        const it = document.createElement('button'); it.type = 'button'; it.className = 'acc-it'; it.setAttribute('role', 'menuitem');
+        it.textContent = ch.textContent; if (ch.dataset.active === '1') it.classList.add('on');
+        it.addEventListener('click', () => { close(); ch.click(); });
+        menu.appendChild(it);
+      });
+      const lo = document.getElementById('logoutBtn');
+      const sep = document.createElement('div'); sep.className = 'acc-sep';
+      if (lo && !lo.hidden) {
+        if (chips.length) menu.appendChild(sep);
+        const it = document.createElement('button'); it.type = 'button'; it.className = 'acc-it acc-out'; it.textContent = 'Выйти';
+        it.addEventListener('click', () => { close(); lo.click(); }); menu.appendChild(it);
+      } else {
+        const gl = document.getElementById('goLogin');
+        const it = document.createElement('button'); it.type = 'button'; it.className = 'acc-it'; it.textContent = 'Войти / зарегистрироваться';
+        it.addEventListener('click', () => { close(); if (gl) gl.click(); }); menu.appendChild(it);
       }
+    }
+    function close() { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); }
+    btn.addEventListener('click', ev => {
+      ev.stopPropagation();
+      if (menu.hidden) { fill(); menu.hidden = false; btn.setAttribute('aria-expanded', 'true'); } else close();
     });
-    return done;
+    document.addEventListener('click', ev => { if (!w.contains(ev.target)) close(); });
+    document.addEventListener('keydown', ev => { if (ev.key === 'Escape') close(); });
+    return w;
   }
-  if (move() < 2) {
+  // в едином блоке — статистика по строкам вместо одной длинной
+  function splitStats() {
+    document.querySelectorAll('.hub .stats-row .num').forEach(n => {
+      if (n.innerHTML.includes(' · ')) n.innerHTML = n.innerHTML.replace(/ · /g, '<br>');
+    });
+  }
+  new MutationObserver(splitStats).observe(document.body, { childList: true, subtree: true, characterData: true });
+  function refreshLabels() { document.querySelectorAll('.acc-name').forEach(n => n.textContent = accLabel()); }
+  const pl = document.getElementById('profList');
+  if (pl) new MutationObserver(refreshLabels).observe(pl, { childList: true, subtree: true, attributes: true });
+
+  // ---- раскладка ----
+  function parts(m) {
+    return { row: m.querySelector('.stats-row'), panel: m.querySelector('.review-panel'), hub: m.querySelector('.hub') };
+  }
+  function build(m) {
+    const { row, panel } = parts(m); let { hub } = parts(m);
+    if (!row || !panel) return false;
+    if (!hub) {
+      hub = document.createElement('section'); hub.className = 'hub';
+      hub.innerHTML = '<div class="hub-me"></div><div class="hub-work"></div>';
+      hub.querySelector('.hub-me').appendChild(makeAcc());
+      panel.before(hub);
+    }
+    if (row.parentNode !== hub.querySelector('.hub-me')) hub.querySelector('.hub-me').appendChild(row);
+    if (panel.parentNode !== hub.querySelector('.hub-work')) hub.querySelector('.hub-work').appendChild(panel);
+    hub.hidden = false;
+    return true;
+  }
+  function unbuild(m) {
+    const { row, panel, hub } = parts(m);
+    if (!row || !panel) return false;
+    if (hub) { hub.before(panel); hub.hidden = true; }
+    if (row.previousElementSibling !== panel) panel.after(row);
+    return true;
+  }
+  function apply() {
+    let ok = 0;
+    MODES.forEach(id => { const m = document.getElementById(id); if (m && (MQ.matches ? build(m) : unbuild(m))) ok++; });
+    document.body.classList.toggle('has-hub', MQ.matches && ok > 0);
+    refreshLabels(); splitStats();
+    return ok;
+  }
+  if (apply() < MODES.length) {
     let n = 0;
-    const t = setInterval(() => { if (move() >= 2 || ++n > 40) clearInterval(t); }, 250);
+    const t = setInterval(() => { if (apply() >= MODES.length || ++n > 40) clearInterval(t); }, 250);
   }
+  MQ.addEventListener ? MQ.addEventListener('change', apply) : MQ.addListener(apply);
 })();
