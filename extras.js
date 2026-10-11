@@ -81,3 +81,24 @@ if (typeof WORD_TR !== 'undefined') {
     }
   }, true);
 })();
+
+// Общая полоса прогресса («выучено … из …») — под блоком «Повторение слов» / «Отработка читанного»
+(function () {
+  function move() {
+    let done = 0;
+    ['mode-w', 'mode-g'].forEach(id => {
+      const m = document.getElementById(id); if (!m) return;
+      const row = m.querySelector('.stats-row');
+      const panel = m.querySelector('.review-panel');
+      if (row && panel && panel.parentNode === row.parentNode) {
+        if (row.nextElementSibling === panel) panel.after(row);
+        done++;
+      }
+    });
+    return done;
+  }
+  if (move() < 2) {
+    let n = 0;
+    const t = setInterval(() => { if (move() >= 2 || ++n > 40) clearInterval(t); }, 250);
+  }
+})();
