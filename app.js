@@ -1,0 +1,1704 @@
+
+const TESTS = window.TESTS || {};
+
+// ================= shared helpers =================
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function el(tag, cls, html){ const e=document.createElement(tag); if(cls) e.className=cls; if(html!=null) e.innerHTML=html; return e; }
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+const phoneMQ = window.matchMedia('(max-width: 720px)');
+
+// shared persistence state (filled in at the bottom)
+let db=null, local=false, profiles=[], current=null;
+// level coefficients (shared by all students, edited on the «Настройки» tab)
+const COEF_DEFAULT={rulesPractice:{ok:1, wrong:-2}, review:{newPerSession:20, hardPct:120, easyPct:130, maxIvl:365}};
+const COEF_RANGE={'review.newPerSession':[0,200], 'review.hardPct':[100,200], 'review.easyPct':[100,300], 'review.maxIvl':[30,3650]};
+const COEF_STEP={'review.newPerSession':5, 'review.hardPct':5, 'review.easyPct':5, 'review.maxIvl':30};
+const COEF=JSON.parse(JSON.stringify(COEF_DEFAULT));
+function applyCoef(src){
+  Object.keys(COEF_DEFAULT).forEach(g=>Object.keys(COEF_DEFAULT[g]).forEach(k=>{
+    const v=src&&src[g]&&src[g][k];
+    const rg=COEF_RANGE[g+'.'+k]||[-10,10];
+    COEF[g][k]=(typeof v==='number'&&isFinite(v))?Math.max(rg[0],Math.min(rg[1],Math.round(v))):COEF_DEFAULT[g][k];
+  }));
+}
+function sgn(n){ return (n>0?'+':n<0?'−':'')+Math.abs(n); }
+function currentName(){ const p=profiles.find(p=>p.id===current); return p?p.name:''; }
+function needProfile(){ if(db && !current){ document.getElementById('newName').focus(); return true; } return false; }
+function onWriteError(e){
+  if(e && ['invalid_argument','not_granted','revoked','permission_denied','forbidden','permission-denied','unauthenticated'].includes(e.code)){
+    document.getElementById('roFlag').hidden=false;
+  }
+}
+
+// ---------- speech ----------
+const canSpeak = (()=>{ try{ return 'speechSynthesis' in window && typeof SpeechSynthesisUtterance!=='undefined'; }catch(e){ return false; } })();
+let _ttsUtt=null, _ttsT=null, _ttsW=null;
+function ttsVoice(){
+  try{ const vs=speechSynthesis.getVoices();
+    return vs.find(v=>/^en[-_]GB/i.test(v.lang)) || vs.find(v=>/^en/i.test(v.lang)) || null; }catch(e){ return null; }
+}
+if(canSpeak){ try{ speechSynthesis.getVoices(); speechSynthesis.addEventListener('voiceschanged',()=>speechSynthesis.getVoices()); }catch(e){} }
+function say(t){
+  if(!canSpeak) return;
+  const ss=window.speechSynthesis;
+  const text=String(t).replace(/…/g,' ').replace(/\s\/\s/g,', ');
+  const make=()=>{ const u=new SpeechSynthesisUtterance(text); u.lang='en-GB'; u.rate=.9; const v=ttsVoice(); if(v) u.voice=v; return u; };
+  try{
+    clearTimeout(_ttsT); clearTimeout(_ttsW);
+    if(ss.speaking||ss.pending||ss.paused) ss.cancel();
+    try{ ss.resume(); }catch(e){}
+    _ttsT=setTimeout(()=>{
+      try{
+        const u=make(); let started=false;
+        u.onstart=()=>{ started=true; };
+        u.onend=u.onerror=()=>{ if(_ttsUtt===u) _ttsUtt=null; };
+        _ttsUtt=u; ss.speak(u); try{ ss.resume(); }catch(e){}
+        // если движок «залип» и не начал говорить — сбросить и повторить один раз
+        _ttsW=setTimeout(()=>{
+          if(started||_ttsUtt!==u) return;
+          try{ ss.cancel(); const u2=make(); _ttsUtt=u2; u2.onend=u2.onerror=()=>{ if(_ttsUtt===u2) _ttsUtt=null; }; ss.speak(u2); ss.resume(); }catch(e){}
+        },1200);
+      }catch(e){}
+    },60);
+  }catch(e){}
+}
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden && canSpeak){ try{ speechSynthesis.cancel(); speechSynthesis.resume(); }catch(e){} } });
+const trBtn = t => (typeof EX_RU!=='undefined' && EX_RU[t]) ? '<button type="button" class="trb" data-tr="'+esc(EX_RU[t])+'" aria-label="Перевести на русский" title="Перевод">RU</button>' : '';
+document.addEventListener('click', ev=>{
+  const b=ev.target.closest('.trb'); if(!b) return;
+  ev.stopPropagation(); ev.preventDefault();
+  const t=b.closest('.exs,p').querySelector('.trt'); if(!t) return;
+  if(b.classList.toggle('on')){ t.dataset.en=t.innerHTML; t.textContent=b.dataset.tr; t.classList.add('is-ru'); b.textContent='EN'; b.setAttribute('aria-label','Показать английский'); }
+  else { t.innerHTML=t.dataset.en; t.classList.remove('is-ru'); b.textContent='RU'; b.setAttribute('aria-label','Перевести на русский'); }
+}, true);
+const sayBtn = t => canSpeak ? '<button type="button" class="say" data-say="'+esc(t)+'" aria-label="Произнести">▶</button>' : '';
+
+// ---------- "i" tooltips ----------
+const TIPS = {};
+const tip = el('div'); tip.id='tip'; tip.hidden=true; document.body.appendChild(tip);
+let pinned=null;
+function showTip(icon){
+  const d = TIPS[icon.dataset.tip]; if(!d) return;
+  tip.innerHTML = '<b>'+esc(d.t)+'</b>'+esc(d.x);
+  tip.hidden=false;
+  const r = icon.getBoundingClientRect();
+  const tw = tip.offsetWidth, th = tip.offsetHeight;
+  let left = Math.min(Math.max(8, r.left + r.width/2 - tw/2), window.innerWidth - tw - 8);
+  let top = r.bottom + 8;
+  if(top + th > window.innerHeight - 8) top = Math.max(8, r.top - th - 8);
+  tip.style.left = left+'px'; tip.style.top = top+'px';
+}
+function unpin(){ if(pinned){ pinned.dataset.pinned='0'; pinned=null; } tip.hidden=true; }
+function bindTips(scope){
+  scope.querySelectorAll('.info[data-tip]').forEach(icon=>{
+    icon.addEventListener('mouseenter',()=>{ if(!pinned) showTip(icon); });
+    icon.addEventListener('mouseleave',()=>{ if(!pinned) tip.hidden=true; });
+    icon.addEventListener('click',ev=>{
+      ev.stopPropagation(); ev.preventDefault();
+      if(pinned===icon){ unpin(); return; }
+      unpin(); pinned=icon; icon.dataset.pinned='1'; showTip(icon);
+    });
+  });
+}
+document.addEventListener('click',()=>unpin());
+window.addEventListener('scroll',()=>unpin(),{passive:true});
+
+// ---------- modal shell (shared by grammar tests and word cards) ----------
+let owner=null;
+const back=el('div','modal-back'); back.hidden=true;
+back.innerHTML='<div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle"></div>';
+document.body.appendChild(back);
+const modal=back.firstChild;
+function openModal(o){ unpin(); const was=!back.hidden; owner=o; back.hidden=false; modal.classList.remove('rulepage','fixed','testm'); if(!was) navPush('modal'); }
+function closeModal(fromNav){
+  if(back.hidden) return;
+  back.hidden=true; modal.classList.remove('fixed','testm'); const o=owner; owner=null;
+  if(!fromNav) navPop('modal');
+  try{ speechSynthesis.cancel(); }catch(e){}
+  if(o && o.onClose) o.onClose();
+}
+function mHead(kicker, title, extra){
+  return '<div class="m-top"><div class="m-htxt"><div class="m-kicker">'+esc(kicker)+'</div>'+
+    '<h2 class="m-title" id="mTitle">'+esc(title)+'</h2></div>'+(extra||'')+
+    '<button type="button" class="m-close" data-act="close" aria-label="Закрыть">×</button></div>';
+}
+modal.addEventListener('click',ev=>{
+  const s=ev.target.closest('[data-say]'); if(s){ say(s.dataset.say); return; }
+  if(ev.target.closest('[data-act="close"]')){ closeModal(); return; }
+  if(owner) owner.onClick(ev);
+});
+modal.addEventListener('change',ev=>{ if(owner && owner.onChange) owner.onChange(ev); });
+modal.addEventListener('submit',ev=>{ ev.preventDefault(); if(owner && owner.onSubmit) owner.onSubmit(ev); });
+back.addEventListener('click',ev=>{ if(ev.target===back) closeModal(); });
+document.addEventListener('keydown',ev=>{
+  if(!owner || back.hidden) return;
+  if(ev.key==='Escape'){ if(owner.onEsc && owner.onEsc()) return; closeModal(); return; }
+  owner.onKey(ev);
+});
+
+// ---------- «Назад»: закрывает окно, а на главном экране спрашивает, выйти ли ----------
+// В истории браузера держим «страж»-запись. Кнопка «Назад» сначала снимает её (событие
+// popstate), и мы решаем сами: закрыть открытое окно или спросить про выход.
+let navOk=true, navSkip=0, navArmed=false;
+function navState(){ try{ return history.state; }catch(e){ return null; } }
+function navPush(kind){
+  if(!navOk || !navArmed) return;
+  try{ history.pushState({ef:kind}, ''); }catch(e){ navOk=false; }
+}
+function navPop(kind){
+  const s=navState();
+  if(navOk && s && s.ef===kind){ navSkip++; try{ history.back(); }catch(e){ navSkip--; } }
+}
+function navArm(){
+  if(navArmed || !navOk) return;
+  navArmed=true;
+  const s=navState();
+  if(!(s && (s.ef==='guard'||s.ef==='modal'))) navPush('guard');
+  if(!back.hidden) navPush('modal');
+}
+['pointerdown','keydown','touchstart'].forEach(t=>document.addEventListener(t, navArm, {capture:true, passive:true}));
+
+const exitBack=el('div','modal-back exitask'); exitBack.hidden=true;
+exitBack.innerHTML='<div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="exitTitle">'+
+  '<div class="m-kicker">Кнопка «Назад»</div><h2 class="m-title" id="exitTitle">Выйти с сайта?</h2>'+
+  '<p class="exit-note">Прогресс уже сохранён. Чтобы уйти со страницы, нажмите «Назад» ещё раз.</p>'+
+  '<div class="m-actions"><button type="button" class="m-btn" data-x="stay">Остаться</button></div></div>';
+document.body.appendChild(exitBack);
+function exitStay(){ exitBack.hidden=true; navPush('guard'); }
+exitBack.addEventListener('click',ev=>{
+  const b=ev.target.closest('[data-x]');
+  if((b && b.dataset.x==='stay') || ev.target===exitBack) exitStay();
+});
+document.addEventListener('keydown',ev=>{
+  if(exitBack.hidden) return;
+  if(ev.key==='Escape'){ ev.preventDefault(); exitStay(); }
+}, true);
+window.addEventListener('popstate',()=>{
+  if(!navOk) return;
+  if(navSkip>0){ navSkip--; return; }
+  const s=navState();
+  if(!back.hidden){                       // «Назад» при открытом окне — просто закрываем окно
+    closeModal(true);
+    if(!(s && (s.ef==='guard'||s.ef==='modal'))) navPush('guard');
+    return;
+  }
+  if(s && (s.ef==='guard'||s.ef==='modal')) return;   // ещё внутри сайта
+  exitBack.hidden=false;                  // страж снят — спрашиваем
+  const st=exitBack.querySelector('[data-x="stay"]'); if(st) st.focus();
+});
+
+// ================= generic tree board =================
+function Board(o){
+  const root=o.root;
+  root.innerHTML =
+    '<div class="stats-row"><div class="progress-big"><span class="num" data-r="stat">—</span><div class="bar" data-r="bar"></div></div>'+
+      '<div class="legend">'+o.legend+'</div></div>'+
+    '<button type="button" class="filters-toggle" data-r="ftoggle" aria-expanded="false">Фильтры <span data-r="fstate"></span></button>'+
+    '<div class="controls" data-r="controls">'+
+      (o.range ? (()=>{ const opts=sel=>Array.from({length:o.range+1},(_,i)=>'<option value="'+i+'"'+(i===sel?' selected':'')+'>'+i+'</option>').join('');
+        return '<div class="ctl-group lvrange" data-r="fRange"><span class="ctl-label">Уровень</span>'+
+          '<label class="rng">от <select id="'+o.key+'-lo" data-r="lo" aria-label="Уровень от">'+opts(0)+'</select></label>'+
+          '<label class="rng">до <select id="'+o.key+'-hi" data-r="hi" aria-label="Уровень до">'+opts(o.range)+'</select></label>'+
+          '<button type="button" class="chip" data-r="rreset" hidden>Сбросить</button></div>'; })() :
+      '<div class="ctl-group" data-r="fStatus"><span class="ctl-label">'+o.statusLabel+'</span>'+
+        o.statusChips.map((c,i)=>'<button class="chip" data-f="'+c[0]+'"'+(i?'':' data-active="1"')+'>'+c[1]+'</button>').join('')+'</div>'+
+      '<div class="ctl-group" data-r="fTag"><span class="ctl-label">'+o.tagLabel+'</span>'+
+        o.tagChips.map((c,i)=>'<button class="chip tag" data-f="'+c[0]+'"'+(i?'':' data-active="1"')+(c[2]?' title="'+esc(c[2])+'"':'')+'>'+c[1]+'</button>').join('')+'</div>')+
+    '</div>'+
+    '<nav class="jumpnav" data-r="jn" aria-label="Переход к ветке"></nav>'+
+    '<div class="tree-scroll" data-r="scroller"><div class="tree" data-r="tree"></div></div>'+
+    '<details class="help"><summary>Как пользоваться</summary><div class="help-body">'+o.footer+'</div></details>';
+  const R = n=>root.querySelector('[data-r="'+n+'"]');
+  const tree=R('tree'), scroller=R('scroller'), jn=R('jn');
+  const H={cnt:{}, pb:{}, lp:{}, lb:{}, lpm:{}};
+  tree.style.setProperty('--cols', o.branches.length);
+  tree.appendChild(el('div','corner'));
+  o.branches.forEach(b=>{
+    const tk=o.key+':b:'+b.key; TIPS[tk]={t:b.name, x:b.info||''};
+    const h=el('div','bhead'); h.dataset.branch=b.key;
+    h.innerHTML='<div class="root" style="background:'+b.color+'">'+
+      '<span class="info" data-tip="'+tk+'">i</span>'+
+      '<div class="mnav"><button type="button" class="marrow" data-dir="-1" aria-label="Предыдущая ветка">‹</button>'+
+      '<span class="mpos"></span><button type="button" class="marrow" data-dir="1" aria-label="Следующая ветка">›</button></div>'+
+      '<div class="n">'+esc(b.name)+'</div><div class="ru">'+esc(b.ru)+'</div>'+
+      '<div class="cnt"></div><div class="pb"><span style="width:0"></span></div></div>';
+    H.cnt[b.key]=h.querySelector('.cnt'); H.pb[b.key]=h.querySelector('.pb span');
+    tree.appendChild(h);
+  });
+  LEVELS.forEach((l,li)=>{
+    const lab=el('div','lvl-label band-'+l.key+(li?' row-sep':''));
+    lab.innerHTML='<div class="diamond" style="background:var('+l.c+')"><span>'+l.key+'</span></div>'+
+      '<div class="book">'+l.book+'</div><div class="lp"></div><div class="lbar"><span style="width:0"></span></div><div class="lpm"></div>';
+    H.lp[l.key]=lab.querySelector('.lp'); H.lb[l.key]=lab.querySelector('.lbar span'); H.lpm[l.key]=lab.querySelector('.lpm');
+    tree.appendChild(lab);
+    o.branches.forEach(b=>{
+      const nodes=o.cell(b, l.key);
+      const cell=el('div','cell lvl-row band-'+l.key+(li?' row-sep':'')+(nodes.length?'':' empty'));
+      cell.dataset.branch=b.key;
+      if(nodes.length){ const st=el('div','stack'); nodes.forEach(n=>st.appendChild(n)); cell.appendChild(st); }
+      else cell.appendChild(el('div','empty-note','<span>новой темы нет</span>'));
+      tree.appendChild(cell);
+    });
+  });
+
+  // branch navigation (desktop: jump; phone: one branch at a time)
+  let active = (()=>{ const k=lsGet(o.branchKey); return o.branches.some(b=>b.key===k)?k:o.branches[0].key; })();
+  function refreshPhone(){ LEVELS.forEach(l=>{ H.lpm[l.key].textContent=o.phoneCount(active, l.key); }); }
+  function setBranch(key, scrollTop){
+    active=key; lsSet(o.branchKey, key);
+    tree.querySelectorAll(':scope > [data-branch]').forEach(e=>e.classList.toggle('on', e.dataset.branch===key));
+    jn.querySelectorAll('button').forEach(bt=>{
+      const on=bt.dataset.key===key; bt.dataset.active=on?'1':'0';
+      if(on && phoneMQ.matches && !root.hidden) bt.scrollIntoView({inline:'center', block:'nearest', behavior:'smooth'});
+    });
+    const i=o.branches.findIndex(b=>b.key===key);
+    root.querySelectorAll('.bhead .mpos').forEach(s=>s.textContent=(i+1)+' / '+o.branches.length);
+    refreshPhone();
+    if(scrollTop && phoneMQ.matches){
+      const top=jn.getBoundingClientRect().top + window.scrollY;
+      if(window.scrollY > top) window.scrollTo({top, behavior:'smooth'});
+    }
+  }
+  function stepBranch(dir){
+    const i=o.branches.findIndex(b=>b.key===active);
+    setBranch(o.branches[(i+dir+o.branches.length)%o.branches.length].key, true);
+  }
+  o.branches.forEach(b=>{
+    const bt=el('button',null,esc(b.name)); bt.type='button'; bt.dataset.key=b.key;
+    bt.addEventListener('click',()=>{
+      if(phoneMQ.matches){ setBranch(b.key, true); return; }
+      const h=tree.querySelector('.bhead[data-branch="'+b.key+'"]');
+      scroller.scrollTo({left:Math.max(0, h.offsetLeft-140), behavior:'smooth'});
+    });
+    jn.appendChild(bt);
+  });
+  root.querySelectorAll('.marrow').forEach(a=>a.addEventListener('click',ev=>{ ev.stopPropagation(); stepBranch(+a.dataset.dir); }));
+  (function(){
+    let sx=0, sy=0, st=0, tracking=false;
+    tree.addEventListener('touchstart',ev=>{
+      if(!phoneMQ.matches || ev.touches.length!==1) return;
+      tracking=true; sx=ev.touches[0].clientX; sy=ev.touches[0].clientY; st=Date.now();
+    },{passive:true});
+    tree.addEventListener('touchend',ev=>{
+      if(!tracking) return; tracking=false;
+      const t=ev.changedTouches[0]; const dx=t.clientX-sx, dy=t.clientY-sy;
+      if(Date.now()-st<700 && Math.abs(dx)>70 && Math.abs(dx)>Math.abs(dy)*1.8) stepBranch(dx<0?1:-1);
+    },{passive:true});
+  })();
+
+  // filters
+  const F={status:'all', tag:'all', lo:0, hi:o.range||0};
+  const ft=R('ftoggle');
+  ft.addEventListener('click',()=>{
+    const open=ft.getAttribute('aria-expanded')!=='true';
+    ft.setAttribute('aria-expanded', open?'true':'false');
+    R('controls').classList.toggle('open', open);
+  });
+  function applyFilter(){
+    const rng=o.range && (F.lo>0 || F.hi<o.range);
+    const n=(F.status!=='all')+(F.tag!=='all')+(rng?1:0);
+    R('fstate').textContent = o.range ? (rng?'· '+F.lo+'–'+F.hi:'') : (n ? '· '+n : '');
+    if(o.range){ R('rreset').hidden=!rng; }
+    if(!n){ tree.classList.remove('filtered'); return; }
+    tree.classList.add('filtered');
+    tree.querySelectorAll('.node[data-id]').forEach(nd=>{ nd.dataset.match = o.match(nd, F) ? '1':'0'; });
+  }
+  if(o.range){
+    const lo=R('lo'), hi=R('hi');
+    const upd=src=>{ F.lo=+lo.value; F.hi=+hi.value;
+      if(F.lo>F.hi){ if(src==='lo'){ F.hi=F.lo; hi.value=F.hi; } else { F.lo=F.hi; lo.value=F.lo; } }
+      applyFilter(); };
+    lo.addEventListener('change',()=>upd('lo')); hi.addEventListener('change',()=>upd('hi'));
+    R('rreset').addEventListener('click',()=>{ lo.value=0; hi.value=o.range; upd('lo'); });
+  }
+  [['fStatus','status'],['fTag','tag']].forEach(([r,k])=>{
+    const g=R(r); if(!g) return;
+    g.addEventListener('click',e=>{
+      const b=e.target.closest('button.chip'); if(!b) return;
+      F[k]=b.dataset.f;
+      g.querySelectorAll('.chip').forEach(c=>c.dataset.active=(c===b)?'1':'0');
+      applyFilter();
+    });
+  });
+
+  // drag to pan with the mouse
+  (function(){
+    let drag=null;
+    scroller.addEventListener('pointerdown', ev=>{
+      if(ev.pointerType!=='mouse' || ev.button!==0) return;
+      if(ev.target.closest('.node:not(.plan), .info, .tbtn, .wbtn, button, input, a')) return;
+      drag={x:ev.clientX, y:ev.clientY, left:scroller.scrollLeft, top:window.scrollY, id:ev.pointerId};
+      scroller.setPointerCapture(ev.pointerId);
+      tree.classList.add('dragging'); unpin(); ev.preventDefault();
+    });
+    scroller.addEventListener('pointermove', ev=>{
+      if(!drag || ev.pointerId!==drag.id) return;
+      scroller.scrollLeft = drag.left - (ev.clientX - drag.x);
+      window.scrollTo(window.scrollX, drag.top - (ev.clientY - drag.y));
+    });
+    function end(ev){
+      if(!drag || (ev && ev.pointerId!==drag.id)) return;
+      try{ scroller.releasePointerCapture(drag.id); }catch(e){}
+      drag=null; tree.classList.remove('dragging');
+    }
+    scroller.addEventListener('pointerup', end);
+    scroller.addEventListener('pointercancel', end);
+    scroller.addEventListener('lostpointercapture', end);
+  })();
+  scroller.addEventListener('scroll',()=>unpin(),{passive:true});
+
+  bindTips(root);
+  setBranch(active);
+  return {root, tree, H, stat:R('stat'), bar:R('bar'), applyFilter, refreshPhone, setBranch, get active(){ return active; }};
+}
+
+// ================= GRAMMAR mode =================
+const G = (function(){
+  const STATUS_ORDER=['not_started','learning','review','mastered'];
+  const STATUS_LABEL={not_started:'не начато', learning:'изучаю', review:'повторяю', mastered:'освоено'};
+  const CARDS={}, state={}, scores={}, glv={}, readM={};
+  const GMAX=10, GREV=5;
+  const STATUS_FROM_OLD={not_started:0, learning:2, review:6, mastered:10};
+  function gstatus(l){ return l>=GMAX?'mastered':l>=GREV?'review':l>0?'learning':'not_started'; }
+  function gband(l){ return l>=GMAX?'m':l>=GREV?'r':l>0?'l':'0'; }
+  function sumOf(ids){ return ids.reduce((s,id)=>s+glv[id],0); }
+  function avgOf(ids){ if(!ids.length) return '0'; const v=sumOf(ids)/ids.length; return (Math.round(v*10)/10).toString().replace('.',','); }
+  function setG(id,l){ glv[id]=Math.max(0,Math.min(GMAX,l|0)); state[id]=gstatus(glv[id]); }
+  G_BRANCHES.forEach(b=>LEVELS.forEach(l=>(b.cells[l.key]||[]).forEach(c=>{
+    CARDS[c[0]]={branch:b.key, level:l.key, title:c[1], tags:c[5]};
+    state[c[0]]='not_started'; glv[c[0]]=0;
+    if(G_INFO[c[0]]) TIPS['g:c:'+c[0]]={t:c[1], x:G_INFO[c[0]]};
+  })));
+  const ALL=Object.keys(CARDS);
+
+  const ICON_UP='<svg class="lvup" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.5 6 3l3.5 3.5M2.5 10.5 6 7l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const ICON_STAR='<svg class="lvup" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 .9l1.55 3.2 3.5.45-2.57 2.42.66 3.48L6 8.75 2.86 10.45l.66-3.48L.95 4.55l3.5-.45z" fill="currentColor"/></svg>';
+  function chipHTML(s,l){ return esc(STATUS_LABEL[s])+' · '+(l||0)+(s==='mastered'?ICON_STAR:''); }
+  function gbarHTML(l){ let h='<span class="gbar" data-b="'+gband(l)+'">'; for(let i=1;i<=GMAX;i++) h+='<i class="'+(i<=l?'on':'')+'"></i>'; return h+'</span>'; }
+  function gEdit(id){
+    const l=glv[id];
+    let h='<div class="r-level"><span class="r-level-l">Уровень правила</span><span class="lvle" data-gid="'+id+'" data-l="'+l+'" data-b="'+gband(l)+'" role="group" aria-label="Уровень правила">'+
+      '<button type="button" class="lvb" data-gset="'+Math.max(0,l-1)+'" title="Понизить"'+(l<=0?' disabled':'')+' aria-label="Понизить">−</button><span class="lvsegs">';
+    for(let i=1;i<=GMAX;i++) h+='<button type="button" class="lvs'+(i<=l?' on':'')+'" data-gset="'+(i===l?i-1:i)+'" title="'+(i===l?'Понизить до '+(i-1):'Поставить уровень '+i)+'" aria-label="уровень '+i+'"></button>';
+    return h+'</span><span class="lvn">'+l+'</span><button type="button" class="lvb" data-gset="'+Math.min(GMAX,l+1)+'" title="Повысить"'+(l>=GMAX?' disabled':'')+' aria-label="Повысить">+</button></span>'+
+      '</div>';
+  }
+  function readEdit(id){ return '<label class="r-read"><input type="checkbox" data-rread'+(readM[id]?' checked':'')+'> читано <span>— отметка для себя, на уровень не влияет</span></label>'; }
+  const TEST_SVG='<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 3.2l1 1 1.7-1.9M2 8.2l1 1 1.7-1.9M6.8 3.6h3.4M6.8 8.6h3.4" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const BOOK_SVG='<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M1.5 2.2c1.6-.6 3.1-.5 4.5.4v7.6c-1.4-.9-2.9-1-4.5-.4zM10.5 2.2c-1.6-.6-3.1-.5-4.5.4v7.6c1.4-.9 2.9-1 4.5-.4z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>';
+  function cardNode(c){
+    const [id,t,g,ex,src,tags]=c;
+    const btn=el('button','node'); btn.type='button'; btn.dataset.id=id; btn.dataset.status='not_started';
+    btn.innerHTML=
+      (G_INFO[id]?'<span class="info" data-tip="g:c:'+id+'">i</span>':'')+
+      (TESTS[id]?'<span class="wbtn wtest rtest rbtn" data-rid="'+id+'" role="button" tabindex="0" title="Пройти тест из 10 вопросов">Тест</span>':'')+
+      '<span class="t">'+esc(t)+'</span>'+
+      (g?'<span class="g">'+esc(g)+'</span>':'')+
+      (ex?'<span class="ex">'+esc(ex)+'</span>':'')+
+      gbarHTML(0)+
+      '<span class="foot"><span class="status-chip split">'+
+      '<span class="lvstep" data-d="-1" role="button" tabindex="0" title="Понизить уровень на 1" aria-label="Понизить уровень"><b>‹</b></span>'+
+      '<span class="sn">0</span>'+
+      '<span class="lvstep" data-d="1" role="button" tabindex="0" title="Повысить уровень на 1" aria-label="Повысить уровень"><b>›</b></span></span>'+
+      '<span class="rread" role="checkbox" aria-checked="false" tabindex="0" title="Отметка для себя: правило уже читал(а). На уровень не влияет."><i aria-hidden="true"></i>читано</span>'+
+      tags.map(x=>'<span class="tg '+x+'">'+x+'</span>').join('')+
+      '<span class="score" hidden></span><span class="src">'+esc(src)+'</span></span>';
+    btn.title='Открыть правило';
+    btn.addEventListener('click',()=>{ if(RULES[id]) openRule(id); else if(TESTS[id]) openTest(id); else cycle(id); });
+    const rr=btn.querySelector('.rread');
+    const tg=ev=>{ ev.stopPropagation(); ev.preventDefault(); setRead(id, !readM[id]); };
+    rr.addEventListener('click',tg); rr.addEventListener('keydown',ev=>{ if(ev.key==='Enter'||ev.key===' ') tg(ev); });
+    btn.querySelectorAll('.lvstep').forEach(s=>{
+      const go=ev=>{ ev.stopPropagation(); ev.preventDefault(); if(s.getAttribute('aria-disabled')==='true') return; setLevelG(id, glv[id]+(+s.dataset.d)); };
+      s.addEventListener('click',go);
+      s.addEventListener('keydown',ev=>{ if(ev.key==='Enter'||ev.key===' ') go(ev); });
+    });
+    return btn;
+  }
+
+  const board = Board({
+    key:'g', root:document.getElementById('mode-g'), branchKey:'ef_skilltree_branch',
+    branches:G_BRANCHES.map(b=>Object.assign({}, b, {info:G_BINFO[b.key]})),
+    legend:'<span class="lg-scale">уровень правила 0–10</span>'+
+      '<span><span class="dot" style="background:var(--st-learn)"></span>1–4</span>'+
+      '<span><span class="dot" style="background:var(--st-review)"></span>5–9</span>'+
+      '<span><span class="dot" style="background:var(--st-mastered)"></span>10</span>',
+    range:10,
+    footer:'<section><h3>Карточка темы</h3><ul>'+
+      '<li>Клик по карточке открывает правило целиком: форма с переводом, когда используем, примеры, исключения и ловушки.</li>'+
+      '<li>Кнопка «Тест» справа вверху открывает тест из 10 вопросов. Последний результат виден на карточке. Кнопкой «← Назад» можно пересмотреть прошлые вопросы.</li>'+
+      '<li>Кнопка «i» показывает короткую подсказку по теме.</li>'+
+      '<li>Галочка «читано» внизу карточки — отметка для себя, что правило уже изучалось. На уровень она не влияет. Кнопка «Отрабатывать читанное» над деревом даёт вопросы вперемешку из всех читанных правил, у которых уровень ещё не 10.</li>'+
+      '<li>Метка справа внизу — урок в Student\'s Book своего уровня: 7B = File 7, lesson B; PE = Practical English.</li>'+
+      '</ul></section>'+
+      '<section><h3>Уровень правила</h3><ul>'+
+      '<li>У каждого правила уровень от 0 до 10. Цвет карточки подсказывает уровень: синий 1–4, жёлтый 5–9, зелёный 10.</li>'+
+      '<li>Фильтр «Уровень от … до …» оставляет яркими только правила в этом диапазоне.</li>'+
+      '<li>Кнопка внизу карточки: ‹ понижает уровень на 1, › повышает, в середине — текущий уровень. На странице правила уровень можно поставить сразу, кликом по шкале.</li>'+
+      '<li>После теста на 9–10 можно сразу поставить уровень 10.</li>'+
+      '<li>По итогам практических работ (переводов) Claude меняет уровни правил по коэффициентам со вкладки «Настройки».</li>'+
+      '</ul></section>'+
+      '<section><h3>Прогресс</h3><ul>'+
+      '<li>Прогресс хранится в артефакте и виден на любом устройстве, если войти в аккаунт Claude. Без входа он хранится только в этом браузере.</li>'+
+      '<li>У каждого ученика свой прогресс. Все, у кого есть доступ к странице, видят всех учеников и могут переключаться между ними.</li>'+
+      '</ul></section>'+
+      '<section><h3>Дерево</h3><ul>'+
+      '<li>Ветки идут слева направо, уровни A1–B2 сверху вниз. Дерево можно прокручивать вбок или тянуть мышью.</li>'+
+      '<li>Пунктирный ствол значит, что на этом уровне в ветке новой темы нет.</li>'+
+      '<li>Объяснения и вопросы написаны для этой схемы в формате English File, это не копия учебника.</li>'+
+      '</ul></section>',
+    cell:(b,lk)=>(b.cells[lk]||[]).map(cardNode),
+    phoneCount:(bk,lk)=>{
+      const ids=ALL.filter(id=>CARDS[id].branch===bk && CARDS[id].level===lk);
+      return ids.length ? 'ср. '+avgOf(ids) : '—';
+    },
+    match:(nd,F)=>{ const l=glv[nd.dataset.id]; return l>=F.lo && l<=F.hi; },
+  });
+
+  board.root.querySelectorAll('.rbtn').forEach(r=>r.addEventListener('click',ev=>{ ev.stopPropagation(); ev.preventDefault(); openTest(r.dataset.rid); }));
+  board.root.querySelectorAll('.rbtn').forEach(r=>r.addEventListener('keydown',ev=>{ if(ev.key==='Enter'||ev.key===' '){ ev.stopPropagation(); ev.preventDefault(); openTest(r.dataset.rid); } }));
+
+  // ---- practice of read rules ----
+  const MIXN=20;
+  const pr=el('section','review-panel practice-panel');
+  pr.setAttribute('aria-label','Отработка читанного');
+  function practicePool(){ return ALL.filter(id=>readM[id] && glv[id]<GMAX && TESTS[id]); }
+  function renderPractice(){
+    const read=ALL.filter(id=>readM[id]).length, pool=practicePool();
+    pr.innerHTML='<div class="pr-row"><div class="rv-head"><h2 class="rv-title">Отработка читанного</h2>'+
+      '<p class="rv-sub">'+(read?'Читано правил: <b>'+read+'</b>, из них не на 10: <b>'+pool.length+'</b>. Вопросы вперемешку из этих правил; верный ответ '+fmtD(COEF.rulesPractice.ok)+', ошибка '+fmtD(COEF.rulesPractice.wrong)+' к уровню правила.':
+        'Отметь на карточках правил галочку «читано» — здесь появятся вопросы по всем читанным правилам, которые ещё не дошли до 10.')+'</p></div>'+
+      '<button type="button" class="m-btn" data-mix'+(pool.length?'':' disabled')+'>Отрабатывать читанное</button></div>';
+  }
+  function fmtD(v){ return (v>0?'+':'')+v; }
+  pr.addEventListener('click',ev=>{ const b=ev.target.closest('[data-mix]'); if(b&&!b.disabled) openMix(); });
+  board.root.querySelector('.stats-row').after(pr);
+  function openMix(){
+    if(needProfile()) return;
+    const ids=shuffle(practicePool()); if(!ids.length) return;
+    const per=ids.map(id=>shuffle(TESTS[id]).map(q=>({rid:id, q})));
+    const qs=[]; let k=0;
+    while(qs.length<MIXN && per.some(p=>p.length)){ const p=per[k%per.length]; if(p.length) qs.push(p.shift()); k++; }
+    modal.classList.remove('rulepage'); ruleId=null;
+    T={mix:true, id:null, title:'Вопросы из '+ids.length+' '+(ids.length===1?'правила':'правил'), kicker:'Отработка читанного', i:0, answers:[], delta:{},
+       qs:qs.map(x=>({rid:x.rid, s:x.q[0], a:x.q[1], opts:shuffle(x.q.slice(1))}))};
+    openModal(api);
+    renderQ();
+  }
+
+  // ---- full rule page ----
+  let ruleId=null;
+  function openRule(id){
+    const R=RULES[id]; if(!R) return;
+    const card=CARDS[id]; const b=G_BRANCHES.find(x=>x.key===card.branch); const lv=LEVELS.find(l=>l.key===card.level);
+    const cell=(b.cells[card.level]||[]).find(c=>c[0]===id)||[];
+    T=null; ruleId=id;
+    openModal(api);
+    modal.classList.add('rulepage');
+    const li=arr=>'<ul>'+arr.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>';
+    const sc=scores[id];
+    modal.innerHTML=mHead('Правило · '+b.name+' · '+card.level+' '+lv.book, card.title,
+        TESTS[id]?'<button type="button" class="m-btn ghost m-hbtn" data-act="rtest">Тест</button>':'')+
+      '<div class="r-meta">'+(cell[2]?esc(cell[2])+' · ':'')+'урок '+esc(cell[4]||'')+'</div>'+gEdit(id)+readEdit(id)+
+      (G_INFO[id]?'<div class="m-rule">'+esc(G_INFO[id])+'</div>':'')+
+      '<h3 class="r-h">Форма</h3><div class="r-form">'+R.f.map(r=>{
+        if(typeof r==='string') return '<div class="rf-row"><span class="rf-en">'+esc(r)+'</span></div>';
+        if(r.length===1) return '<div class="rf-h">'+esc(r[0].replace(/^#/,''))+'</div>';
+        return '<div class="rf-row">'+(r[0]?'<span class="rf-en">'+esc(r[0])+'</span>':'')+'<span class="rf-ru'+(r[0]?'':' solo')+'">'+esc(r[1])+'</span></div>';
+      }).join('')+'</div>'+
+      '<h3 class="r-h">Когда используем</h3>'+li(R.u)+
+      '<h3 class="r-h">Примеры</h3><div class="r-ex">'+R.e.map(p=>'<div class="r-row"><div><div class="r-en">'+esc(p[0])+'</div><div class="r-ru">'+esc(p[1])+'</div></div>'+sayBtn(p[0].replace(/\(.*?\)/g,''))+'</div>').join('')+'</div>'+
+      '<h3 class="r-h">Исключения и ловушки</h3><ul class="r-x">'+R.x.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>'+
+      '<div class="m-actions">'+(TESTS[id]?'<button type="button" class="m-btn ghost" data-act="rtest">Пройти тест'+(sc?' · было '+sc.score+'/'+sc.total:'')+'</button>':'')+
+      '<button type="button" class="m-btn" data-act="close">Закрыть</button></div>';
+    modal.scrollTop=0;
+    const f=modal.querySelector('.m-close'); if(f) f.focus({preventScroll:true});
+  }
+
+  function paint(id){
+    const n=board.tree.querySelector('.node[data-id="'+id+'"]'); if(!n) return;
+    const s=state[id];
+    n.dataset.status=s;
+    const chip=n.querySelector('.status-chip');
+    const l=glv[id];
+    chip.querySelector('.sn').textContent=l;
+    chip.title = 'Уровень '+l+' из '+GMAX;
+    const st=n.querySelectorAll('.lvstep');
+    st[0].setAttribute('aria-disabled', l<=0?'true':'false'); st[1].setAttribute('aria-disabled', l>=GMAX?'true':'false');
+    const gb=n.querySelector('.gbar'); if(gb) gb.outerHTML=gbarHTML(l);
+    n.setAttribute('aria-label', CARDS[id].title+' — уровень '+l+' из '+GMAX+(readM[id]?', читано':'')+'. Открыть правило');
+    const rr=n.querySelector('.rread'); if(rr){ rr.setAttribute('aria-checked', readM[id]?'true':'false'); rr.classList.toggle('on', !!readM[id]); }
+    n.classList.toggle('is-read', !!readM[id]);
+  }
+  function paintScore(id){
+    const n=board.tree.querySelector('.node[data-id="'+id+'"]'); if(!n) return;
+    const s=n.querySelector('.score'); const v=scores[id];
+    if(!v){ s.hidden=true; return; }
+    s.hidden=false; s.textContent='тест '+v.score+'/'+v.total;
+    s.className='score '+(v.score>=9?'good':v.score>=6?'mid':'low');
+  }
+  function stats(){
+    board.refreshPhone();
+    const T=ALL.length, started=ALL.filter(id=>glv[id]>0).length, pct=sumOf(ALL)/(GMAX*T)*100;
+    const who=currentName();
+    board.stat.innerHTML=(who?'<span class="who">'+esc(who)+':</span> ':'')+'средний уровень '+avgOf(ALL)+' из '+GMAX+' · начато '+started+' из '+T+' правил';
+    board.bar.innerHTML='<span style="width:'+pct+'%;background:var(--st-mastered)"></span>';
+    G_BRANCHES.forEach(b=>{
+      const ids=ALL.filter(id=>CARDS[id].branch===b.key);
+      board.H.cnt[b.key].textContent='ср. '+avgOf(ids)+' из '+GMAX;
+      board.H.pb[b.key].style.width=(ids.length?sumOf(ids)/(GMAX*ids.length)*100:0)+'%';
+    });
+    LEVELS.forEach(l=>{
+      const ids=ALL.filter(id=>CARDS[id].level===l.key);
+      board.H.lp[l.key].textContent='ср. '+avgOf(ids)+' из '+GMAX;
+      board.H.lb[l.key].style.width=(ids.length?sumOf(ids)/(GMAX*ids.length)*100:0)+'%';
+    });
+  }
+  function refresh(){ ALL.forEach(paint); ALL.forEach(paintScore); stats(); board.applyFilter(); renderPractice(); }
+
+  // ---- persistence ----
+  const LKEY='ef_skilltree_v2';
+  let unsubP=null, unsubT=null;
+  const LKEY10='ef_skilltree_lv10';
+  function saveLocal(){ lsSet(LKEY10, JSON.stringify(glv)); }
+  function setLevelG(id,l){
+    if(needProfile()) return;
+    setG(id,l); paint(id); stats(); board.applyFilter(); renderPractice();
+    const ed=modal.querySelector('.r-level'); if(ed && ruleId===id) ed.outerHTML=gEdit(id);
+    if(db && current && canWrite()) db.collection('profiles/'+current+'/progress').doc(id).set({lv:glv[id], status:state[id], read:!!readM[id], updatedAt:Date.now()}).catch(onWriteError);
+    else if(local) saveLocal();
+  }
+  const RKEY='ef_rules_read';
+  function setRead(id, on){
+    if(needProfile()) return;
+    if(on) readM[id]=true; else delete readM[id];
+    paint(id); renderPractice();
+    const cb=modal.querySelector('[data-rread]'); if(cb && ruleId===id) cb.checked=!!on;
+    if(db && current && canWrite()) db.collection('profiles/'+current+'/progress').doc(id).set({lv:glv[id], status:state[id], read:!!on, updatedAt:Date.now()}).catch(onWriteError);
+    else if(local) lsSet(RKEY, JSON.stringify(readM));
+  }
+  function cycle(id){ if(glv[id]<GMAX) setLevelG(id, glv[id]+1); }
+  function markMastered(id){ setLevelG(id, GMAX); }
+  function saveScore(id, score, total){
+    scores[id]={score,total}; paintScore(id);
+    if(db && current && canWrite()) db.collection('profiles/'+current+'/tests').doc(id).set({score, total, at:Date.now()}).catch(onWriteError);
+    else if(local) lsSet(LKEY+'_scores', JSON.stringify(scores));
+  }
+  function select(pid){
+    if(unsubP){ unsubP(); unsubP=null; }
+    if(unsubT){ unsubT(); unsubT=null; }
+    Object.keys(scores).forEach(k=>delete scores[k]);
+    Object.keys(readM).forEach(k=>delete readM[k]);
+    ALL.forEach(id=>setG(id,0));
+    refresh();
+    if(!pid || !db) return;
+    unsubT=db.collection('profiles/'+pid+'/tests').onSnapshot(qs=>{
+      if(current!==pid) return;
+      Object.keys(scores).forEach(k=>delete scores[k]);
+      qs.docs.forEach(doc=>{ const v=doc.data(); if(v && (doc.id in CARDS) && typeof v.score==='number') scores[doc.id]={score:v.score, total:v.total||10}; });
+      ALL.forEach(paintScore);
+    },()=>{});
+    unsubP=db.collection('profiles/'+pid+'/progress').onSnapshot(qs=>{
+      if(current!==pid) return;
+      ALL.forEach(id=>setG(id,0));
+      Object.keys(readM).forEach(k=>delete readM[k]);
+      qs.docs.forEach(doc=>{ const v=doc.data(); if(!v || !(doc.id in state)) return;
+        if(v.read) readM[doc.id]=true;
+        if(typeof v.lv==='number') setG(doc.id, v.lv);
+        else if(STATUS_ORDER.includes(v.status)) setG(doc.id, STATUS_FROM_OLD[v.status]); });
+      refresh();
+    },()=>{});
+  }
+  function initLocal(){
+    try{
+      const n=lsGet(LKEY10);
+      if(n){ const o=JSON.parse(n); Object.keys(o).forEach(k=>{ if(k in state) setG(k, +o[k]||0); }); }
+      else { const o=JSON.parse(lsGet(LKEY)||'{}'); Object.keys(o).forEach(k=>{ if(k in state && o[k] in STATUS_FROM_OLD) setG(k, STATUS_FROM_OLD[o[k]]); }); }
+    }catch(e){}
+    try{ Object.assign(scores, JSON.parse(lsGet(LKEY+'_scores')||'{}')); }catch(e){}
+    try{ const o=JSON.parse(lsGet(RKEY)||'{}'); Object.keys(o).forEach(k=>{ if(k in state && o[k]) readM[k]=true; }); }catch(e){}
+    refresh();
+  }
+
+  // ---- tests ----
+  let T=null;
+  function fillGap(sentence, word, cls, wrong){
+    const parts=sentence.split('___');
+    let before=esc(parts[0]); const after=esc(parts.slice(1).join('___'));
+    let w=word;
+    if(w==='—'){ w='∅'; }
+    else if(w && w.startsWith("'") && before.endsWith(' ')) before=before.slice(0,-1);
+    const wr=wrong!=null?'<s class="gap-wrong">'+esc(wrong==='—'?'∅':wrong)+'</s> ':'';
+    return before+wr+'<span class="gap'+(cls?' '+cls:'')+'">'+(word==null?'&nbsp;':esc(w))+'</span>'+after;
+  }
+  function optLabel(o){ return o==='—' ? '— (ничего не нужно)' : o; }
+  function head(){ return mHead('Тест · '+T.kicker, T.title); }
+  function openTest(id){
+    if(!TESTS[id]) return;
+    const card=CARDS[id]; const b=G_BRANCHES.find(x=>x.key===card.branch); const lv=LEVELS.find(l=>l.key===card.level);
+    modal.classList.remove('rulepage'); ruleId=null;
+    T={id, title:card.title, kicker:b.name+' · '+card.level+' '+lv.book, i:0, answers:[],
+       qs:shuffle(TESTS[id]).map(q=>({s:q[0], a:q[1], opts:shuffle(q.slice(1))}))};
+    openModal(api);
+    renderQ();
+  }
+  function dots(){
+    return '<div class="m-dots">'+T.qs.map((q,i)=>{
+      const a=T.answers[i]; const c=a==null?(i===T.i?'cur':''):(a===q.a?'ok':'no');
+      return '<span class="'+c+'"></span>';
+    }).join('')+'</div>';
+  }
+  function renderQ(){
+    const q=T.qs[T.i]; const ans=T.answers[T.i]; const done=ans!=null;
+    modal.classList.add('fixed','testm');
+    modal.innerHTML=head()+dots()+
+      (T.mix?'<div class="m-rid">'+(done?'Правило: '+esc(CARDS[q.rid].title)+' · '+CARDS[q.rid].level:'Правило откроется после ответа')+'</div>':'')+
+      '<div class="m-count">Вопрос '+(T.i+1)+' из '+T.qs.length+(done?(ans===q.a?' · <span class="m-okt">верно</span>':' · <span class="m-not">неверно</span>'):'')+'</div>'+
+      '<div class="m-q">'+fillGap(q.s, done?q.a:null, done?'ok':'', done&&ans!==q.a?ans:null)+'</div>'+
+      '<div class="m-opts">'+q.opts.map((o,k)=>{
+        let cls=''; if(done){ if(o===q.a) cls=' ok'; else if(o===ans) cls=' no'; }
+        return '<button type="button" class="m-opt'+cls+'" data-opt="'+k+'"'+(done?' disabled':'')+'><span class="k">'+(k+1)+'</span>'+esc(optLabel(o))+'</button>';
+      }).join('')+'</div>'+
+      '<div class="m-actions">'+(T.i>0?'<button type="button" class="m-btn ghost m-prev" data-act="prev">← Назад</button>':'')+
+        (done?'<button type="button" class="m-btn" data-act="next">'+(T.i<T.qs.length-1?'Дальше →':'Результат')+'</button>':'')+'</div>'+
+      '<div class="m-note">Клавиши 1–3 — выбрать ответ, Enter — дальше, ← — назад, Esc — закрыть.</div>';
+    const f=modal.querySelector(done?'[data-act="next"]':'.m-opt'); if(f) f.focus();
+  }
+  function choose(k){
+    if(!T || T.finished || T.answers[T.i]!=null) return;
+    const q=T.qs[T.i]; T.answers[T.i]=q.opts[k];
+    if(T.mix){
+      const d=T.answers[T.i]===q.a?COEF.rulesPractice.ok:COEF.rulesPractice.wrong;
+      if(!(q.rid in T.delta)) T.delta[q.rid]={from:glv[q.rid], ok:0, no:0};
+      T.delta[q.rid][T.answers[T.i]===q.a?'ok':'no']++;
+      setLevelG(q.rid, glv[q.rid]+d);
+    }
+    renderQ();
+  }
+  function prev(){ if(!T || T.finished || T.i<=0) return; T.i--; renderQ(); }
+  function next(){ if(!T || T.answers[T.i]==null) return; if(T.i<T.qs.length-1){ T.i++; renderQ(); } else finish(); }
+  function finish(){
+    modal.classList.add('fixed','testm');
+    const total=T.qs.length, score=T.qs.filter((q,i)=>T.answers[i]===q.a).length;
+    if(T.mix){ finishMix(score,total); return; }
+    saveScore(T.id, score, total);
+    T.finished=true;
+    const verdict=score===total?'Отлично — тема освоена.':score>=8?'Хорошо, осталось совсем чуть-чуть.':score>=5?'Стоит повторить правило и пройти ещё раз.':'Начни с правила — оно ниже.';
+    const misses=T.qs.map((q,i)=>({q,a:T.answers[i]})).filter(x=>x.a!==x.q.a);
+    const canMaster=score>=9 && glv[T.id]<GMAX;
+    modal.innerHTML=head()+dots()+
+      '<div class="m-score">'+score+' / '+total+'</div><div class="m-verdict">'+verdict+'</div>'+
+      (misses.length?'<div class="m-count">Ошибки</div><ul class="m-miss">'+misses.map(x=>
+        '<li>'+fillGap(x.q.s, x.q.a, 'ok')+'<div class="yours">твой ответ: '+esc(optLabel(x.a))+'</div></li>').join('')+'</ul>':'')+
+      (G_INFO[T.id]?'<div class="m-count" style="margin-top:12px">Правило</div><div class="m-rule">'+esc(G_INFO[T.id])+'</div>':'')+
+      '<div class="m-actions">'+
+        (canMaster?'<button type="button" class="m-btn ghost" data-act="master">Поставить уровень 10</button>':'')+
+        (RULES[T.id]?'<button type="button" class="m-btn ghost" data-act="rule">Правило целиком</button>':'')+
+        '<button type="button" class="m-btn ghost" data-act="again">Ещё раз</button>'+
+        '<button type="button" class="m-btn" data-act="close">Закрыть</button></div>';
+    const f=modal.querySelector('[data-act="again"]'); if(f) f.focus();
+  }
+  function finishMix(score,total){
+    T.finished=true;
+    const misses=T.qs.map((q,i)=>({q,a:T.answers[i]})).filter(x=>x.a!=null && x.a!==x.q.a);
+    const rows=Object.keys(T.delta).map(id=>({id, d:T.delta[id]}));
+    modal.innerHTML=head()+dots()+
+      '<div class="m-score">'+score+' / '+total+'</div>'+
+      '<div class="m-count">Уровни правил</div><div class="wl mix-res">'+rows.map(r=>
+        '<div class="row"><span class="en">'+esc(CARDS[r.id].title)+'</span><span class="ru">верно '+r.d.ok+(r.d.no?' · ошибок '+r.d.no:'')+'</span>'+
+        '<span class="chg">'+r.d.from+' → '+glv[r.id]+'</span></div>').join('')+'</div>'+
+      (misses.length?'<div class="m-count" style="margin-top:12px">Ошибки</div><ul class="m-miss">'+misses.map(x=>
+        '<li><div class="m-rid">'+esc(CARDS[x.q.rid].title)+'</div>'+fillGap(x.q.s, x.q.a, 'ok')+'<div class="yours">твой ответ: '+esc(optLabel(x.a))+'</div></li>').join('')+'</ul>':'')+
+      '<div class="m-actions"><button type="button" class="m-btn ghost" data-act="close">Закрыть</button>'+
+        (practicePool().length?'<button type="button" class="m-btn" data-act="mixagain">Ещё вопросы</button>':'')+'</div>';
+    const f=modal.querySelector('[data-act="mixagain"]')||modal.querySelector('[data-act="close"]'); if(f) f.focus();
+  }
+  const api = {
+    onClick(ev){
+      const rc=ev.target.closest('[data-rread]'); if(rc && ruleId){ setRead(ruleId, rc.checked); return; }
+      const gs=ev.target.closest('[data-gset]'); if(gs && ruleId){ setLevelG(ruleId, +gs.dataset.gset); return; }
+      const o=ev.target.closest('[data-opt]'); if(o){ choose(+o.dataset.opt); return; }
+      const a=ev.target.closest('[data-act]'); if(!a) return;
+      if(a.dataset.act==='rtest' && ruleId){ openTest(ruleId); return; }
+      if(!T) return;
+      if(a.dataset.act==='mixagain'){ openMix(); return; }
+      if(a.dataset.act==='rule'){ openRule(T.id); return; }
+      if(a.dataset.act==='next') next();
+      else if(a.dataset.act==='prev') prev();
+      else if(a.dataset.act==='again') openTest(T.id);
+      else if(a.dataset.act==='master'){ markMastered(T.id); a.remove(); }
+    },
+    onKey(ev){
+      if(!T || T.finished) return;
+      if(['1','2','3'].includes(ev.key)){ choose(+ev.key-1); ev.preventDefault(); }
+      else if(ev.key==='Enter' && T.answers[T.i]!=null){ next(); ev.preventDefault(); }
+      else if(ev.key==='ArrowLeft'){ prev(); ev.preventDefault(); }
+      else if(ev.key==='ArrowRight' && T.answers[T.i]!=null){ next(); ev.preventDefault(); }
+    },
+    onClose(){ T=null; ruleId=null; modal.classList.remove('rulepage'); },
+    select, initLocal, stats, refresh, board,
+  };
+  return api;
+})();
+
+// ================= WORDS mode =================
+const W = (function(){
+  const MAXL=10, REVL=5, SESSION=Infinity;
+  const STATUS_LABEL={not_started:'не начато', learning:'изучаю', review:'повторяю', mastered:'закрыто'};
+  function slug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'w'; }
+  function parseWords(s){
+    return s.split(';').map(x=>x.trim()).filter(Boolean).map(x=>{
+      const p=x.split('|').map(y=>y.trim());
+      return {en:p[0], ru:p[1]||'', p:POS_ORDER.includes(p[2])?p[2]:'n', ex:p[3]||'', note:p[4]||'', k:slug(p[0])};
+    });
+  }
+  const CARDS={};
+  function addCard(b, l, c, extra){
+    const words=parseWords(c[3]);
+    words.forEach(w=>{ w.tid=c[0]; if(!w.note && NOTES[c[0]+'|'+w.en]) w.note=NOTES[c[0]+'|'+w.en]; });
+    CARDS[c[0]]={branch:b.key, level:l.key, title:c[1], gloss:c[2], tags:POS_ORDER.filter(p=>words.some(w=>w.p===p)), words, extra:!!extra};
+  }
+  W_BRANCHES.forEach(b=>LEVELS.forEach(l=>(b.cells[l.key]||[]).forEach(c=>addCard(b,l,c,false))));
+  W_BRANCHES.forEach(b=>LEVELS.forEach(l=>((b.extra&&b.extra[l.key])||[]).forEach(c=>addCard(b,l,c,true))));
+  const ALL=Object.keys(CARDS);
+
+  // prog[cardId][wordKey] = [level, lastReviewedMs, reviews, dueMs, intervalDays, ease]
+  const prog={};
+  const rec=(id,k)=>(prog[id]&&prog[id][k])||[0,0,0];
+  const lvl=(id,k)=>rec(id,k)[0];
+  function cardInfo(id){
+    const ws=CARDS[id].words;
+    let sum=0, learned=0, seen=0, min=MAXL;
+    ws.forEach(w=>{ const r=rec(id,w.k); sum+=r[0]; if(r[0]===MAXL) learned++; if(r[2]>0||r[0]>0) seen++; if(r[0]<min) min=r[0]; });
+    const status=min===MAXL?'mastered':min>=REVL?'review':seen?'learning':'not_started';
+    return {n:ws.length, sum, pct:Math.round(sum/(MAXL*ws.length)*100), learned, status};
+  }
+  function band(l){ return l>=MAXL?'m':l>=REVL?'r':l>0?'l':'0'; }
+  // spaced repetition: Anki-like SM-2; the 0–10 level is derived from the current interval
+  const DAY=864e5, MIN=6e4;
+  const IVL_FOR_LEVEL=[0,0,1,2.5,5,10,17,30,60,120,180];
+  function lvFromIvl(ivl, seen){
+    if(ivl>=180) return 10; if(ivl>=90) return 9; if(ivl>=45) return 8; if(ivl>=25) return 7; if(ivl>=14) return 6;
+    if(ivl>=7) return 5; if(ivl>=4) return 4; if(ivl>=2) return 3; if(ivl>=1) return 2; return seen?1:0;
+  }
+  function sched(r,g,now){
+    const R=COEF.review, cap=x=>Math.min(R.maxIvl, x);
+    let ivl=r[4]||0, ease=r[5]||2.5, due;
+    if(g==='again'){ ivl=0; ease=Math.max(1.3,ease-0.2); due=now+10*MIN; }
+    else if(g==='reset'){ ivl=0; ease=2.5; due=0; }
+    else if(g==='known'){ ivl=Math.max(ivl,180); due=now+ivl*DAY; }
+    else {
+      if(g==='hard'){ ivl=ivl?Math.max(1,ivl*R.hardPct/100):0.5; ease=Math.max(1.3,ease-0.15); }
+      else if(g==='good'){ ivl=ivl?Math.max(ivl+1,ivl*ease):1; }
+      else { ivl=ivl?Math.max(ivl+1,ivl*ease*R.easyPct/100):4; ease=ease+0.15; }
+      ivl=cap(Math.round(ivl*10)/10); due=now+ivl*DAY;
+    }
+    const lv = g==='reset' ? 0 : g==='known' ? 10 : Math.min(lvFromIvl(ivl, true), ivl>=180?10:9);
+    return {due, ivl, ease:Math.round(ease*100)/100, lv};
+  }
+  function ivlLabel(ms){
+    if(ms<60*MIN) return Math.max(1,Math.round(ms/MIN))+' мин';
+    if(ms<DAY*0.9) return Math.round(ms/36e5)+' ч';
+    const d=ms/DAY; if(d<1.5) return '1 дн.';
+    if(d<30) return Math.round(d)+' дн.';
+    if(d<365) return Math.round(d/30)+' мес.';
+    return (Math.round(d/36.5)/10)+' г.';
+  }
+  const isDue=(r,now)=>r[0]<MAXL && (r[3] ? r[3]<=now : (r[2]>0||r[0]>0));
+  const isNew=r=>!r[3] && !r[2] && !r[0];
+  function lvlHTML(l){ let h='<span class="lvl" data-b="'+band(l)+'" data-l="'+l+'" title="уровень '+l+' из '+MAXL+'">'; for(let i=1;i<=MAXL;i++) h+='<i class="'+(i<=l?'on':'')+'"></i>'; return h+'</span>'; }
+  function trHTML(w){
+    const t=(typeof WORD_TR!=='undefined')&&WORD_TR[w.k]; if(!t) return '';
+    return '<div class="trn"><span class="ipa">/'+esc(t[0])+'/</span><span class="rus">'+esc(t[1])+'</span></div>';
+  }
+  function extraHTML(w){
+    const d=(typeof WORD_EX!=='undefined')&&WORD_EX[w.k]; if(!d) return '';
+    const [forms,irr,s,p,pf,c,syn,ant,rx,nn]=d;
+    const re=rx?new RegExp('\\b(?:'+rx+')\\w*','gi'):null;
+    const hl=t=>{ const e=esc(t); return re?e.replace(re,m=>'<b>'+m+'</b>'):e; };
+    let h='<div class="wx">';
+    if(forms) h+='<div class="wx-forms">'+forms.map(esc).join(' · ')+' <span class="'+(irr?'irr':'reg')+'">'+(irr?'неправильный':'правильный')+'</span></div>';
+    if(nn){
+      const CN={C:['исчисляемое','c'],U:['неисчисляемое','u'],CU:['исчисляемое и неисчисляемое','cu'],PL:['только мн. ч.','pl'],SG:['без мн. ч.','sg']}[nn[1]]||['',''];
+      h+='<div class="wx-forms wx-noun">'+(nn[1]==='PL'?'мн. ч. <b>'+esc(nn[0])+'</b>':
+          '<b>'+esc(w.en)+'</b>'+(nn[0]?' · мн. ч. <b>'+esc(nn[0])+'</b>':''))+
+        ' <span class="cnt cnt-'+CN[1]+'">'+CN[0]+'</span>'+(nn[2]?'<div class="wx-cn">'+esc(nn[2])+'</div>':'')+'</div>';
+    }
+    const NUM={sg:'ед. ч.', pl:'мн. ч.'};
+    const rows=[['Present Simple',s,nn&&nn[3][0]],['Past Simple',p,''],['Present Perfect',pf,nn&&nn[3][2]],['Present Continuous',c,nn&&nn[3][3]]].filter(r=>r[1]);
+    if(rows.length) h+='<div class="wx-ex">'+rows.map(r=>'<div><span class="lb">'+r[0]+(r[2]&&NUM[r[2]]?' · '+NUM[r[2]]:'')+'</span><p><span class="trt">'+hl(r[1])+'</span><span class="btns">'+trBtn(r[1])+sayBtn(r[1])+'</span></p></div>').join('')+'</div>';
+    const lst=(t,a)=>a&&a.length?'<div class="wx-syn"><span class="lb">'+t+'</span>'+a.map(x=>'<em>'+esc(x[0])+(x[1]?' <i>— '+esc(x[1])+'</i>':'')+'</em>').join('')+'</div>':'';
+    h+=lst('Синонимы',syn)+lst('Антонимы',ant);
+    return h+'</div>';
+  }
+  function exampleHTML(w){
+    const ex=w.ex; if(!ex) return '';
+    const low=ex.toLowerCase();
+    const variants=w.en.split('/').flatMap(v=>v.split('…')).map(v=>v.replace(/[?.!]/g,'').replace(/\s+/g,' ').trim()).filter(Boolean);
+    for(const v of variants){
+      const vl=v.toLowerCase(); if(vl.length<2 && vl!=='i') continue;
+      let i=low.indexOf(vl);
+      while(i>=0){
+        const before=i===0?' ':low[i-1];
+        if(!/[a-z]/.test(before)){
+          let end=i+vl.length;
+          if(!/\s/.test(vl)) while(end<ex.length && /[a-z]/i.test(ex[end])) end++;
+          return esc(ex.slice(0,i))+'<b>'+esc(ex.slice(i,end))+'</b>'+esc(ex.slice(end));
+        }
+        i=low.indexOf(vl, i+1);
+      }
+    }
+    return esc(ex);
+  }
+  const AKEY='ef_wordtree_autosay';
+  let autoSay = lsGet(AKEY)!=='0';
+
+  function cardNode(c){
+    const id=c[0], card=CARDS[id];
+    const btn=el('button','node'); btn.type='button'; btn.dataset.id=id; btn.dataset.status='not_started'; btn.title='Открыть список слов';
+    btn.innerHTML=
+      '<span class="wbtn wtest" data-wid="'+id+'" role="button" tabindex="0" title="Учить карточками">Тест</span>'+
+      '<span class="t">'+esc(card.title)+'</span><span class="g">'+esc(card.gloss)+'</span>'+
+      '<span class="wbar">'+card.words.map(()=>'<i data-l="0"></i>').join('')+'</span>'+
+      '<span class="foot"><span class="status-chip">'+STATUS_LABEL.not_started+'</span>'+
+      card.tags.map(x=>'<span class="tg '+x+'">'+POS_NAME[x]+'</span>').join('')+'<span class="src"></span></span>';
+    if(card.extra) btn.classList.add('xnode');
+    btn.addEventListener('click',()=>openList(id));
+    return btn;
+  }
+  const LOCK_SVG='<svg class="lockico" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="5.5" width="8" height="5.5" rx="1.2" fill="currentColor"/><path d="M4 5.5V4a2 2 0 0 1 4 0v1.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
+  function xsepNode(lk){ const d=el('div','xsep'); d.innerHTML='<span>Экстра '+lk+'</span>'; return d; }
+  // extra topics of a level open when every main topic of that level is closed
+  // extra topics of a branch at a level open when the main topics of that branch and level are 75% done
+  const UNLOCK_PCT=75;
+  const OPEN={};
+  const okey = id => CARDS[id].branch+'|'+CARDS[id].level;
+  function mainIds(bk, lk){ return ALL.filter(id=>CARDS[id].branch===bk && CARDS[id].level===lk && !CARDS[id].extra); }
+  function mainPct(bk, lk){ const ids=mainIds(bk, lk); return ids.length ? wordsOf(ids).pct : 100; }
+  function computeOpen(){ W_BRANCHES.forEach(b=>LEVELS.forEach(l=>{ OPEN[b.key+'|'+l.key] = mainPct(b.key, l.key) >= UNLOCK_PCT; })); }
+  const isLocked = id => CARDS[id].extra && !OPEN[okey(id)];
+  function planNode(p){
+    const d=el('div','node plan');
+    d.innerHTML='<span class="t">'+esc(p[0])+'</span><span class="g">'+esc(p[1])+'</span><span class="soon">в плане</span>';
+    return d;
+  }
+  function wordsOf(ids){
+    let t=0, sum=0, learned=0, rev=0, lrn=0;
+    ids.forEach(id=>CARDS[id].words.forEach(w=>{ const l=lvl(id,w.k); t++; sum+=l; if(l===MAXL) learned++; else if(l>=REVL) rev++; else if(l>=1) lrn++; }));
+    return {t, sum, learned, rev, lrn, pct:t?Math.round(sum/(MAXL*t)*100):0};
+  }
+
+  const board = Board({
+    key:'w', root:document.getElementById('mode-w'), branchKey:'ef_wordtree_branch',
+    branches:W_BRANCHES,
+    legend:'<span><span class="dot" style="background:var(--st-none)"></span>новое (0)</span>'+
+      '<span><span class="dot" style="background:var(--st-learn)"></span>изучаю (1–4)</span>'+
+      '<span><span class="dot" style="background:var(--st-review)"></span>повторяю (5–9)</span>'+
+      '<span><span class="dot" style="background:var(--st-mastered)"></span>выучено (10)</span>',
+    statusLabel:'Тема', statusChips:[['all','Все'],['not_started','Не начато'],['learning','Изучаю'],['review','Повторяю'],['mastered','Закрыто']],
+    tagLabel:'Часть речи', tagChips:[['all','все'],['n','noun','Наборы с существительными'],['v','verb','Наборы с глаголами'],['a','adj','Наборы с прилагательными'],['o','other','Фразы, предлоги, союзы, наречия']],
+    footer:'<section><h3>Сессия карточек</h3><ul>'+
+      '<li>Клик по карточке темы открывает список слов с примерами и уровнями. Кнопка «Тест» справа запускает сессию карточек из всех невыученных слов темы (если выучены все — из всех слов на повторение): видишь слово по-русски, вспоминаешь английское, открываешь ответ с примером и оцениваешь себя.</li>'+
+      '<li>Слова идут в случайном порядке.</li>'+
+      '<li>В списке слов уровень можно поменять вручную: «−» и «+» или клик по шкале. Слово получит интервал этого уровня (например, 7 — повтор через месяц).</li>'+
+      '</ul></section>'+
+      '<section><h3>Оценки и уровень</h3><ul>'+
+      '<li>Оценки как в Anki: «Снова» — слово вернётся через 10 минут и ещё раз в этой сессии; «Трудно», «Хорошо», «Легко» — через растущее число дней. Под кнопкой видно, когда слово вернётся.</li>'+
+      '<li>Уровень 0–10 показывает интервал: 2 — повтор через день, 5 — через неделю, 7 — через месяц, 10 — полгода и больше (выучено, больше не повторяется).</li>'+
+      '<li>Кнопка «Я знаю» на лицевой стороне открывает поле: впиши слово по-английски. Если верно — уровень 10, слово больше не повторяется; если нет — открывается ответ, и слово оцениваешь как обычно. «Обнулить» возвращает слово в новые.</li>'+
+      '<li>«← Предыдущее слово» возвращает к прошлой карточке и отменяет её оценку, чтобы можно было оценить заново.</li>'+
+      '<li>Переводы: слово переведено верно — как «Хорошо», с ошибкой — как «Трудно», неверно — как «Снова».</li>'+
+      '</ul></section>'+
+      '<section><h3>Прогресс темы</h3><ul>'+
+      '<li>Полоска на карточке — все слова темы, по сегменту на слово.</li>'+
+      '<li>Шкала слова — от 0 до 10. Тема «повторяю», когда все слова на уровне 5 и выше, и «закрыта», когда все на 10.</li>'+
+      '</ul></section>'+
+      '<section><h3>Повторение слов</h3><ul>'+
+      '<li>Блок «Повторение слов» над деревом работает как Anki: после оценки слово получает срок следующего повтора.</li>'+
+      '<li>В блоке «Повторение слов» включи нужные уровни. «Повторить» — все слова, у которых подошёл срок; «Изучать базовые» и «Изучать Экстра» — все новые слова из основных или экстра-тем подряд, пока не закончатся. Окно можно закрыть в любой момент — прогресс сохраняется после каждого слова.</li>'+
+      '<li>Галочка «с экстра-темами» добавляет в повторение слова экстра-тем.</li>'+
+      '<li>Слова на уровне 10 считаются выученными и в повторение не попадают.</li>'+
+      '</ul></section>'+
+      '<section><h3>Экстра-темы</h3><ul>'+
+      '<li>Под основными темами каждого уровня лежат экстра-темы («Family 2», «Common verbs 2»…) с дополнительными словами того же уровня.</li>'+
+      '<li>Они открываются отдельно для каждой ветки, когда её основные темы на этом уровне пройдены на 75%.</li>'+
+      '</ul></section>',
+    cell:(b,lk)=>{
+      const main=(b.cells[lk]||[]).map(cardNode);
+      const ex=((b.extra&&b.extra[lk])||[]);
+      return main.concat(ex.length ? [xsepNode(lk)].concat(ex.map(cardNode)) : []).concat(((b.plan&&b.plan[lk])||[]).map(planNode));
+    },
+    phoneCount:(bk,lk)=>{
+      const ids=ALL.filter(id=>CARDS[id].branch===bk && CARDS[id].level===lk);
+      return ids.length ? wordsOf(ids).learned+' / '+wordsOf(ids).t+' слов' : 'в плане';
+    },
+    match:(nd,F)=>{ const id=nd.dataset.id; return (F.status==='all'||nd.dataset.status===F.status) && (F.tag==='all'||CARDS[id].tags.includes(F.tag)); },
+  });
+  board.root.querySelectorAll('.wbtn').forEach(t=>t.addEventListener('click',ev=>{ ev.stopPropagation(); ev.preventDefault(); openSession(t.dataset.wid); }));
+  board.root.querySelectorAll('.wbtn').forEach(t=>t.addEventListener('keydown',ev=>{ if(ev.key==='Enter'||ev.key===' '){ ev.stopPropagation(); ev.preventDefault(); openSession(t.dataset.wid); } }));
+
+  function paint(id){
+    const n=board.tree.querySelector('.node[data-id="'+id+'"]'); if(!n) return;
+    const ci=cardInfo(id);
+    n.dataset.status=ci.status;
+    const locked=isLocked(id);
+    n.classList.toggle('locked', locked);
+    n.querySelector('.status-chip').innerHTML = locked ? LOCK_SVG+'с '+UNLOCK_PCT+'%' : esc(STATUS_LABEL[ci.status]);
+    const segs=n.querySelectorAll('.wbar i');
+    CARDS[id].words.forEach((w,i)=>{ const l=lvl(id,w.k); segs[i].dataset.l=l; segs[i].dataset.b=band(l); });
+    n.querySelector('.src').textContent=ci.learned+'/'+ci.n+' · '+ci.pct+'%';
+    n.setAttribute('aria-label', CARDS[id].title+(locked?': экстра-тема, откроется, когда основные темы ветки на этом уровне будут пройдены на '+UNLOCK_PCT+'%':': '+STATUS_LABEL[ci.status]+', выучено '+ci.learned+' из '+ci.n+' слов. Открыть карточки'));
+  }
+  function stats(){
+    board.refreshPhone();
+    if(panelReady) renderPanel();
+    const s=wordsOf(ALL);
+    const closed=ALL.filter(id=>cardInfo(id).status==='mastered').length;
+    const who=currentName();
+    board.stat.innerHTML=(who?'<span class="who">'+esc(who)+':</span> ':'')+
+      'выучено '+s.learned+' из '+s.t+' слов · повторяю '+s.rev+' · изучаю '+s.lrn+' · тем закрыто '+closed+' из '+ALL.length;
+    board.bar.innerHTML=
+      '<span style="width:'+(s.learned/s.t*100)+'%;background:var(--st-mastered)"></span>'+
+      '<span style="width:'+(s.rev/s.t*100)+'%;background:var(--st-review)"></span>'+
+      '<span style="width:'+(s.lrn/s.t*100)+'%;background:var(--st-learn)"></span>';
+    W_BRANCHES.forEach(b=>{
+      const ws=wordsOf(ALL.filter(id=>CARDS[id].branch===b.key));
+      board.H.cnt[b.key].textContent=ws.learned+' / '+ws.t+' слов · '+ws.pct+'%';
+      board.H.pb[b.key].style.width=ws.pct+'%';
+    });
+    LEVELS.forEach(l=>{
+      const ids=ALL.filter(id=>CARDS[id].level===l.key);
+      const ws=wordsOf(ids);
+      board.H.lp[l.key].textContent=ids.length ? ws.learned+' / '+ws.t+' слов · '+ws.pct+'%' : 'в плане';
+      board.H.lb[l.key].style.width=ws.pct+'%';
+    });
+  }
+  function refresh(){ computeOpen(); ALL.forEach(paint); stats(); board.applyFilter(); }
+
+  // ---- modal content ----
+  let S=null;
+  function head(id, what){
+    const c=CARDS[id]; const b=W_BRANCHES.find(x=>x.key===c.branch); const lv=LEVELS.find(l=>l.key===c.level);
+    return mHead(what+' · '+b.name+' · '+c.level+' '+lv.book, c.title);
+  }
+  function lvlEdit(id,w){
+    const l=lvl(id,w.k), k=esc(w.k);
+    let h='<span class="lvle" data-k="'+k+'" data-l="'+l+'" data-b="'+band(l)+'" role="group" aria-label="Уровень слова '+esc(w.en)+'">'+
+      '<button type="button" class="lvb" data-setl="'+Math.max(0,l-1)+'" title="Понизить уровень"'+(l<=0?' disabled':'')+' aria-label="Понизить">−</button>'+
+      '<span class="lvsegs">';
+    for(let i=1;i<=MAXL;i++) h+='<button type="button" class="lvs'+(i<=l?' on':'')+'" data-setl="'+(i===l?i-1:i)+'" title="'+(i===l?'Понизить до '+(i-1):'Поставить уровень '+i)+'" aria-label="уровень '+i+'"></button>';
+    return h+'</span><span class="lvn">'+l+'</span>'+
+      '<button type="button" class="lvb" data-setl="'+Math.min(MAXL,l+1)+'" title="Повысить уровень"'+(l>=MAXL?' disabled':'')+' aria-label="Повысить">+</button></span>';
+  }
+  function setLevel(id,k,l){
+    if(needProfile()) return;
+    l=Math.max(0,Math.min(MAXL,l|0));
+    const r=rec(id,k);
+    if(r[0]===l) return;
+    if(!prog[id]) prog[id]={};
+    const now=Date.now(), iv=IVL_FOR_LEVEL[l];
+    prog[id][k]= l===0 ? [0, now, r[2]||0] : [l, now, Math.max(1,r[2]||0), l===1?now:now+iv*DAY, iv, r[5]||2.5];
+    const wasOpen=OPEN[okey(id)];
+    computeOpen();
+    if(OPEN[okey(id)]!==wasOpen) ALL.forEach(paint); else paint(id);
+    stats(); board.applyFilter();
+    saveCard(id);
+    const w=CARDS[id].words.find(x=>x.k===k);
+    const el=modal.querySelector('.lvle[data-k="'+CSS.escape(k)+'"]');
+    if(el && w){ el.outerHTML=lvlEdit(id,w); const n=modal.querySelector('.lvle[data-k="'+CSS.escape(k)+'"] .lvb'); }
+    const sm=modal.querySelector('.m-sum'); if(sm) sm.outerHTML=cardSummary(id);
+  }
+  function cardSummary(id){
+    const ci=cardInfo(id);
+    return '<div class="m-sum"><span class="wbar">'+CARDS[id].words.map(w=>'<i data-l="'+lvl(id,w.k)+'" data-b="'+band(lvl(id,w.k))+'"></i>').join('')+'</span>'+
+      '<span>'+ci.pct+'% · выучено '+ci.learned+' / '+ci.n+'</span></div>';
+  }
+  function openList(id){
+    const c=CARDS[id];
+    S={mode:'list', id};
+    openModal(api);
+    modal.innerHTML=head(id,'Слова')+
+      '<div class="m-gloss">'+esc(c.gloss)+' · '+c.words.length+' слов</div>'+cardSummary(id)+
+      '<div class="wl">'+c.words.map(w=>
+        '<div class="row"><span class="en">'+esc(w.en)+'</span><span class="ru">'+esc(w.ru)+'</span>'+
+        '<span class="tg '+w.p+'" title="'+esc(POS_RU[w.p])+'">'+POS_NAME[w.p]+'</span>'+lvlEdit(id,w)+sayBtn(w.en)+
+        (w.note?'<span class="exl nt">'+esc(w.note)+'</span>':'')+
+        (w.ex?'<span class="exl">'+exampleHTML(w)+'</span>':'')+'</div>').join('')+'</div>'+
+      '<div class="m-actions"><button type="button" class="m-btn ghost" data-act="close">Закрыть</button>'+
+      (isLocked(id)?'<span class="hint" style="align-self:center">откроется с '+UNLOCK_PCT+'% основных тем ветки</span>':'<button type="button" class="m-btn" data-act="session">Учить карточками</button>')+'</div>';
+    const f=modal.querySelector('[data-act="session"]'); if(f) f.focus();
+  }
+  function pickWords(id){
+    const ws=CARDS[id].words;
+    const open=ws.filter(w=>lvl(id,w.k)<MAXL);
+    if(open.length){
+      const pool=shuffle(open).sort((a,b)=>{ const ra=rec(id,a.k), rb=rec(id,b.k); return ra[0]-rb[0] || ra[1]-rb[1]; });
+      return {words:shuffle(pool.slice(0,SESSION)), review:false};
+    }
+    const pool=shuffle(ws).sort((a,b)=>rec(id,a.k)[1]-rec(id,b.k)[1]);
+    return {words:shuffle(pool.slice(0,SESSION)), review:true};
+  }
+  function openLocked(id){
+    const c=CARDS[id], lk=c.level, br=W_BRANCHES.find(x=>x.key===c.branch), ids=mainIds(c.branch, lk), pct=mainPct(c.branch, lk);
+    S={mode:'locked', id};
+    openModal(api);
+    modal.innerHTML=head(id,'Экстра-тема')+
+      '<div class="lockmsg">'+LOCK_SVG+'<div>Эта тема откроется, когда основные темы ветки «'+esc(br.name)+'» уровня '+lk+' будут пройдены на '+UNLOCK_PCT+'%.</div></div>'+
+      '<div class="m-sum"><span class="bar unlockbar"><span style="width:'+pct+'%;background:var(--st-mastered)"></span><i style="left:'+UNLOCK_PCT+'%"></i></span>'+
+      '<span>сейчас '+pct+'% из '+UNLOCK_PCT+'%</span></div>'+
+      '<div class="lockhint">Основные темы: '+ids.map(i=>esc(CARDS[i].title)+' — '+cardInfo(i).pct+'%').join(' · ')+'</div>'+
+      '<div class="m-actions"><button type="button" class="m-btn ghost" data-act="list">Посмотреть слова</button>'+
+      '<button type="button" class="m-btn" data-act="close">Понятно</button></div>';
+    const f=modal.querySelector('[data-act="close"]'); if(f) f.focus();
+  }
+  // ---- spaced repetition: one panel, level toggles ----
+  const RVKEY='ef_review_lvls';
+  let rvLv=(()=>{ const s=lsGet(RVKEY); const a=s?s.split(',').filter(k=>LEVELS.some(l=>l.key===k)):null; return a&&(a.length||s==='')?a:LEVELS.map(l=>l.key); })();
+  const KIND_NAME={due:'Повторение', base:'Новые слова · базовые темы', extra:'Новые слова · экстра-темы'};
+  function lvWords(lks, part){ // part: 'base' | 'extra' | 'all'
+    const out=[];
+    ALL.forEach(id=>{ const c=CARDS[id]; if(!lks.includes(c.level)) return; if(part==='base'&&c.extra) return; if(part==='extra'&&!c.extra) return; c.words.forEach(w=>out.push(w)); });
+    return out;
+  }
+  function rvCounts(lks){
+    const now=Date.now(); let due=0, nb=0, nx=0, left=0, total=0;
+    lvWords(lks,'all').forEach(w=>{ const r=rec(w.tid,w.k), x=CARDS[w.tid].extra; total++; if(r[0]<MAXL) left++;
+      if(isDue(r,now)) due++; else if(isNew(r)){ if(x) nx++; else nb++; } });
+    return {due, nb, nx, left, total};
+  }
+  function lvLabel(lks){ return lks.length===LEVELS.length?'все уровни':lks.join(' · '); }
+  function lvHead(){ return mHead(KIND_NAME[S.kind]||'Повторение', lvLabel(S.lvs)); }
+  function openReview(kind, lks){
+    if(needProfile()) return;
+    lks=(lks||rvLv).slice(); if(!lks.length) return;
+    const now=Date.now(); let q;
+    if(kind==='due'){
+      q=lvWords(lks,'all').filter(w=>{ const r=rec(w.tid,w.k); return r[0]<MAXL && isDue(r,now); })
+        .sort((x,y)=>(rec(x.tid,x.k)[3]||0)-(rec(y.tid,y.k)[3]||0));
+    } else {
+      q=shuffle(lvWords(lks,kind).filter(w=>isNew(rec(w.tid,w.k))));
+    }
+    S={mode:'session', lv:lvLabel(lks), lvs:lks, kind, queue:q, wait:[], done:0, flipped:false, start:{}, fails:{}, seen:[], hist:[]};
+    q.forEach(w=>{ S.start[w.tid+'|'+w.k]=lvl(w.tid,w.k); });
+    openModal(api);
+    if(!q.length){ renderLvEmpty(); return; }
+    renderCard();
+  }
+  function rvNextBtns(c, skip){
+    return (skip!=='due'&&c.due?'<button type="button" class="m-btn" data-act="rv" data-kind="due">Повторить ('+c.due+')</button>':'')+
+      (skip!=='base'&&c.nb?'<button type="button" class="m-btn ghost" data-act="rv" data-kind="base">Изучать базовые</button>':'')+
+      (skip!=='extra'&&c.nx?'<button type="button" class="m-btn ghost" data-act="rv" data-kind="extra">Изучать Экстра</button>':'');
+  }
+  function renderLvEmpty(){
+    const c=rvCounts(S.lvs);
+    S.mode='done'; modal.classList.add('fixed');
+    const msg=S.kind==='due'?'Сейчас нет слов, у которых подошёл срок повторения.':
+      S.kind==='base'?'Новых слов в базовых темах не осталось.':'Новых слов в экстра-темах не осталось.';
+    modal.innerHTML=lvHead()+'<div class="done-big">На сейчас всё</div>'+
+      '<div class="m-verdict">'+msg+(c.left?' Не выучено на выбранных уровнях: '+c.left+'.':' Все слова выбранных уровней выучены.')+'</div>'+
+      '<div class="m-actions"><button type="button" class="m-btn ghost" data-act="close">Закрыть</button>'+rvNextBtns(c,S.kind)+'</div>';
+  }
+  function renderLvDone(){
+    flushAll();
+    const up=S.seen.filter(w=>lvl(w.tid,w.k)>S.start[w.tid+'|'+w.k]).length;
+    const down=S.seen.filter(w=>lvl(w.tid,w.k)<S.start[w.tid+'|'+w.k]).length;
+    const c=rvCounts(S.lvs);
+    S.mode='done'; modal.classList.add('fixed');
+    modal.innerHTML=lvHead()+'<div class="done-big">Сессия пройдена</div>'+
+      '<div class="m-verdict">Слов: '+S.seen.length+' · выросло: '+up+(down?' · опустилось: '+down:'')+'. Сейчас к повторению: '+c.due+'.</div>'+
+      '<div class="wl">'+S.seen.map(w=>{ const r=rec(w.tid,w.k);
+        return '<div class="row"><span class="en">'+esc(w.en)+'</span><span class="ru">'+esc(w.ru)+'</span>'+
+        '<span class="chg">'+S.start[w.tid+'|'+w.k]+' → '+r[0]+(r[3]?' · через '+ivlLabel(Math.max(0,r[3]-Date.now())):'')+'</span>'+sayBtn(w.en)+'</div>'; }).join('')+'</div>'+
+      '<div class="m-actions">'+
+        (S.hist.length?'<button type="button" class="m-btn ghost" data-act="back">← Последнее слово</button>':'')+
+        '<button type="button" class="m-btn ghost" data-act="close">Закрыть</button>'+rvNextBtns(c)+'</div>';
+  }
+  // review panel above the tree
+  const rv=el('section','review-panel');
+  rv.setAttribute('aria-label','Повторение слов');
+  function renderPanel(){
+    const c=rvCounts(rvLv), none=!rvLv.length, NP=COEF.review.newPerSession;
+    rv.innerHTML='<div class="rv-head"><h2 class="rv-title">Повторение слов</h2>'+
+      '<p class="rv-sub">Как в Anki: слово возвращается, когда подходит срок. Выбери уровни — кнопки работают по включённым.</p></div>'+
+      '<div class="rv-lvls" role="group" aria-label="Уровни">'+LEVELS.map(l=>{ const on=rvLv.includes(l.key);
+        return '<button type="button" class="rv-tg'+(on?' on':'')+'" data-tg="'+l.key+'" aria-pressed="'+on+'" style="--lc:var('+l.c+')">'+
+          '<b>'+l.key+'</b><span>'+l.book+'</span></button>'; }).join('')+'</div>'+
+      (none?'<div class="rv-none">Включи хотя бы один уровень.</div>':
+      '<div class="rv-stats">'+
+        '<div><b class="rv-due">'+c.due+'</b><span>к повторению</span></div>'+
+        '<div><b class="rv-new">'+c.nb+'</b><span>новых в базовых</span></div>'+
+        '<div><b class="rv-new">'+c.nx+'</b><span>новых в экстра</span></div>'+
+        '<div><b>'+c.left+'</b><span>не выучено из '+c.total+'</span></div></div>')+
+      '<div class="rv-acts">'+
+        '<button type="button" class="m-btn" data-kind="due"'+(none||!c.due?' disabled':'')+'>Повторить'+(c.due?' ('+c.due+')':'')+'</button>'+
+        '<button type="button" class="m-btn ghost" data-kind="base"'+(none||!c.nb?' disabled':'')+'>Изучать базовые'+(c.nb?' ('+c.nb+')':'')+'</button>'+
+        '<button type="button" class="m-btn ghost" data-kind="extra"'+(none||!c.nx?' disabled':'')+'>Изучать Экстра'+(c.nx?' ('+c.nx+')':'')+'</button></div>';
+  }
+  rv.addEventListener('click',ev=>{
+    const t=ev.target.closest('[data-tg]');
+    if(t){ const k=t.dataset.tg; rvLv=rvLv.includes(k)?rvLv.filter(x=>x!==k):LEVELS.map(l=>l.key).filter(x=>x===k||rvLv.includes(x)); lsSet(RVKEY, rvLv.join(',')); renderPanel(); return; }
+    const b=ev.target.closest('[data-kind]'); if(b&&!b.disabled) openReview(b.dataset.kind);
+  });
+  board.root.querySelector('.stats-row').after(rv);
+  var panelReady=true; renderPanel();
+  setInterval(()=>{ if(!document.hidden && !S) renderPanel(); }, 60000);
+
+  function openSession(id){
+    if(isLocked(id)){ openLocked(id); return; }
+    if(needProfile()) return;
+    const pk=pickWords(id);
+    S={mode:'session', id, review:pk.review, queue:pk.words.slice(), done:0, flipped:false, start:{}, fails:{}, seen:[], hist:[]};
+    pk.words.forEach(w=>{ S.start[w.tid+'|'+w.k]=lvl(id,w.k); });
+    S.pctStart=cardInfo(id).pct;
+    openModal(api);
+    renderCard();
+  }
+  function renderCard(){
+    if(S.kdone){ renderKnownOk(); return; }
+    if(S.wtimer){ clearInterval(S.wtimer); S.wtimer=null; }
+    if(!S.flipped && !S.kbox && !S.kres && S.wait && S.wait.length){
+      const now0=Date.now(), ready=S.wait.filter(x=>x.due<=now0);
+      if(ready.length){ S.wait=S.wait.filter(x=>x.due>now0); S.queue.unshift(...ready.map(x=>x.w)); }
+    }
+    if(!S.queue.length){ if(S.wait&&S.wait.length){ renderWait(); return; } renderDone(); return; }
+    const w=S.queue[0], id=w.tid, l=lvl(id,w.k), r=rec(id,w.k), now=Date.now();
+    const pct=Math.round(S.done/(S.done+S.queue.length)*100);
+    const nx=g=>ivlLabel(sched(r,g,now).due-now);
+    let h=(S.lv?lvHead():head(id, S.review?'Повторение':'Карточки'))+
+      '<div class="sess-meta"><span>осталось '+S.queue.length+(S.wait&&S.wait.length?' · ждут '+S.wait.length:'')+'</span><span>'+(S.lv?esc(CARDS[id].title):'тема '+cardInfo(id).pct+'%')+'</span></div>'+
+      '<div class="sess-bar"><span style="width:'+pct+'%"></span></div>'+
+      '<div class="fc"><span class="pos">'+esc(POS_RU[w.p])+'</span>'+
+      '<div class="front'+(S.flipped?' small':'')+'">'+esc(w.ru)+'</div>';
+    if(!S.flipped && S.kbox){
+      h+='<form class="kbox" autocomplete="off"><label for="knownIn">Напиши слово по-английски</label>'+
+        '<div class="kbox-row"><input id="knownIn" type="text" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="english">'+
+        '<button type="submit" class="m-btn">Проверить</button></div>'+
+        '<button type="button" class="linkbtn" data-act="kcancel">Отмена</button></form>';
+    }
+    if(S.flipped && S.kres){
+      h+='<div class="kres no">Ты написал: <b>'+esc(S.kres)+'</b> — неверно, слово не засчитано. Оцени его как обычно.</div>';
+    }
+    if(S.flipped){
+      h+='<div class="back">'+esc(w.en)+sayBtn(w.en)+'</div>'+
+        trHTML(w)+
+        (w.note?'<div class="note">'+esc(w.note)+'</div>':'')+
+        (w.ex?'<div class="exs"><span class="trt">'+exampleHTML(w)+'</span>'+trBtn(w.ex)+sayBtn(w.ex)+'</div>':'')+
+        extraHTML(w);
+    }
+    h+='<div class="lvlrow">'+lvlHTML(l)+'<span>уровень '+l+' из '+MAXL+(r[3]&&r[4]?' · интервал '+ivlLabel(r[4]*DAY):'')+'</span></div></div><div class="fc-actions">';
+    // grades are always rendered so the block keeps the same height; before the flip they are hidden under the button
+    const ti=S.flipped?'':' tabindex="-1"';
+    h+='<div class="grades-wrap"><div class="grades'+(S.flipped?'':' hidden-grades')+'"'+(S.flipped?'':' aria-hidden="true"')+'>'+
+      '<button type="button" class="grade again" data-g="again"'+ti+'>Снова<small>'+nx('again')+'</small></button>'+
+      '<button type="button" class="grade hard" data-g="hard"'+ti+'>Трудно<small>'+nx('hard')+'</small></button>'+
+      '<button type="button" class="grade easy" data-g="good"'+ti+'>Хорошо<small>'+nx('good')+'</small></button>'+
+      '<button type="button" class="grade know" data-g="easy"'+ti+'>Легко<small>'+nx('easy')+'</small></button></div>'+
+      (S.flipped?'':'<button type="button" class="m-btn show" data-act="flip">Показать ответ</button>')+'</div>'+
+      '<div class="fc-row"><button type="button" class="m-btn ghost fc-back" data-act="back"'+(S.hist.length?'':' disabled')+'>← Предыдущее слово</button>'+
+      '<button type="button" class="m-btn fc-know" data-act="kopen"'+(S.flipped||S.kbox?' disabled aria-hidden="true" tabindex="-1"':'')+' title="Впиши слово по-английски: если верно — уровень 10, слово больше не повторяется">Я знаю</button></div>';
+    h+='<div class="fc-foot">'+
+      (canSpeak?'<label class="auto"><input type="checkbox" id="autoSay"'+(autoSay?' checked':'')+'> озвучивать ответ</label>':'<span></span>')+
+      (S.flipped?'<span class="fc-links"><button type="button" class="linkbtn" data-g="reset">Обнулить</button></span>':
+        '<span class="auto kbd-hint">пробел — показать ответ</span>')+
+      '</div></div>';
+    modal.innerHTML=h; modal.classList.add('fixed');
+    const f=modal.querySelector(S.kbox&&!S.flipped?'#knownIn':S.flipped?'.grade.hard':'[data-act="flip"]'); if(f) f.focus({preventScroll:true});
+  }
+  function normAns(s){ return String(s).toLowerCase().replace(/[’`]/g,"'").replace(/[^a-z0-9' ]+/g,' ').replace(/\s+/g,' ').trim().replace(/^(to|a|an|the) /,''); }
+  function answers(en){
+    const out=new Set();
+    const base=en.replace(/\(.*?\)/g,' ');
+    [en, base].concat(base.split(/\s*[\/;,]\s*|\s+or\s+/)).forEach(v=>{ const n=normAns(v); if(n) out.add(n); });
+    return out;
+  }
+  function renderKnownOk(){
+    const k=S.kdone;
+    modal.classList.add('fixed');
+    modal.innerHTML=(S.lv?lvHead():head(S.id, S.review?'Повторение':'Карточки'))+
+      '<div class="kok" role="status"><div class="kok-ico" aria-hidden="true">✓</div>'+
+      '<div class="kok-t">Засчитано</div>'+
+      '<div class="kok-w"><span>'+esc(k.ru)+'</span><b>'+esc(k.en)+'</b></div>'+
+      '<div class="kok-n">Слово отмечено как выученное — уровень 10, в повторение больше не попадёт.</div></div>'+
+      '<div class="m-actions kok-a"><button type="button" class="m-btn ghost" data-act="back">Отменить</button>'+
+      '<button type="button" class="m-btn" data-act="knext">Дальше →</button></div>';
+    const f=modal.querySelector('[data-act="knext"]'); if(f) f.focus({preventScroll:true});
+  }
+  function checkKnown(){
+    if(!S || S.mode!=='session' || S.flipped || !S.queue.length) return;
+    const inp=modal.querySelector('#knownIn'); const typed=(inp&&inp.value||'').trim(); if(!typed){ if(inp) inp.focus(); return; }
+    const w=S.queue[0];
+    S.kbox=false;
+    if(answers(w.en).has(normAns(typed))){
+      S.kdone={ru:w.ru, en:w.en, typed};
+      S.flipped=true; grade('known');
+    } else {
+      S.kres=typed; S.flipped=true; renderCard();
+      if(autoSay) say(w.en);
+    }
+  }
+  function flip(){
+    if(!S || S.mode!=='session' || S.flipped || !S.queue.length) return;
+    S.flipped=true; renderCard();
+    if(autoSay) say(S.queue[0].en);
+  }
+  function grade(g){
+    if(!S || S.mode!=='session' || !S.flipped || !S.queue.length) return;
+    const id=S.queue[0].tid;
+    if(!S.wait) S.wait=[];
+    S.hist.push({queue:S.queue.slice(), wait:S.wait.slice(), done:S.done, fails:Object.assign({},S.fails), seen:S.seen.slice(), tid:id,
+      k:S.queue[0].k, had:!!(prog[id]&&prog[id][S.queue[0].k]), prev:prog[id]&&prog[id][S.queue[0].k]?prog[id][S.queue[0].k].slice():null});
+    const w=S.queue.shift();
+    const r=rec(id,w.k), now=Date.now(), sc=sched(r,g,now);
+    if(!prog[id]) prog[id]={};
+    prog[id][w.k]=[sc.lv, now, (r[2]||0)+1, sc.due, sc.ivl, sc.ease];
+    if(!S.seen.includes(w)){ S.seen.push(w); if(!((w.tid+'|'+w.k) in S.start)) S.start[w.tid+'|'+w.k]=r[0]; }
+    if(g==='again'){
+      S.fails[w.k]=(S.fails[w.k]||0)+1;
+      S.wait.push({w, due:sc.due}); S.wait.sort((x,y)=>x.due-y.due);
+    } else if(g==='reset' && (S.fails[w.k]||0)<3){
+      S.fails[w.k]=(S.fails[w.k]||0)+1;
+      S.queue.splice(Math.min(3, S.queue.length), 0, w);
+    } else S.done++;
+    S.flipped=false; S.kres=''; S.kbox=false;
+    const wasOpen=OPEN[okey(id)];
+    computeOpen();
+    if(OPEN[okey(id)]!==wasOpen) ALL.forEach(paint); else paint(id);
+    stats(); board.applyFilter();
+    saveCard(id);
+    renderCard();
+  }
+  function renderWait(){
+    S.mode='wait'; modal.classList.add('fixed');
+    const n=S.wait.length;
+    modal.innerHTML=(S.lv?lvHead():head(S.id, S.review?'Повторение':'Карточки'))+
+      '<div class="wait-box" role="status"><div class="wait-t">Следующее слово через</div><div class="wait-n" id="waitN">—</div>'+
+      '<div class="wait-s">'+n+' '+(n===1?'слово ждёт':n<5?'слова ждут':'слов ждут')+' повтора: после «Снова» карточка возвращается только через 10 минут. Можно подождать здесь или закрыть — слова придут в «Повторить», когда подойдёт срок.</div></div>'+
+      '<div class="m-actions">'+(S.hist.length?'<button type="button" class="m-btn ghost" data-act="back">← Назад</button>':'')+
+      '<button type="button" class="m-btn ghost" data-act="wend">Завершить</button>'+
+      '<button type="button" class="m-btn" data-act="close">Закрыть</button></div>';
+    const tick=()=>{
+      if(!S || S.mode!=='wait'){ clearInterval(t); return; }
+      const ms=S.wait[0].due-Date.now();
+      if(ms<=0){ clearInterval(t); S.wtimer=null; S.mode='session'; renderCard(); return; }
+      const s=Math.ceil(ms/1000), e=document.getElementById('waitN'); if(e) e.textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+    };
+    const t=setInterval(tick,1000); S.wtimer=t; tick();
+  }
+  function undo(){
+    if(!S || !S.hist || !S.hist.length) return;
+    const h=S.hist.pop(), id=h.tid;
+    if(S.wtimer){ clearInterval(S.wtimer); S.wtimer=null; }
+    S.queue=h.queue; S.wait=h.wait||[]; S.done=h.done; S.fails=h.fails; S.seen=h.seen; S.mode='session'; S.flipped=true; S.kbox=false; S.kres=''; S.kdone=null;
+    if(!prog[id]) prog[id]={};
+    if(h.had) prog[id][h.k]=h.prev; else delete prog[id][h.k];
+    computeOpen(); ALL.forEach(paint); stats(); board.applyFilter();
+    saveCard(id);
+    renderCard();
+  }
+  function renderDone(){
+    if(S.lv){ renderLvDone(); return; }
+    const id=S.id, ci=cardInfo(id);
+    flushAll();
+    const up=S.seen.filter(w=>lvl(id,w.k)>S.start[w.tid+'|'+w.k]).length;
+    const down=S.seen.filter(w=>lvl(id,w.k)<S.start[w.tid+'|'+w.k]).length;
+    const msg=ci.status==='mastered'?'Тема закрыта: все слова на уровне 5.':
+      'Слов выросло: '+up+(down?', опустилось: '+down:'')+'. Тема: '+S.pctStart+'% → '+ci.pct+'%.';
+    S.mode='done'; modal.classList.add('fixed');
+    modal.innerHTML=head(id,'Сессия окончена')+
+      '<div class="done-big">'+(ci.status==='mastered'?'Готово!':'Сессия пройдена')+'</div>'+
+      '<div class="m-verdict">'+esc(msg)+'</div>'+cardSummary(id)+
+      '<div class="wl">'+S.seen.map(w=>
+        '<div class="row"><span class="en">'+esc(w.en)+'</span><span class="ru">'+esc(w.ru)+'</span>'+
+        '<span class="chg">'+S.start[w.tid+'|'+w.k]+' → '+lvl(id,w.k)+'</span>'+sayBtn(w.en)+'</div>').join('')+'</div>'+
+      '<div class="m-actions">'+
+        (S.hist.length?'<button type="button" class="m-btn ghost" data-act="back">← Последнее слово</button>':'')+
+        '<button type="button" class="m-btn ghost" data-act="list">Все слова</button>'+
+        '<button type="button" class="m-btn ghost" data-act="close">Закрыть</button>'+
+        '<button type="button" class="m-btn" data-act="session">'+(ci.status==='mastered'?'Повторить ещё':'Ещё сессия')+'</button></div>';
+    const f=modal.querySelector('[data-act="session"]'); if(f) f.focus();
+  }
+
+  // ---- persistence: one doc per topic card ----
+  const LKEY='ef_wordtree_v3', LKEY_OLD='ef_wordtree_v2';
+  const dirty=new Set(), timers={}, inflight={}, again={};
+  let unsub=null;
+  function cleanRec(m, mult){
+    const out={}; mult=mult||1;
+    Object.keys(m||{}).forEach(k=>{ const r=m[k]; if(Array.isArray(r) && typeof r[0]==='number'){
+      const o=[Math.max(0,Math.min(MAXL,(r[0]|0)*mult)), +r[1]||0, +r[2]||0];
+      if(+r[3]>0) o.push(+r[3], +r[4]||0, +r[5]||2.5);
+      else if(o[0]>0){ const iv=IVL_FOR_LEVEL[o[0]]; o[2]=Math.max(1,o[2]); o.push((o[1]||Date.now())+iv*DAY || Date.now(), iv, 2.5); }
+      out[k]=o; } });
+    return out;
+  }
+  function saveCard(id){
+    if(local){ lsSet(LKEY, JSON.stringify(prog)); return; }
+    if(!db || !current || !canWrite()) return;
+    dirty.add(id);
+    clearTimeout(timers[id]);
+    timers[id]=setTimeout(()=>flush(id), 700);
+  }
+  function flush(id){
+    clearTimeout(timers[id]);
+    if(!db || !current || !canWrite() || !dirty.has(id)) return;
+    if(inflight[id]){ again[id]=true; return; }
+    inflight[id]=true;
+    db.collection('profiles/'+current+'/cards').doc(id).set({w:prog[id]||{}, v:2, updatedAt:Date.now()})
+      .catch(onWriteError)
+      .finally(()=>{ inflight[id]=false; if(again[id]){ again[id]=false; flush(id); } else dirty.delete(id); });
+  }
+  function flushAll(){ Array.from(dirty).forEach(flush); }
+  window.addEventListener('pagehide', flushAll);
+  function select(pid){
+    if(unsub){ unsub(); unsub=null; }
+    dirty.clear();
+    Object.keys(prog).forEach(k=>delete prog[k]);
+    refresh();
+    if(!pid || !db) return;
+    unsub=db.collection('profiles/'+pid+'/cards').onSnapshot(qs=>{
+      if(current!==pid) return;
+      const seen=new Set();
+      qs.docs.forEach(doc=>{
+        if(!(doc.id in CARDS)) return;
+        seen.add(doc.id);
+        if(dirty.has(doc.id)) return;
+        const dd=doc.data()||{}; prog[doc.id]=cleanRec(dd.w, dd.v===2?1:2);
+      });
+      Object.keys(prog).forEach(k=>{ if(!seen.has(k) && !dirty.has(k)) delete prog[k]; });
+      refresh();
+    },()=>{});
+  }
+  function initLocal(){
+    try{
+      const cur=lsGet(LKEY), old=cur?null:lsGet(LKEY_OLD);
+      const o=JSON.parse(cur||old||'{}'), mult=cur?1:2;
+      Object.keys(o).forEach(k=>{ if(k in CARDS) prog[k]=cleanRec(o[k], mult); });
+    }catch(e){}
+    refresh();
+  }
+
+  const api={
+    onClick(ev){
+      const sl=ev.target.closest('[data-setl]');
+      if(sl && S && S.mode==='list'){ const box=sl.closest('.lvle'); if(box) setLevel(S.id, box.dataset.k, +sl.dataset.setl); return; }
+      const g=ev.target.closest('[data-g]'); if(g){ grade(g.dataset.g); return; }
+      const a=ev.target.closest('[data-act]'); if(!a||!S) return;
+      const id=S.id;
+      if(a.dataset.act==='flip') flip();
+      else if(a.dataset.act==='kopen'){ S.kbox=true; renderCard(); }
+      else if(a.dataset.act==='knext'){ S.kdone=null; renderCard(); }
+      else if(a.dataset.act==='kcancel'){ S.kbox=false; renderCard(); }
+      else if(a.dataset.act==='back'){ S.kdone=null; undo(); }
+      else if(a.dataset.act==='rv') openReview(a.dataset.kind, S.lvs);
+      else if(a.dataset.act==='wend'){ if(S.wtimer) clearInterval(S.wtimer); S.wtimer=null; S.wait=[]; S.mode='session'; renderDone(); }
+      else if(a.dataset.act==='session') openSession(id);
+      else if(a.dataset.act==='list') openList(id);
+    },
+    onChange(ev){ if(ev.target.id==='autoSay'){ autoSay=ev.target.checked; lsSet(AKEY, autoSay?'1':'0'); } },
+    onSubmit(ev){ if(ev.target.classList.contains('kbox')) checkKnown(); },
+    onEsc(){ if(S && S.kbox){ S.kbox=false; renderCard(); return true; } return false; },
+    onKey(ev){
+      if(S && S.kdone){ if(ev.key==='Enter'||ev.key===' '){ S.kdone=null; renderCard(); ev.preventDefault(); } return; }
+      if(!S || S.mode!=='session') return;
+      if(ev.target && (ev.target.id==='autoSay' || ev.target.id==='knownIn')) return;
+      if(ev.key==='ArrowLeft' || ev.key==='Backspace'){ undo(); ev.preventDefault(); return; }
+      if(!S.flipped && (ev.key===' ' || ev.key==='Enter')){ flip(); ev.preventDefault(); return; }
+      if(S.flipped){
+        const map={'1':'again','2':'hard','3':'good','4':'easy','0':'reset'};
+        if(map[ev.key]){ grade(map[ev.key]); ev.preventDefault(); }
+      }
+    },
+    onClose(){ S=null; flushAll(); },
+    select, initLocal, stats, refresh, flushAll, board,
+  };
+  return api;
+})();
+
+// ================= SETTINGS mode =================
+const SETTINGS = (function(){
+  const root=document.getElementById('mode-s');
+  const SKEY='ef_coef';
+  const GROUPS=[
+    {key:'rulesPractice', h:'Правила · практические работы', note:'Как меняется уровень правила: когда оно встретилось в переводе (меняет Claude) и при ответах в «Отрабатывать читанное».',
+     f:[['ok','Правило применено верно'],['wrong','С правилом ошибка']]},
+    {key:'review', h:'Лексика · интервальное повторение', note:'Как в Anki: «Хорошо» умножает интервал на лёгкость слова (≈2,5), «Трудно» и «Легко» — на свои множители. Переводы: верно = «Хорошо», с ошибкой = «Трудно», неверно = «Снова».',
+     f:[['hardPct','«Трудно»: интервал ×, %'],['easyPct','«Легко»: бонус к «Хорошо», %'],['maxIvl','Максимальный интервал, дней']]},
+  ];
+  let msg='';
+  function render(){
+    root.innerHTML='<div class="set-wrap"><p class="set-intro">Настройки повторения слов и коэффициенты для уровней правил. Они общие для всех учеников. '+
+      'Claude читает их отсюда, когда обновляет уровни по итогам практических работ.</p>'+
+      '<form id="coefForm" class="set-grid" autocomplete="off">'+GROUPS.map(g=>'<fieldset class="set-card"><legend>'+esc(g.h)+'</legend><p class="set-note">'+esc(g.note)+'</p>'+
+        g.f.map(([k,l])=>'<label class="set-row" for="c-'+g.key+'-'+k+'"><span>'+esc(l)+'</span>'+
+          '<span class="set-step"><button type="button" class="lvb" data-step="-1" data-for="c-'+g.key+'-'+k+'" aria-label="меньше">−</button>'+
+          '<input type="number" id="c-'+g.key+'-'+k+'" data-g="'+g.key+'" data-k="'+k+'" min="'+(COEF_RANGE[g.key+'.'+k]||[-10,10])[0]+'" max="'+(COEF_RANGE[g.key+'.'+k]||[-10,10])[1]+'" data-step="'+(COEF_STEP[g.key+'.'+k]||1)+'" step="1" value="'+COEF[g.key][k]+'">'+
+          '<button type="button" class="lvb" data-step="1" data-for="c-'+g.key+'-'+k+'" aria-label="больше">+</button></span></label>').join('')+
+        '</fieldset>').join('')+
+      '<div class="set-actions"><span class="set-msg" id="coefMsg" role="status">'+esc(msg)+'</span>'+
+      '<button type="button" class="m-btn ghost" id="coefReset">Вернуть по умолчанию</button>'+
+      '<button type="submit" class="m-btn">Сохранить</button></div></form></div>';
+  }
+  function read(){ const o={}; root.querySelectorAll('input[data-g]').forEach(i=>{ (o[i.dataset.g]=o[i.dataset.g]||{})[i.dataset.k]=Math.round(+i.value||0); }); return o; }
+  function save(o){
+    applyCoef(o);
+    if(db) db.doc('settings/coef').set(Object.assign(JSON.parse(JSON.stringify(COEF)),{scale:10, updatedAt:Date.now()}))
+      .then(()=>{ msg='Сохранено'; setMsg(); }).catch(e=>{ msg='Не удалось сохранить'; setMsg(); onWriteError(e); });
+    else { lsSet(SKEY, JSON.stringify(COEF)); msg='Сохранено в этом браузере'; setMsg(); }
+    W.refreshGrades && W.refreshGrades();
+  }
+  function setMsg(){ const m=document.getElementById('coefMsg'); if(m) m.textContent=msg; }
+  root.addEventListener('click',ev=>{
+    const b=ev.target.closest('[data-step]');
+    if(b){ const i=document.getElementById(b.dataset.for); i.value=Math.max(+i.min,Math.min(+i.max,(+i.value||0)+(+b.dataset.step)*(+i.dataset.step||1))); msg='Есть несохранённые изменения'; setMsg(); return; }
+    if(ev.target.id==='coefReset'){ msg=''; save(JSON.parse(JSON.stringify(COEF_DEFAULT))); render(); }
+  });
+  root.addEventListener('input',()=>{ msg='Есть несохранённые изменения'; setMsg(); });
+  root.addEventListener('submit',ev=>{ ev.preventDefault(); save(read()); render(); });
+  function load(){
+    if(db){ db.doc('settings/coef').onSnapshot(s=>{ const v=s&&s.exists?s.data():null; applyCoef(v); if(!root.hidden && !msg.startsWith('Есть')) render(); },()=>{}); }
+    else { try{ applyCoef(JSON.parse(lsGet(SKEY)||'null')); }catch(e){} }
+    render();
+  }
+  render();
+  return {load, render};
+})();
+
+// ================= mode switch =================
+const MODES={
+  g:{sub:'грамматика четырёх учебников: каждое правило один раз, со ссылкой на урок', mod:G},
+  w:{sub:'лексика по темам: учишь карточками, у каждого слова шкала 0–10', mod:W},
+  s:{sub:'настройки повторения слов и коэффициенты уровней правил', mod:null},
+};
+let mode = (()=>{
+  const h=(location.hash||'').replace('#','').toLowerCase();
+  if(['words','lexis','vocab','w'].includes(h)) return 'w';
+  if(['grammar','rules','g'].includes(h)) return 'g';
+  const s=lsGet('ef_mode'); return s==='w'||s==='s'?s:'g';
+})();
+function setMode(m){
+  if(owner) closeModal();
+  unpin();
+  mode=m; lsSet('ef_mode', m);
+  document.getElementById('mode-g').hidden = m!=='g';
+  document.getElementById('mode-w').hidden = m!=='w';
+  document.getElementById('mode-s').hidden = m!=='s';
+  document.getElementById('profileBar').classList.toggle('dim', m==='s');
+  document.querySelectorAll('.modes button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.mode===m?'true':'false'));
+  document.getElementById('modeSub').textContent = MODES[m].sub;
+  if(MODES[m].mod){ const bd=MODES[m].mod.board; bd.setBranch(bd.active); } else SETTINGS.render();
+}
+document.querySelectorAll('.modes button').forEach(b=>b.addEventListener('click',()=>{ if(b.dataset.mode!==mode) setMode(b.dataset.mode); }));
+setMode(mode);
+
+// ================= profiles (shared by both modes) =================
+var ME=null;
+function canWrite(){ return !ME || current===ME; }
+const PKEY='ef_skilltree_profile';
+const profList=document.getElementById('profList');
+const confirmBox=document.getElementById('confirmBox');
+let pendingDelete=null;
+function selectProfile(id){
+  if(!db) return;
+  W.flushAll();
+  current=id; if(id) lsSet(PKEY, id);
+  G.select(id); W.select(id);
+  renderProfiles();
+}
+function renderProfiles(){
+  const vf=document.getElementById('viewFlag');
+  const cp=profiles.find(p=>p.id===current);
+  if(ME && current && current!==ME && cp){ vf.textContent='Ты смотришь прогресс «'+cp.name+'». Это только просмотр — изменения не сохранятся. Чтобы вернуться к себе, нажми на свой ник.'; vf.hidden=false; }
+  else vf.hidden=true;
+  profList.innerHTML='';
+  if(!profiles.length){ profList.appendChild(el('span','hint','Добавь первого ученика →')); return; }
+  profiles.forEach(p=>{
+    const b=el('button','pchip'); b.type='button';
+    b.dataset.active=p.id===current?'1':'0';
+    b.appendChild(document.createTextNode(p.id===ME ? p.name+' (я)' : p.name));
+    if(false){
+      const x=el('span','x','×'); x.title='Удалить ученика'; x.setAttribute('role','button');
+      x.addEventListener('click',ev=>{ ev.stopPropagation(); askDelete(p); });
+      b.appendChild(x);
+    }
+    b.addEventListener('click',()=>{ if(p.id!==current) selectProfile(p.id); });
+    profList.appendChild(b);
+  });
+}
+function askDelete(p){ pendingDelete=p; document.getElementById('confirmText').textContent='Удалить «'+p.name+'»?'; confirmBox.hidden=false; }
+document.getElementById('confirmNo').addEventListener('click',()=>{ pendingDelete=null; confirmBox.hidden=true; });
+document.getElementById('confirmYes').addEventListener('click',()=>{
+  const p=pendingDelete; pendingDelete=null; confirmBox.hidden=true;
+  if(!p||!db) return;
+  db.doc('profiles/'+p.id).delete().catch(onWriteError);
+});
+document.getElementById('addForm').addEventListener('submit',ev=>{
+  ev.preventDefault();
+  const inp=document.getElementById('newName');
+  const name=inp.value.trim().slice(0,30);
+  if(!name||!db) return;
+  inp.value='';
+  db.collection('profiles').add({name, createdAt:Date.now()}).then(ref=>selectProfile(ref.id)).catch(onWriteError);
+});
+
+G.refresh(); W.refresh();
+
+const FB_CONFIG={
+  apiKey:"AIzaSyDMLtjjGnFBLPF_nhVk_gz7RfHtRUY8ECI",
+  authDomain:"english-skill-tree-01.firebaseapp.com",
+  projectId:"english-skill-tree-01",
+  storageBucket:"english-skill-tree-01.firebasestorage.app",
+  messagingSenderId:"727269577290",
+  appId:"1:727269577290:web:789bd8a809897af3128cb3"
+};
+const SKIP_KEY='ef_auth_skip';
+const authBox=document.getElementById('authBox');
+const authErr=document.getElementById('authErr');
+let fbAuth=null, unsubMe=null;
+function nickToEmail(nick){
+  const n=nick.trim().toLowerCase();
+  if(/^[a-z0-9._-]+$/.test(n)) return n+'@users.skilltree.app';
+  const hex=Array.from(new TextEncoder().encode(n)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  return 'x-'+hex+'@users.skilltree.app';
+}
+function authMsg(code){
+  return ({
+    'auth/invalid-credential':'Неверный ник или пароль.',
+    'auth/invalid-login-credentials':'Неверный ник или пароль.',
+    'auth/wrong-password':'Неверный пароль.',
+    'auth/user-not-found':'Такого ника нет. Нажми «Создать аккаунт».',
+    'auth/email-already-in-use':'Этот ник уже занят. Выбери другой или войди.',
+    'auth/weak-password':'Пароль слишком короткий — нужно не меньше 6 символов.',
+    'auth/invalid-email':'Ник может содержать буквы, цифры, точку, дефис и подчёркивание.',
+    'auth/too-many-requests':'Слишком много попыток. Подожди пару минут.',
+    'auth/network-request-failed':'Нет связи с сервером. Проверь интернет.'
+  })[code] || 'Что-то пошло не так ('+code+').';
+}
+function showAuth(on){ authBox.hidden=!on; if(on) setTimeout(()=>{ try{ document.getElementById('authNick').focus(); }catch(e){} },50); }
+function readAuth(){
+  const nick=document.getElementById('authNick').value.trim();
+  const pass=document.getElementById('authPass').value;
+  if(nick.length<2){ authErr.textContent='Ник — от 2 до 15 символов.'; authErr.hidden=false; return null; }
+  if(/[\s@]/.test(nick)){ authErr.textContent='В нике не должно быть пробелов и @.'; authErr.hidden=false; return null; }
+  if(pass.length<6){ authErr.textContent='Пароль — не короче 6 символов.'; authErr.hidden=false; return null; }
+  return {nick, pass};
+}
+let pendingNick=null;
+async function doAuth(register){
+  const v=readAuth(); if(!v||!fbAuth) return;
+  authErr.hidden=true;
+  const btns=[document.getElementById('authLogin'),document.getElementById('authReg')];
+  btns.forEach(b=>b.disabled=true);
+  try{
+    pendingNick=v.nick;
+    if(register) await fbAuth.createUserWithEmailAndPassword(nickToEmail(v.nick), v.pass);
+    else await fbAuth.signInWithEmailAndPassword(nickToEmail(v.nick), v.pass);
+    try{ localStorage.removeItem(SKIP_KEY); }catch(e){}
+  }catch(e){ authErr.textContent=authMsg(e.code||''); authErr.hidden=false; }
+  finally{ btns.forEach(b=>b.disabled=false); }
+}
+document.getElementById('authForm').addEventListener('submit',ev=>{ ev.preventDefault(); doAuth(false); });
+document.getElementById('authReg').addEventListener('click',()=>doAuth(true));
+document.getElementById('authSkip').addEventListener('click',()=>{ lsSet(SKIP_KEY,'1'); showAuth(false); startLocal(); });
+document.getElementById('goLogin').addEventListener('click',ev=>{ ev.preventDefault(); if(fbAuth) showAuth(true); else alert('Сервер входа сейчас недоступен. Попробуй позже.'); });
+document.getElementById('logoutBtn').addEventListener('click',()=>{ if(!fbAuth) return; W.flushAll(); fbAuth.signOut().then(()=>location.reload()); });
+
+let localStarted=false;
+function startLocal(){
+  if(localStarted) return; localStarted=true;
+  local=true;
+  document.getElementById('profileBar').hidden=true;
+  document.getElementById('offlineFlag').dataset.on='1';
+  SETTINGS.load();
+  G.initLocal(); W.initLocal();
+}
+function startCloud(user){
+  db=firebase.firestore();
+  document.getElementById('profileBar').hidden=false;
+  document.getElementById('offlineFlag').dataset.on='0';
+  document.getElementById('logoutBtn').hidden=false;
+  SETTINGS.load();
+  const uid=user.uid, me=db.doc('profiles/'+uid);
+  ME=uid;
+  me.get().then(snap=>{
+    if(!snap.exists){
+      const nick=pendingNick || (user.email||'').split('@')[0];
+      return me.set({name:nick, createdAt:Date.now()});
+    }
+  }).catch(onWriteError).finally(()=>{
+    unsubMe=db.collection('profiles').onSnapshot(qs=>{
+      profiles=qs.docs.map(doc=>{ const v=doc.data()||{}; return {id:doc.id, name:String(v.name||'Без имени'), createdAt:v.createdAt||0}; })
+        .sort((a,b)=>(a.id===uid?-1:b.id===uid?1:a.createdAt-b.createdAt));
+      if(!current || !profiles.some(p=>p.id===current)) selectProfile(uid);
+      else { renderProfiles(); G.stats(); W.stats(); }
+      offerImport(qs);
+    },()=>{
+      profiles=[{id:uid, name:pendingNick||'Я', createdAt:0}];
+      if(current!==uid) selectProfile(uid); else renderProfiles();
+    });
+  });
+}
+
+let migChecked=false;
+function offerImport(qs){
+  if(migChecked || !ME || !db) return;
+  const box=document.getElementById('migBox');
+  const docs=qs.docs.map(d=>({id:d.id, v:d.data()||{}}));
+  const mine=docs.find(d=>d.id===ME);
+  if(mine && (mine.v.migratedFrom || mine.v.migrateSkip)){ box.hidden=true; migChecked=true; return; }
+  const claimed=new Set(docs.map(d=>d.v.migratedFrom).filter(Boolean));
+  const free=Object.entries((typeof OLD_DATA==='undefined'?{profiles:{}}:OLD_DATA).profiles).filter(([pid])=>!claimed.has(pid));
+  migChecked=true;
+  if(!free.length) return;
+  db.collection('profiles/'+ME+'/cards').limit(1).get().then(c=>db.collection('profiles/'+ME+'/progress').limit(1).get().then(p=>{
+    if(!c.empty || !p.empty) return;
+    const bt=document.getElementById('migBtns'); bt.innerHTML='';
+    free.forEach(([pid,pr])=>{
+      const b=el('button','chip',pr.name); b.type='button';
+      b.addEventListener('click',()=>{ if(confirm('Перенести прогресс «'+pr.name+'» в твой аккаунт?')) doImport(pid,pr); });
+      bt.appendChild(b);
+    });
+    box.hidden=false;
+  })).catch(()=>{});
+}
+document.getElementById('migNo').addEventListener('click',()=>{
+  document.getElementById('migBox').hidden=true;
+  if(db && ME) db.doc('profiles/'+ME).set({migrateSkip:true},{merge:true}).catch(()=>{});
+});
+async function doImport(pid,pr){
+  const box=document.getElementById('migBox'); const txt=document.getElementById('migText');
+  document.getElementById('migBtns').innerHTML=''; txt.textContent='Переношу…';
+  try{
+    const ops=[];
+    ['cards','progress','tests'].forEach(col=>Object.entries(pr[col]||{}).forEach(([id,data])=>ops.push(['profiles/'+ME+'/'+col, id, data])));
+    for(let i=0;i<ops.length;i+=400){
+      const b=db.batch();
+      ops.slice(i,i+400).forEach(([c,id,data])=>b.set(db.collection(c).doc(id), data));
+      await b.commit();
+    }
+    await db.doc('profiles/'+ME).set({migratedFrom:pid, migratedAt:Date.now()},{merge:true});
+    txt.textContent='Готово! Прогресс «'+pr.name+'» перенесён.';
+    document.getElementById('migNo').hidden=true;
+    setTimeout(()=>{ box.hidden=true; },4000);
+  }catch(e){ txt.textContent='Не получилось перенести ('+(e.code||'ошибка')+'). Обнови страницу и попробуй ещё раз.'; }
+}
+
+(function init(){
+  if(typeof firebase==='undefined'){ startLocal(); return; }
+  try{
+    firebase.initializeApp(FB_CONFIG);
+    fbAuth=firebase.auth();
+  }catch(e){ startLocal(); return; }
+  let first=true;
+  fbAuth.onAuthStateChanged(user=>{
+    if(user){
+      showAuth(false);
+      if(localStarted){ location.reload(); return; }
+      startCloud(user);
+    } else if(first){
+      if(lsGet(SKIP_KEY)==='1') startLocal(); else showAuth(true);
+    }
+    first=false;
+  });
+})();
