@@ -12,3 +12,9 @@ document.addEventListener('keydown', ev => {
     b.click();
   }
 }, true);
+
+// Мелкие исправления транскрипций
+if (typeof WORD_TR !== 'undefined') {
+  WORD_TR['rebellious'] = ['rɪˈbeljəs', 'рибэ́льес'];
+  WORD_TR['resist'] = ['rɪˈzɪst', 'ризи́ст'];
+}
