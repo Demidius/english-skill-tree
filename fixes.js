@@ -36,6 +36,23 @@ fr4-hobbies|passionate about|увлечённый (чем-то)
 bo3-doctor|blood pressure|давление (кровяное)
 bo3-senses|shake hands|пожать руку (друг другу)
 ba4-quantifiers|plenty of|много, полно (достаточно)
+to-places-2|castle|за́мок (крепость)
+ho3-bills|lock|замо́к (на двери), запирать
+fo2-cooking-2|flour|мука́
+ho3-furniture|shelves|по́лки
+ho4-diy|put up shelves|вешать по́лки
+na3-birds|magpie|соро́ка (птица)
+na4-birds|soar|пари́ть (в воздухе)
+ba2-place|at home|до́ма
+pe3-social|stay in|остаться до́ма (вечером)
+fr-games|stay at home|оставаться до́ма
+ba3-phrases-2|Make yourself at home.|Будь как до́ма.
+ti2-expr|already|уже́
+ti2-expr|yet|ещё (не), уже́ (в вопросе)
+fo3-diet|protein|бело́к
+de4-sounds|bang|удар, хлопо́к
+ho4-diy|saw|пила́ (инструмент)
+da-verbs|write|писа́ть
 `;
   if (typeof W_BRANCHES === 'undefined') return;
   const idx = {};
