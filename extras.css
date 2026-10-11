@@ -40,3 +40,60 @@
   .review-panel:not(.practice-panel) .rv-tg { padding: 10px 6px; align-items: center; }
   .review-panel:not(.practice-panel) .rv-acts .m-btn { padding: 10px 12px; }
 }
+
+/* Фильтры — по кнопке и на компьютере */
+@media (min-width: 721px) {
+  .filters-toggle {
+    display: inline-flex; gap: 4px; align-items: center; margin-top: 12px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+    border-radius: 999px; padding: 6px 14px; font-size: .82rem; font-family: 'Manrope', sans-serif; cursor: pointer;
+  }
+  .filters-toggle[aria-expanded="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .controls { display: none; }
+  .controls.open { display: flex; }
+}
+
+/* Единый блок на ПК: аккаунт и прогресс | уровни | счётчики и кнопки */
+@media (min-width: 1000px) {
+  body.has-hub #profileBar { display: none !important; }
+  .hub {
+    display: grid; grid-template-columns: minmax(230px, 290px) minmax(0, 1fr); gap: 28px;
+    margin-top: 12px; padding: 16px 18px; background: var(--surface);
+    border: 1px solid var(--line); border-radius: 14px; max-width: 1280px; box-sizing: border-box;
+  }
+  .hub-me { display: flex; flex-direction: column; gap: 10px; min-width: 0; border-right: 1px solid var(--line); padding-right: 24px; }
+  .hub .stats-row { margin: 0; padding: 0; border: 0; background: none; display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
+  .hub .stats-row .progress-big { flex: none; min-width: 0; }
+  .hub .stats-row .num { font-size: .8rem; line-height: 1.5; }
+  .hub .stats-row .num .who { display: none; }
+  .hub .legend { gap: 4px 12px; font-size: .72rem; }
+  .hub .review-panel { margin: 0; padding: 0; border: 0; background: none; max-width: none; }
+  .hub .review-panel:not(.practice-panel) { grid-template-columns: minmax(240px, 340px) minmax(0, 1fr); }
+  .hub .rv-acts .m-btn { font-size: .85rem; }
+
+  .acc { position: relative; }
+  .acc-btn {
+    display: inline-flex; align-items: center; gap: 6px; max-width: 100%;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+    border-radius: 999px; padding: 6px 14px; cursor: pointer;
+    font: 600 .95rem 'Manrope', sans-serif;
+  }
+  .acc-btn:hover { border-color: var(--ink); }
+  .acc-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .acc-car { font-size: .7rem; color: var(--muted); }
+  .acc-menu {
+    position: absolute; z-index: 40; top: calc(100% + 6px); left: 0; min-width: 200px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.22); padding: 6px; display: flex; flex-direction: column;
+  }
+  .acc-menu[hidden] { display: none; }
+  .acc-it {
+    text-align: left; border: 0; background: none; color: var(--ink); cursor: pointer;
+    padding: 8px 10px; border-radius: 8px; font: 500 .9rem 'Manrope', sans-serif;
+  }
+  .acc-it:hover { background: var(--surface-2); }
+  .acc-it.on { font-weight: 700; }
+  .acc-it.on::before { content: '✓ '; color: var(--st-mastered); }
+  .acc-sep { height: 1px; background: var(--line); margin: 4px 2px; }
+  .acc-out { color: var(--accent-2); }
+}
