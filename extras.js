@@ -203,3 +203,40 @@ if (typeof WORD_TR !== 'undefined') {
   }
   MQ.addEventListener ? MQ.addEventListener('change', apply) : MQ.addListener(apply);
 })();
+
+// «Интервальное повторение слов» + кнопка (i) с объяснением метода и его научной основы
+(function () {
+  let open = false;
+  const INFO =
+    '<p><b>Что это.</b> Слово показывается не каждый день подряд, а через растущие промежутки — примерно тогда, когда ты начинаешь его забывать. ' +
+    'Оценка после ответа задаёт следующий срок: «Снова» — через несколько минут, «Трудно» — скоро, «Хорошо» и «Легко» — всё дальше и дальше. ' +
+    'Хорошо выученные слова приходят редко, трудные — часто, и время уходит на то, что действительно нужно.</p>' +
+    '<p><b>Почему это работает.</b></p><ul>' +
+    '<li><b>Кривая забывания.</b> Герман Эббингауз (1885) показал: новое забывается быстро, особенно в первые часы и дни, а каждое повторение делает забывание медленнее. Поэтому следующий интервал можно делать длиннее.</li>' +
+    '<li><b>Эффект распределённых повторений.</b> Одно и то же время занятий, разнесённое по дням, даёт заметно лучшее долгосрочное запоминание, чем зубрёжка за один раз. Это один из самых надёжно подтверждённых результатов психологии памяти (большой обзор — Cepeda и коллеги, 2006).</li>' +
+    '<li><b>Эффект тестирования.</b> Попытка вспомнить ответ укрепляет память сильнее, чем повторное чтение (Roediger и Karpicke, 2006). Поэтому карточка сначала показывает русское слово — ты вспоминаешь английское и только потом открываешь ответ.</li>' +
+    '<li><b>«Желательная трудность».</b> По Роберту Бьорку, вспоминать с небольшим усилием, когда слово уже чуть подзабылось, полезнее, чем когда оно и так перед глазами. Растущие интервалы как раз держат эту трудность.</li>' +
+    '</ul>' +
+    '<p><b>Откуда метод.</b> Карточки по «коробкам» придумал Себастьян Лейтнер (1970-е), компьютерный алгоритм SM-2 — Пётр Возняк (SuperMemo, 1987). На SM-2 основан Anki; здесь работает тот же принцип.</p>' +
+    '<p><b>Как заниматься.</b> Понемногу, но каждый день: сначала «Повторить», потом новые слова. Оценивай честно — «Снова» не провал, а сигнал показать слово пораньше.</p>';
+  function enhance() {
+    document.querySelectorAll('.review-panel:not(.practice-panel) .rv-head').forEach(h => {
+      if (h.dataset.enh) return;
+      h.dataset.enh = '1';
+      const t = h.querySelector('.rv-title'); if (!t) return;
+      const wrap = document.createElement('div'); wrap.className = 'rv-titlebar';
+      t.before(wrap); wrap.appendChild(t);
+      t.textContent = 'Интервальное повторение слов';
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'rv-info'; b.textContent = 'i';
+      b.setAttribute('aria-label', 'Что такое интервальное повторение'); b.setAttribute('aria-expanded', open ? 'true' : 'false');
+      wrap.appendChild(b);
+      const box = document.createElement('div'); box.className = 'rv-infobox'; box.innerHTML = INFO; box.hidden = !open;
+      h.appendChild(box);
+      b.addEventListener('click', () => {
+        open = !open; box.hidden = !open; b.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    });
+  }
+  enhance();
+  new MutationObserver(enhance).observe(document.body, { childList: true, subtree: true });
+})();
