@@ -170,3 +170,32 @@
   .rv-acts .m-btn[data-kind="base"] { border-radius: 999px 0 0 999px; border-right-width: 1px; margin-right: -.5px; }
   .rv-acts .m-btn[data-kind="extra"] { border-radius: 0 999px 999px 0; margin-left: -.5px; }
 }
+
+/* Блок повторения: счётчики-кнопки (Повторить | Изучать базовые / Изучать экстра) */
+.review-panel:not(.practice-panel) .rv-stats,
+.review-panel:not(.practice-panel) .rv-acts { display: none !important; }
+.rv-big {
+  display: grid; grid-template-columns: 1fr 1fr; margin-top: 2px;
+  border: 1px solid var(--line); border-radius: 18px; overflow: hidden; background: var(--surface-2);
+}
+.rvb {
+  border: 0; background: none; color: var(--ink); cursor: pointer; font-family: 'Manrope', sans-serif;
+  display: flex; text-align: left; padding: 14px 16px; min-width: 0;
+}
+.rvb:hover:not(:disabled) { background: rgba(255,255,255,.04); }
+.rvb:disabled { cursor: default; opacity: .45; }
+.rvb-n { font: 700 1.6rem/1 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
+.rvb-n small { font-size: .55em; font-weight: 600; color: var(--muted); }
+.rvb-l { font-size: .85rem; line-height: 1.2; color: var(--muted); }
+.rvb-due { flex-direction: column; justify-content: center; gap: 8px; border-right: 1px solid var(--line); }
+.rvb-due .rvb-n { color: var(--st-review); font-size: 2rem; }
+.rvb-due .rvb-l { font-size: 1.05rem; font-weight: 700; color: var(--ink); }
+.rvb-col { display: grid; grid-template-rows: 1fr 1fr; min-width: 0; }
+.rvb-base, .rvb-extra { align-items: center; justify-content: space-between; gap: 8px; }
+.rvb-extra { border-top: 1px solid var(--line); }
+.rvb-base .rvb-n { color: var(--st-learn); }
+.rvb-extra .rvb-n { color: #a27ad6; }
+@media (min-width: 1000px) {
+  .review-panel:not(.practice-panel) { grid-template-areas: "head head" "lvls big" !important; }
+  .review-panel:not(.practice-panel) .rv-big { grid-area: big; margin-top: 0; align-self: start; }
+}
