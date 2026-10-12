@@ -154,8 +154,8 @@ if (typeof WORD_TR !== 'undefined') {
     if (!row || !panel) return false;
     if (!hub) {
       hub = document.createElement('section'); hub.className = 'hub';
-      hub.innerHTML = '<div class="hub-me"></div><div class="hub-work"></div>';
-      hub.querySelector('.hub-me').appendChild(makeAcc());
+      hub.innerHTML = '<div class="hub-nav"></div><div class="hub-me"></div><div class="hub-work"></div>';
+      hub.querySelector('.hub-nav').appendChild(makeAcc());
       panel.before(hub);
     }
     if (row.parentNode !== hub.querySelector('.hub-me')) hub.querySelector('.hub-me').appendChild(row);
@@ -188,13 +188,28 @@ if (typeof WORD_TR !== 'undefined') {
       nav.before(md); nav.hidden = true;
     }
   }
+  // ---- ПК: переключатель «Правила / Лексика» — внутри единого блока, слева под аккаунтом ----
+  function placeModes() {
+    const md = document.querySelector('.modes'), tr = document.querySelector('.title-row');
+    if (!md || !tr) return;
+    if (!MQ.matches) return;
+    const on = md.querySelector('button[aria-pressed="true"]');
+    const k = on ? on.dataset.mode : '';
+    const slot = (k === 'w' || k === 'g') ? document.querySelector('#mode-' + k + ' .hub .hub-nav') : null;
+    if (slot) { if (md.parentNode !== slot) slot.appendChild(md); md.classList.add('in-hub'); }
+    else {
+      if (md.parentNode !== tr) { const h1 = tr.querySelector('h1'); if (h1) h1.after(md); else tr.prepend(md); }
+      md.classList.remove('in-hub');
+    }
+  }
+  document.addEventListener('click', ev => { if (ev.target.closest('.modes button, .acc-it')) setTimeout(placeModes, 0); });
   function apply() {
     mobileNav(!MQ.matches);
     let ok = 0;
     MODES.forEach(id => { const m = document.getElementById(id); if (m && (MQ.matches ? build(m) : unbuild(m))) ok++; });
     document.body.classList.toggle('has-hub', MQ.matches && ok > 0);
     document.body.classList.toggle('has-navrow', !MQ.matches);
-    refreshLabels(); splitStats();
+    refreshLabels(); splitStats(); placeModes();
     return ok;
   }
   if (apply() < MODES.length) {
