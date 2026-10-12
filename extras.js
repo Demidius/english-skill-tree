@@ -302,43 +302,59 @@ if (typeof WORD_TR !== 'undefined') {
   })).observe(document.body, { childList: true, subtree: true, characterData: true });
 })();
 
-// Метки на полосах прогресса: в «Лексике» — границы уровней A1/A2/B1/B2 (сколько слов в каждом), в «Правилах» — шкала 0–10
+// Полосы прогресса: отрезки по уровням A1/A2/B1/B2 и заливка тремя цветами (изучаю 1–4 · повторяю 5–9 · выучено 10).
+// «Лексика» — по словам, «Правила» — по правилам.
 (function () {
-  let marks = null;
-  function wordMarks() {
-    if (marks) return marks;
+  const LV = ['A1', 'A2', 'B1', 'B2'];
+  const cache = {};
+  function counts(kind) {
+    if (cache[kind]) return cache[kind];
     const cnt = { A1: 0, A2: 0, B1: 0, B2: 0 };
-    if (typeof W_BRANCHES !== 'undefined') W_BRANCHES.forEach(b => ['cells', 'extra'].forEach(p => Object.entries(b[p] || {}).forEach(([lv, cs]) => cs.forEach(c => {
+    if (kind === 'w' && typeof W_BRANCHES !== 'undefined') W_BRANCHES.forEach(b => ['cells', 'extra'].forEach(p => Object.entries(b[p] || {}).forEach(([lv, cs]) => cs.forEach(c => {
       if (c && typeof c[3] === 'string' && lv in cnt) cnt[lv] += c[3].split(';').filter(x => x.trim()).length;
     }))));
-    const tot = cnt.A1 + cnt.A2 + cnt.B1 + cnt.B2 || 1;
+    if (kind === 'g' && typeof G_BRANCHES !== 'undefined') G_BRANCHES.forEach(b => Object.entries(b.cells || {}).forEach(([lv, cs]) => { if (lv in cnt) cnt[lv] += cs.length; }));
+    const tot = LV.reduce((s, l) => s + cnt[l], 0) || 1;
     let acc = 0;
-    marks = ['A1', 'A2', 'B1', 'B2'].map(l => { const from = acc / tot; acc += cnt[l]; return { l, n: cnt[l], from, to: acc / tot, cum: acc }; });
-    return marks;
+    return (cache[kind] = LV.map(l => { const from = acc / tot; acc += cnt[l]; return { l, n: cnt[l], from, to: acc / tot, cum: acc }; }));
   }
-  function build(row, kind) {
+  function ticks(row, kind) {
     const bar = row.querySelector('.bar'); if (!bar) return;
     let t = row.querySelector('.bar-ticks');
     if (t && t.dataset.kind === kind && t.previousElementSibling === bar) return;
     if (t) t.remove();
     t = document.createElement('div'); t.className = 'bar-ticks'; t.dataset.kind = kind;
+    const unit = kind === 'w' ? 'слов' : 'правил';
     let h = '';
-    if (kind === 'w') {
-      wordMarks().forEach((m, i, a) => {
-        if (i < a.length - 1) h += '<i class="tk tk-major" style="left:' + (m.to * 100) + '%" title="' + m.cum + ' слов — весь ' + m.l + '"></i>';
-        h += '<span class="tl" style="left:' + ((m.from + m.to) / 2 * 100) + '%">' + m.l + ' <em>' + m.n + '</em></span>';
-      });
-    } else {
-      for (let k = 1; k < 10; k++) h += '<i class="tk' + (k % 5 === 0 ? ' tk-major' : '') + '" style="left:' + (k * 10) + '%"></i>';
-      [0, 2, 4, 6, 8, 10].forEach(k => h += '<span class="tl tl-n" style="left:' + (k * 10) + '%">' + k + '</span>');
-    }
+    counts(kind).forEach((m, i, a) => {
+      if (i < a.length - 1) h += '<i class="tk tk-major" style="left:' + (m.to * 100) + '%" title="' + m.cum + ' ' + unit + ' — весь ' + m.l + '"></i>';
+      h += '<span class="tl" style="left:' + ((m.from + m.to) / 2 * 100) + '%">' + m.l + ' <em>' + m.n + '</em></span>';
+    });
     t.innerHTML = h;
     bar.after(t);
   }
+  // заливка полосы «Правил» по уровням правил (как в «Лексике»)
+  function fillRules(row) {
+    const bar = row.querySelector('.bar'); if (!bar) return;
+    const chips = document.querySelectorAll('#mode-g .node[data-id] .status-chip .sn');
+    if (!chips.length) return;
+    let lrn = 0, rev = 0, done = 0;
+    chips.forEach(c => { const v = parseInt(c.textContent, 10) || 0; if (v >= 10) done++; else if (v >= 5) rev++; else if (v >= 1) lrn++; });
+    const t = chips.length;
+    const h = '<span style="width:' + (done / t * 100) + '%;background:var(--st-mastered)"></span>' +
+      '<span style="width:' + (rev / t * 100) + '%;background:var(--st-review)"></span>' +
+      '<span style="width:' + (lrn / t * 100) + '%;background:var(--st-learn)"></span>';
+    if (bar.dataset.sig !== h || bar.innerHTML.indexOf('st-review') < 0) { bar.dataset.sig = h; bar.innerHTML = h; }
+    bar.title = 'выучено (10): ' + done + ' · повторяю (5–9): ' + rev + ' · изучаю (1–4): ' + lrn + ' из ' + t;
+  }
+  let busy = false;
   function run() {
-    const w = document.querySelector('#mode-w .stats-row'); if (w) build(w, 'w');
-    const g = document.querySelector('#mode-g .stats-row'); if (g) build(g, 'g');
+    if (busy) return; busy = true;
+    try {
+      const w = document.querySelector('#mode-w .stats-row'); if (w) ticks(w, 'w');
+      const g = document.querySelector('#mode-g .stats-row'); if (g) { ticks(g, 'g'); fillRules(g); }
+    } finally { busy = false; }
   }
   run();
-  new MutationObserver(run).observe(document.body, { childList: true, subtree: true });
+  new MutationObserver(run).observe(document.body, { childList: true, subtree: true, characterData: true });
 })();
