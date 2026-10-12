@@ -136,3 +136,14 @@
   .hub .rv-head { grid-column: 1 / -1; }
   .hub .review-panel:not(.practice-panel) { grid-template-areas: "head head" "lvls stats" "lvls acts"; }
 }
+
+/* «Фильтры» в полосе тем, первой слева, не уезжает при прокрутке полосы */
+.jumpnav .filters-toggle {
+  display: inline-flex !important; align-items: center; gap: 4px; flex: 0 0 auto;
+  margin: 0 4px 0 0; position: sticky; left: 0; z-index: 2;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  border-radius: 999px; font-family: 'Manrope', sans-serif; font-weight: 600;
+  box-shadow: 8px 0 8px -4px var(--bg);
+}
+.jumpnav .filters-toggle[aria-expanded="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.controls.open { margin-top: 10px; }
