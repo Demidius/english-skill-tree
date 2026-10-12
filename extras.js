@@ -399,3 +399,28 @@ if (typeof WORD_TR !== 'undefined') {
   run();
   new MutationObserver(run).observe(document.body, { childList: true, subtree: true });
 })();
+
+// «Отработка изученных правил»: кнопка в стиле кнопок «Лексики» — с числом правил в отработке
+(function () {
+  function build(panel) {
+    const mix = panel.querySelector('[data-mix]'); if (!mix) return;
+    const sub = panel.querySelector('.rv-sub');
+    const txt = sub ? sub.textContent : '';
+    const m = txt.match(/(?:Изучено|Читано) правил:\s*(\d+),\s*из них не на 10:\s*(\d+)/);
+    const read = m ? +m[1] : 0, pool = m ? +m[2] : 0;
+    const sig = read + '|' + pool + '|' + mix.disabled;
+    let box = panel.querySelector('.rv-big');
+    if (box && box.dataset.sig === sig) return;
+    if (box) box.remove();
+    box = document.createElement('div'); box.className = 'rv-big rv-big-one'; box.dataset.sig = sig;
+    box.innerHTML = '<button type="button" class="rvb rvb-mix"' + (mix.disabled ? ' disabled' : '') + '>' +
+      '<span class="rvb-n">' + pool + '<small> / ' + read + '</small></span>' +
+      '<span class="rvb-l">Отрабатывать изученное</span></button>';
+    box.firstChild.title = pool + ' правил в отработке из ' + read + ' отмеченных «изучено»';
+    box.firstChild.addEventListener('click', () => { if (!mix.disabled) mix.click(); });
+    mix.before(box);
+  }
+  function run() { document.querySelectorAll('.practice-panel').forEach(build); }
+  run();
+  new MutationObserver(run).observe(document.body, { childList: true, subtree: true, characterData: true });
+})();
