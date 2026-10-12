@@ -28,7 +28,7 @@
 .sp-board    { background: #22382F; color: #EDEBDF; border: 4px solid #6B4A2E; font-family: 'Caveat', cursive; }
 .sp-board b { font-size: 1.8rem; }
 .sp-board i:nth-of-type(1) { background: transparent; border: 2px solid #F2D16B; border-radius: 4px; } .sp-board i:nth-of-type(2) { background: transparent; border: 2px solid #C9A2E8; border-radius: 4px; }
-.sp-rpg      { background: #000; color: #FFD166; border: 3px solid #8D99AE; font-family: 'Press Start 2P', monospace; border-radius: 0; box-shadow: inset 0 0 0 2px #000; }
+.sp-rpg      { background: #1C1C20; color: #FFD166; border: 3px solid #8D99AE; font-family: 'Press Start 2P', monospace; border-radius: 0; box-shadow: inset 0 0 0 2px #1C1C20; }
 .sp-rpg b { font-size: .8rem; }
 .sp-rpg i { border-radius: 0; border: 2px solid #000; } .sp-rpg i:nth-of-type(1) { background: #EF476F; } .sp-rpg i:nth-of-type(2) { background: #06D6A0; }
 
@@ -104,15 +104,15 @@ html[data-skin="board"] .modes.in-hub button[aria-pressed="true"],
 html[data-skin="board"] .modes button[aria-pressed="true"] { background: #EDEBDF; color: #22382F; }
 
 /* ======================================================================
-   RPG — чёрная подложка, пиксельные рамки, квесты и «заперто»
+   RPG — серая подложка (как у стандартного по яркости), пиксельные рамки
    ====================================================================== */
 html:root[data-skin="rpg"] {
   color-scheme: dark;
-  --bg: #000000; --surface: #12121A; --surface-2: #1A1A26; --ink: #EDF2F4; --muted: #A3A9C9;
-  --line: #34344A; --trunk: #8D99AE; --accent: #FFD166; --accent-2: #EF476F;
-  --a1: #06D6A0; --a1-soft: #0B2F2B; --a2: #118AB2; --a2-soft: #0D2638;
-  --b1: #8E6BC0; --b1-soft: #211839; --b2: #E9B949; --b2-soft: #2E2512;
-  --st-none: #3A3A52; --st-learn: #4CC9F0; --st-review: #FFD166; --st-mastered: #06D6A0;
+  --bg: #1C1C20; --surface: #26262B; --surface-2: #2C2C32; --ink: #EDF2F4; --muted: #AEB2C7;
+  --line: #3F3F48; --trunk: #8D99AE; --accent: #FFD166; --accent-2: #EF476F;
+  --a1: #06D6A0; --a1-soft: #1B2F2B; --a2: #118AB2; --a2-soft: #1B2A38;
+  --b1: #8E6BC0; --b1-soft: #2A2339; --b2: #E9B949; --b2-soft: #322A16;
+  --st-none: #44444E; --st-learn: #4CC9F0; --st-review: #FFD166; --st-mastered: #06D6A0;
   --tag-be: #4CC9F0; --tag-do: #06D6A0; --tag-have: #EF476F;
   --tag-n: #4CC9F0; --tag-v: #06D6A0; --tag-a: #EF476F; --tag-o: #FFD166;
   --f-display: 'Press Start 2P', 'Courier New', monospace; --f-num: 'Press Start 2P', 'Courier New', monospace;
@@ -121,7 +121,7 @@ html:root[data-skin="rpg"] {
 html[data-skin="rpg"] *, html[data-skin="rpg"] *::before, html[data-skin="rpg"] *::after { border-radius: 0 !important; }
 html[data-skin="rpg"] body { background-color: var(--bg); }
 html[data-skin="rpg"] :is(.hub, .stats-row, .review-panel, .set-card, .skin-tile, .acc-menu) {
-  border: 3px solid #8D99AE; box-shadow: inset 0 0 0 2px #000, 4px 4px 0 #2B2D42;
+  border: 3px solid #8D99AE; box-shadow: inset 0 0 0 2px #1C1C20, 4px 4px 0 #101013;
 }
 html[data-skin="rpg"] .hub .stats-row, html[data-skin="rpg"] .hub .review-panel { border: 0; box-shadow: none; }
 html[data-skin="rpg"] .rvb { border-width: 3px; border-color: #000; box-shadow: 0 4px 0 color-mix(in srgb, var(--c) 45%, #000); background: var(--c); color: #0F0F1B; }
@@ -135,8 +135,8 @@ html[data-skin="rpg"] .rvb .rvb-n, html[data-skin="rpg"] .rvb .rvb-l, html[data-
 html[data-skin="rpg"] .rvb-base .rvb-n, html[data-skin="rpg"] .rvb-extra .rvb-n, html[data-skin="rpg"] .rvb-due .rvb-n, html[data-skin="rpg"] .rvb-mix .rvb-n { color: inherit; }
 html[data-skin="rpg"] .rvb-n small { color: inherit; opacity: .8; }
 html[data-skin="rpg"] .rvb:not(:disabled)::after { color: inherit; }
-html[data-skin="rpg"] .rvb:disabled { background: #12121A; color: #6E7396; border: 3px dashed #3A3A52; box-shadow: none; opacity: 1; }
-html[data-skin="rpg"] .rvb:disabled .rvb-n { color: #6E7396; }
+html[data-skin="rpg"] .rvb:disabled { background: #26262B; color: #7C8096; border: 3px dashed #4A4A55; box-shadow: none; opacity: 1; }
+html[data-skin="rpg"] .rvb:disabled .rvb-n { color: #7C8096; }
 html[data-skin="rpg"] .rvb-hint { background: transparent; color: var(--muted); }
 html[data-skin="rpg"] .rvb-hint .rvb-l b { color: var(--ink); }
 html[data-skin="rpg"] .modes.in-hub button[aria-pressed="true"],
