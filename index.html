@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<script>document.documentElement.classList.add('booting')</script>
+<script>document.documentElement.classList.add('booting');try{var __s=localStorage.getItem('ef_skin');if(__s&&__s!=='classic')document.documentElement.setAttribute('data-skin',__s)}catch(e){}</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>English File · Skill Tree</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -17,9 +17,10 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&family=Neucha&family=Caveat:wght@500;600&family=Press+Start+2P&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="extras.css?v=20261012-4">
+<link rel="stylesheet" href="themes.css?v=20261013-1">
 <style>
 /* Шторка на время загрузки и перестройки страницы */
 .boot{position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:var(--bg,#1c1a16);color:var(--ink,#efe9dd);transition:opacity .25s ease;}
@@ -99,6 +100,7 @@ html.booting body{overflow:hidden;}
 <script src="migration.js"></script>
 <script src="app.js"></script>
 <script src="extras.js?v=20261012-4"></script>
+<script src="themes.js?v=20261013-1"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
