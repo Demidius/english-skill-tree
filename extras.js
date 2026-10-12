@@ -413,11 +413,25 @@ if (typeof WORD_TR !== 'undefined') {
     if (box && box.dataset.sig === sig) return;
     if (box) box.remove();
     box = document.createElement('div'); box.className = 'rv-big rv-big-one'; box.dataset.sig = sig;
-    box.innerHTML = '<button type="button" class="rvb rvb-mix"' + (mix.disabled ? ' disabled' : '') + '>' +
-      '<span class="rvb-n">' + pool + '<small> / ' + read + '</small></span>' +
-      '<span class="rvb-l">Отрабатывать изученное</span></button>';
-    box.firstChild.title = pool + ' правил в отработке из ' + read + ' отмеченных «изучено»';
-    box.firstChild.addEventListener('click', () => { if (!mix.disabled) mix.click(); });
+    if (mix.disabled) {
+      // отрабатывать нечего — подсказка, что сделать; нажатие ведёт к галочкам «изучено»
+      const msg = read
+        ? 'Все изученные правила уже на уровне 10. Отметь галочкой «изучено» следующие правила.'
+        : 'Отметь галочкой <b>☑ изучено</b> правила, которые ты разобрал, — и здесь появятся вопросы по ним.';
+      box.innerHTML = '<button type="button" class="rvb rvb-hint"><span class="rvb-ico">☑</span><span class="rvb-l">' + msg + '</span></button>';
+      box.firstChild.addEventListener('click', () => {
+        const cb = document.querySelector('#mode-g .node[data-id]:not([hidden]) .rread');
+        if (!cb) return;
+        cb.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        cb.classList.remove('rread-ping'); void cb.offsetWidth; cb.classList.add('rread-ping');
+      });
+    } else {
+      box.innerHTML = '<button type="button" class="rvb rvb-mix">' +
+        '<span class="rvb-n">' + pool + '<small> / ' + read + '</small></span>' +
+        '<span class="rvb-l">Отрабатывать изученное</span></button>';
+      box.firstChild.title = pool + ' правил в отработке из ' + read + ' отмеченных «изучено»';
+      box.firstChild.addEventListener('click', () => { if (!mix.disabled) mix.click(); });
+    }
     mix.before(box);
   }
   function run() { document.querySelectorAll('.practice-panel').forEach(build); }
