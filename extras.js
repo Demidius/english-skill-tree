@@ -164,10 +164,30 @@ if (typeof WORD_TR !== 'undefined') {
     if (row.previousElementSibling !== panel) panel.after(row);
     return true;
   }
+  // ---- телефон: аккаунт в одной строке с переключателем режимов ----
+  function mobileNav(on) {
+    const tr = document.querySelector('.title-row');
+    const md = document.querySelector('.modes'); if (!tr || !md) return;
+    let nav = document.querySelector('.navrow');
+    if (on) {
+      if (!nav) {
+        nav = document.createElement('div'); nav.className = 'navrow';
+        nav.appendChild(makeAcc());
+        const sep = document.createElement('span'); sep.className = 'navsep'; nav.appendChild(sep);
+        md.before(nav);
+      }
+      if (md.parentNode !== nav) nav.appendChild(md);
+      nav.hidden = false;
+    } else if (nav) {
+      nav.before(md); nav.hidden = true;
+    }
+  }
   function apply() {
+    mobileNav(!MQ.matches);
     let ok = 0;
     MODES.forEach(id => { const m = document.getElementById(id); if (m && (MQ.matches ? build(m) : unbuild(m))) ok++; });
     document.body.classList.toggle('has-hub', MQ.matches && ok > 0);
+    document.body.classList.toggle('has-navrow', !MQ.matches);
     refreshLabels(); splitStats();
     return ok;
   }
