@@ -199,3 +199,32 @@
   .review-panel:not(.practice-panel) { grid-template-areas: "head head" "lvls big" !important; }
   .review-panel:not(.practice-panel) .rv-big { grid-area: big; margin-top: 0; align-self: start; }
 }
+
+/* Кнопки блока повторения: видно, что это кнопки, и активны ли они */
+.rv-big { gap: 8px; border: 0; background: none; border-radius: 0; overflow: visible; }
+.rvb-col { gap: 8px; }
+.rvb {
+  --c: var(--muted);
+  border-radius: 16px; border: 2px solid var(--c);
+  background: color-mix(in srgb, var(--c) 14%, var(--surface-2));
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--c) 45%, transparent);
+  transition: transform .08s, box-shadow .08s, background .15s;
+  position: relative;
+}
+.rvb-due { --c: var(--st-review); border-right: 2px solid var(--c); }
+.rvb-base { --c: var(--st-learn); }
+.rvb-extra { --c: #a27ad6; border-top: 2px solid var(--c); }
+.rvb:hover:not(:disabled) { background: color-mix(in srgb, var(--c) 24%, var(--surface-2)); }
+.rvb:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 0 0 transparent; }
+.rvb:not(:disabled)::after {
+  content: '›'; position: absolute; right: 12px; top: 8px;
+  font: 700 1.1rem/1 'Manrope', sans-serif; color: var(--c);
+}
+.rvb-base:not(:disabled)::after, .rvb-extra:not(:disabled)::after { top: 50%; transform: translateY(-50%); right: 10px; }
+.rvb-base, .rvb-extra { padding-right: 28px; }
+.rvb:disabled {
+  opacity: .5; border-style: dashed; border-color: var(--line);
+  background: transparent; box-shadow: none;
+}
+.rvb:disabled .rvb-n { color: var(--muted); }
+.rvb-due .rvb-l { color: var(--ink); }
