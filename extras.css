@@ -114,3 +114,25 @@
 /* «Настройки» — в выпадающем списке аккаунта, в переключателе только «Правила» и «Лексика» */
 .modes button[data-mode="s"] { display: none !important; }
 .navrow .modes { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+
+/* Заголовок «Интервальное повторение слов» с кнопкой (i) */
+.rv-titlebar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.rv-titlebar .rv-title { margin: 0; }
+.rv-info {
+  flex: none; width: 28px; height: 28px; border-radius: 50%;
+  border: 1.5px solid var(--muted); background: none; color: var(--ink); cursor: pointer;
+  font: italic 700 .95rem Georgia, 'Times New Roman', serif; line-height: 1; padding: 0;
+}
+.rv-info[aria-expanded="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.rv-infobox {
+  margin-top: 10px; padding: 12px 14px; border-radius: 12px; background: var(--surface-2);
+  border: 1px solid var(--line); font-size: .86rem; line-height: 1.5; color: var(--ink);
+}
+.rv-infobox p { margin: 0 0 8px; }
+.rv-infobox ul { margin: 0 0 8px; padding-left: 18px; }
+.rv-infobox li { margin-bottom: 6px; }
+.rv-infobox p:last-child { margin-bottom: 0; }
+@media (min-width: 1000px) {
+  .hub .rv-head { grid-column: 1 / -1; }
+  .hub .review-panel:not(.practice-panel) { grid-template-areas: "head head" "lvls stats" "lvls acts"; }
+}
