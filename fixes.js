@@ -53,6 +53,16 @@ fo3-diet|protein|бело́к
 de4-sounds|bang|удар, хлопо́к
 ho4-diy|saw|пила́ (инструмент)
 da-verbs|write|писа́ть
+da-routine-2|brush your teeth|чистить (свои) зубы
+pe4-body-lang|raise your eyebrows|поднять (свои) брови
+bo2-accidents|break your arm|сломать (себе) руку
+bo2-accidents|cut your finger|порезать (себе) палец
+bo2-accidents|burn your hand|обжечь (себе) руку
+bo2-accidents|take your temperature|измерить (тебе) температуру
+wo-class|Open your books.|Откройте (ваши) книги.
+wo4-jobhunt|hand in your notice|подать (своё) заявление об уходе
+sh4-finance|live within your means|жить по (своим) средствам
+da3-makedo|do your best|сделать всё (от себя) возможное
 `;
   if (typeof W_BRANCHES === 'undefined') return;
   const idx = {};
