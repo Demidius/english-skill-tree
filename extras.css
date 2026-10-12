@@ -243,3 +243,16 @@
 .rvb-n { white-space: nowrap; }
 .rvb-mix .rvb-l { font-size: 1.05rem; font-weight: 700; color: var(--ink); }
 .rvb-mix:not(:disabled)::after { top: 50%; transform: translateY(-50%); right: 14px; }
+
+/* Подсказка вместо кнопки, если ни одно правило не отмечено «изучено» */
+.rvb-hint {
+  --c: var(--line); border-style: dashed; background: transparent; box-shadow: none;
+  align-items: center; gap: 12px; padding: 14px 16px;
+}
+.rvb-hint::after { display: none; }
+.rvb-hint .rvb-l { font-size: .9rem; line-height: 1.4; color: var(--muted); font-weight: 500; }
+.rvb-hint .rvb-l b { color: var(--ink); white-space: nowrap; }
+.rvb-ico { font-size: 1.6rem; line-height: 1; color: var(--st-mastered); flex: none; }
+.rvb-hint:hover { background: color-mix(in srgb, var(--st-mastered) 8%, transparent); }
+@keyframes rreadPing { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 30% { box-shadow: 0 0 0 4px var(--st-mastered); } }
+.rread-ping { animation: rreadPing 1.2s ease 2; border-radius: 999px; }
