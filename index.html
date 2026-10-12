@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
+<script>document.documentElement.classList.add('booting')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>English File · Skill Tree</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -18,9 +19,19 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="extras.css?v=20261012-3">
+<link rel="stylesheet" href="extras.css?v=20261012-4">
+<style>
+/* Шторка на время загрузки и перестройки страницы */
+.boot{position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:var(--bg,#1c1a16);color:var(--ink,#efe9dd);transition:opacity .25s ease;}
+.boot-t{font:600 1.6rem/1.2 'Fraunces',Georgia,serif;letter-spacing:.01em;}
+.boot-s{width:34px;height:34px;border-radius:50%;border:3px solid color-mix(in srgb,currentColor 20%,transparent);border-top-color:var(--st-mastered,#4a8a5a);animation:bootspin .8s linear infinite;}
+@keyframes bootspin{to{transform:rotate(360deg)}}
+html:not(.booting) .boot{opacity:0;pointer-events:none;}
+html.booting body{overflow:hidden;}
+</style>
 </head>
 <body>
+<div class="boot" aria-hidden="true"><div class="boot-t">English File · Skill Tree</div><div class="boot-s"></div></div>
 
 <header class="top">
   <div class="title-row">
@@ -83,11 +94,11 @@
 <script src="data-exru.js"></script>
 <script src="data-grammar.js"></script>
 <script src="data-patch.js"></script>
-<script src="fixes.js?v=20261012-3"></script>
+<script src="fixes.js?v=20261012-4"></script>
 <script src="verb-forms.js"></script>
 <script src="migration.js"></script>
 <script src="app.js"></script>
-<script src="extras.js?v=20261012-3"></script>
+<script src="extras.js?v=20261012-4"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
