@@ -70,30 +70,43 @@
   .hub .review-panel { margin: 0; padding: 0; border: 0; background: none; max-width: none; }
   .hub .review-panel:not(.practice-panel) { grid-template-columns: minmax(240px, 340px) minmax(0, 1fr); }
   .hub .rv-acts .m-btn { font-size: .85rem; }
+}
 
-  .acc { position: relative; }
-  .acc-btn {
-    display: inline-flex; align-items: center; gap: 6px; max-width: 100%;
-    border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
-    border-radius: 999px; padding: 6px 14px; cursor: pointer;
-    font: 600 .95rem 'Manrope', sans-serif;
-  }
-  .acc-btn:hover { border-color: var(--ink); }
-  .acc-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .acc-car { font-size: .7rem; color: var(--muted); }
-  .acc-menu {
-    position: absolute; z-index: 40; top: calc(100% + 6px); left: 0; min-width: 200px;
-    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
-    box-shadow: 0 8px 28px rgba(0,0,0,.22); padding: 6px; display: flex; flex-direction: column;
-  }
-  .acc-menu[hidden] { display: none; }
-  .acc-it {
-    text-align: left; border: 0; background: none; color: var(--ink); cursor: pointer;
-    padding: 8px 10px; border-radius: 8px; font: 500 .9rem 'Manrope', sans-serif;
-  }
-  .acc-it:hover { background: var(--surface-2); }
-  .acc-it.on { font-weight: 700; }
-  .acc-it.on::before { content: '✓ '; color: var(--st-mastered); }
-  .acc-sep { height: 1px; background: var(--line); margin: 4px 2px; }
-  .acc-out { color: var(--accent-2); }
+/* Выпадающий список аккаунтов (ПК и телефон) */
+.acc { position: relative; }
+.acc-btn {
+  display: inline-flex; align-items: center; gap: 6px; max-width: 100%;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+  border-radius: 999px; padding: 6px 14px; cursor: pointer;
+  font: 600 .95rem 'Manrope', sans-serif;
+}
+.acc-btn:hover { border-color: var(--ink); }
+.acc-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acc-car { font-size: .7rem; color: var(--muted); }
+.acc-menu {
+  position: absolute; z-index: 40; top: calc(100% + 6px); left: 0; min-width: 200px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.22); padding: 6px; display: flex; flex-direction: column;
+}
+.acc-menu[hidden] { display: none; }
+.acc-it {
+  text-align: left; border: 0; background: none; color: var(--ink); cursor: pointer;
+  padding: 8px 10px; border-radius: 8px; font: 500 .9rem 'Manrope', sans-serif;
+}
+.acc-it:hover { background: var(--surface-2); }
+.acc-it.on { font-weight: 700; }
+.acc-it.on::before { content: '✓ '; color: var(--st-mastered); }
+.acc-sep { height: 1px; background: var(--line); margin: 4px 2px; }
+.acc-out { color: var(--accent-2); }
+
+/* Телефон: без подзаголовка; аккаунт слева в строке с режимами, отделён чертой */
+@media (max-width: 999px) {
+  .title-row .sub { display: none; }
+  body.has-navrow #profileBar { display: none !important; }
+  .navrow { display: flex; align-items: center; gap: 7px; width: 100%; margin-top: 8px; }
+  .navrow .modes { flex: 1; min-width: 0; margin-top: 0; width: auto; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .navrow .modes button { padding: 9px 1px; font-size: clamp(.7rem, 3.3vw, .82rem); letter-spacing: -.01em; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .navsep { width: 1px; align-self: stretch; background: var(--line); margin: 4px 0; }
+  .navrow .acc-btn { padding: 9px 9px; max-width: 26vw; font-size: .82rem; gap: 4px; }
+  .navrow .acc-menu { min-width: 190px; }
 }
