@@ -82,7 +82,7 @@ if (typeof WORD_TR !== 'undefined') {
   }, true);
 })();
 
-// Единый блок на ПК: «я и мой прогресс» + повторение; на телефоне — полоса прогресса под блоком повторения.
+// Единый блок на ПК: «я и мой прогресс» + повторение; на телефоне — полоса прогресса над блоком повторения.
 // Аккаунты — выпадающий список (там же «Настройки» и «Выйти»). Фильтры — по кнопке.
 (function () {
   const MQ = window.matchMedia('(min-width: 1000px)');
@@ -167,7 +167,7 @@ if (typeof WORD_TR !== 'undefined') {
     const { row, panel, hub } = parts(m);
     if (!row || !panel) return false;
     if (hub) { hub.before(panel); hub.hidden = true; }
-    if (row.previousElementSibling !== panel) panel.after(row);
+    if (row.nextElementSibling !== panel) panel.before(row);
     return true;
   }
   // ---- телефон: аккаунт в одной строке с переключателем режимов ----
@@ -300,4 +300,45 @@ if (typeof WORD_TR !== 'undefined') {
     if (m.type === 'characterData') walk(m.target);
     else m.addedNodes.forEach(walk);
   })).observe(document.body, { childList: true, subtree: true, characterData: true });
+})();
+
+// Метки на полосах прогресса: в «Лексике» — границы уровней A1/A2/B1/B2 (сколько слов в каждом), в «Правилах» — шкала 0–10
+(function () {
+  let marks = null;
+  function wordMarks() {
+    if (marks) return marks;
+    const cnt = { A1: 0, A2: 0, B1: 0, B2: 0 };
+    if (typeof W_BRANCHES !== 'undefined') W_BRANCHES.forEach(b => ['cells', 'extra'].forEach(p => Object.entries(b[p] || {}).forEach(([lv, cs]) => cs.forEach(c => {
+      if (c && typeof c[3] === 'string' && lv in cnt) cnt[lv] += c[3].split(';').filter(x => x.trim()).length;
+    }))));
+    const tot = cnt.A1 + cnt.A2 + cnt.B1 + cnt.B2 || 1;
+    let acc = 0;
+    marks = ['A1', 'A2', 'B1', 'B2'].map(l => { const from = acc / tot; acc += cnt[l]; return { l, n: cnt[l], from, to: acc / tot, cum: acc }; });
+    return marks;
+  }
+  function build(row, kind) {
+    const bar = row.querySelector('.bar'); if (!bar) return;
+    let t = row.querySelector('.bar-ticks');
+    if (t && t.dataset.kind === kind && t.previousElementSibling === bar) return;
+    if (t) t.remove();
+    t = document.createElement('div'); t.className = 'bar-ticks'; t.dataset.kind = kind;
+    let h = '';
+    if (kind === 'w') {
+      wordMarks().forEach((m, i, a) => {
+        if (i < a.length - 1) h += '<i class="tk tk-major" style="left:' + (m.to * 100) + '%" title="' + m.cum + ' слов — весь ' + m.l + '"></i>';
+        h += '<span class="tl" style="left:' + ((m.from + m.to) / 2 * 100) + '%">' + m.l + ' <em>' + m.n + '</em></span>';
+      });
+    } else {
+      for (let k = 1; k < 10; k++) h += '<i class="tk' + (k % 5 === 0 ? ' tk-major' : '') + '" style="left:' + (k * 10) + '%"></i>';
+      [0, 2, 4, 6, 8, 10].forEach(k => h += '<span class="tl tl-n" style="left:' + (k * 10) + '%">' + k + '</span>');
+    }
+    t.innerHTML = h;
+    bar.after(t);
+  }
+  function run() {
+    const w = document.querySelector('#mode-w .stats-row'); if (w) build(w, 'w');
+    const g = document.querySelector('#mode-g .stats-row'); if (g) build(g, 'g');
+  }
+  run();
+  new MutationObserver(run).observe(document.body, { childList: true, subtree: true });
 })();
