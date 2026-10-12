@@ -1,0 +1,182 @@
+/* Оформления сайта. Включаются атрибутом data-skin на <html>: notebook / board / rpg.
+   Без атрибута сайт выглядит как раньше. Подключается после style.css и extras.css. */
+
+/* ---------- Выбор оформления (Настройки) — одинаково во всех оформлениях ---------- */
+.skin-pick { margin: 0 0 18px; }
+.skin-h { margin: 0 0 4px; font: 600 1.1rem 'Fraunces', Georgia, serif; color: var(--ink); }
+.skin-note { margin: 0 0 12px; font-size: .85rem; color: var(--muted); }
+.skin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.skin-tile {
+  display: flex; flex-direction: column; gap: 8px; text-align: left; cursor: pointer; padding: 10px;
+  background: var(--surface); color: var(--ink); border: 2px solid var(--line); border-radius: 14px;
+  font-family: 'Manrope', system-ui, sans-serif; position: relative;
+}
+.skin-tile:hover { border-color: var(--muted); }
+.skin-tile[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.skin-tile[aria-pressed="true"]::after {
+  content: '✓'; position: absolute; top: 8px; right: 10px; font-weight: 800; color: var(--accent);
+}
+.skin-prev { display: flex; align-items: flex-end; gap: 6px; height: 64px; padding: 8px; border-radius: 8px; overflow: hidden; }
+.skin-prev b { font-size: 1.5rem; line-height: 1; margin-right: auto; }
+.skin-prev i { display: block; width: 26px; height: 26px; border-radius: 6px; }
+.skin-name { font-weight: 700; font-size: .95rem; }
+.skin-sub { font-size: .78rem; color: var(--muted); margin-top: -4px; }
+.sp-classic  { background: #1c1a16; color: #f1ece1; border: 1px solid #3f392e; }
+.sp-classic i:nth-of-type(1) { background: #c98a2e; } .sp-classic i:nth-of-type(2) { background: #4c7ea8; }
+.sp-notebook { background-color: #FBFCFF; background-image: linear-gradient(#DCE6F5 1px, transparent 1px), linear-gradient(90deg, #DCE6F5 1px, transparent 1px); background-size: 12px 12px; color: #1F3A7A; border: 1.5px solid #1F3A7A; font-family: 'Neucha', cursive; }
+.sp-notebook i:nth-of-type(1) { background: #FFF3A8; border: 1.5px solid #1F3A7A; border-radius: 3px; } .sp-notebook i:nth-of-type(2) { background: #FBFCFF; border: 1.5px solid #1F3A7A; border-radius: 3px; }
+.sp-board    { background: #22382F; color: #EDEBDF; border: 4px solid #6B4A2E; font-family: 'Caveat', cursive; }
+.sp-board b { font-size: 1.8rem; }
+.sp-board i:nth-of-type(1) { background: transparent; border: 2px solid #F2D16B; border-radius: 4px; } .sp-board i:nth-of-type(2) { background: transparent; border: 2px solid #C9A2E8; border-radius: 4px; }
+.sp-rpg      { background: #2B2D42; color: #FFD166; border: 3px solid #0F0F1B; font-family: 'Press Start 2P', monospace; border-radius: 0; box-shadow: inset 0 0 0 2px #8D99AE; }
+.sp-rpg b { font-size: .8rem; }
+.sp-rpg i { border-radius: 0; border: 2px solid #0F0F1B; } .sp-rpg i:nth-of-type(1) { background: #EF476F; } .sp-rpg i:nth-of-type(2) { background: #06D6A0; }
+
+/* ======================================================================
+   ТЕТРАДЬ — светлый лист в клетку, чернильно-синий текст, жёлтый маркер
+   ====================================================================== */
+html:root[data-skin="notebook"] {
+  color-scheme: light;
+  --bg: #FBFCFF; --surface: #FFFFFF; --surface-2: #F1F5FC; --ink: #1F3A7A; --muted: #5A6E9E;
+  --line: #C3D1E8; --trunk: #8FA6D0; --accent: #1F3A7A; --accent-2: #D14B4B;
+  --a1: #3E9B5F; --a1-soft: #E1F2E7; --a2: #2F7F6B; --a2-soft: #DCEFE9;
+  --b1: #2C6BD6; --b1-soft: #E0EAFB; --b2: #C98A1E; --b2-soft: #FBEFD2;
+  --st-none: #C3D1E8; --st-learn: #2C6BD6; --st-review: #E0922B; --st-mastered: #3E9B5F;
+  --tag-be: #2C6BD6; --tag-do: #3E9B5F; --tag-have: #D14B4B;
+  --tag-n: #2C6BD6; --tag-v: #3E9B5F; --tag-a: #D14B4B; --tag-o: #8A4FC8;
+  --f-display: 'Neucha', 'Comic Sans MS', cursive; --f-num: 'Neucha', 'Comic Sans MS', cursive;
+  --f-mono: 'Manrope', system-ui, sans-serif;
+}
+html[data-skin="notebook"] body {
+  background-color: var(--bg);
+  background-image: linear-gradient(#DCE6F5 1px, transparent 1px), linear-gradient(90deg, #DCE6F5 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+html[data-skin="notebook"] body::before {
+  content: ''; position: fixed; left: 8px; top: 0; bottom: 0; width: 2px; background: #E05A5A; opacity: .7;
+  pointer-events: none; z-index: 2;
+}
+html[data-skin="notebook"] :is(.hub, .stats-row, .review-panel, .set-card, .skin-tile, .acc-btn, .modes.in-hub) { border-color: var(--ink); }
+html[data-skin="notebook"] :is(.hub, .stats-row, .review-panel, .set-card) { border-width: 1.5px; }
+html[data-skin="notebook"] .rvb-due:not(:disabled) { --c: #C9A400; background: #FFF3A8; color: #3A3000; box-shadow: 0 2px 0 #C9A400aa; }
+html[data-skin="notebook"] .rvb-due:hover:not(:disabled) { background: #FFEC7A; }
+html[data-skin="notebook"] .rvb-due:not(:active):not(:disabled) { transform: rotate(-.4deg); }
+html[data-skin="notebook"] .rvb-due:not(:disabled) .rvb-n { color: #1F3A7A; }
+html[data-skin="notebook"] .rvb-extra:not(:disabled) .rvb-n { color: #8A4FC8; }
+html[data-skin="notebook"] .rvb-extra { --c: #8A4FC8; }
+html[data-skin="notebook"] .rvb-mix .rvb-n { color: #2E7D4A; }
+html[data-skin="notebook"] .rvb:hover:not(:disabled) { background: color-mix(in srgb, var(--c) 18%, #fff); }
+html[data-skin="notebook"] .modes.in-hub button[aria-pressed="true"],
+html[data-skin="notebook"] .modes button[aria-pressed="true"] { background: var(--ink); color: #FBFCFF; }
+html[data-skin="notebook"] .acc-menu, html[data-skin="notebook"] .rv-infobox { border-color: var(--ink); }
+
+/* ======================================================================
+   ДОСКА — тёмно-зелёная, мел, деревянная рамка
+   ====================================================================== */
+html:root[data-skin="board"] {
+  color-scheme: dark;
+  --bg: #22382F; --surface: #2C463B; --surface-2: #31503F; --ink: #EDEBDF; --muted: #A9B8AE;
+  --line: #4F6D5D; --trunk: #6F8F7E; --accent: #F2D16B; --accent-2: #F29A7B;
+  --a1: #7DBB7A; --a1-soft: #2A4A36; --a2: #5FA67C; --a2-soft: #274536;
+  --b1: #7FB0D4; --b1-soft: #27434F; --b2: #E0B456; --b2-soft: #4A4326;
+  --st-none: #5A7566; --st-learn: #7FB0D4; --st-review: #F2D16B; --st-mastered: #7DD39A;
+  --tag-be: #8FC0E0; --tag-do: #8FD3A5; --tag-have: #F29A7B;
+  --tag-n: #8FC0E0; --tag-v: #8FD3A5; --tag-a: #F29A7B; --tag-o: #E0C48A;
+  --f-display: 'Caveat', 'Segoe Script', cursive; --f-num: 'Caveat', 'Segoe Script', cursive;
+  --f-mono: 'Manrope', system-ui, sans-serif;
+}
+html[data-skin="board"] body {
+  background-color: var(--bg);
+  background-image: radial-gradient(ellipse at 25% 15%, rgba(255,255,255,.07), transparent 55%), radial-gradient(ellipse at 80% 90%, rgba(0,0,0,.18), transparent 60%);
+}
+html[data-skin="board"] body::after {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 150;
+  border: 7px solid #6B4A2E; box-shadow: inset 0 0 0 2px #4A3320, inset 0 0 36px rgba(0,0,0,.4);
+}
+html[data-skin="board"] :is(.hub, .stats-row, .review-panel, .set-card, .skin-tile) { border-color: #6F8F7E; }
+html[data-skin="board"] .rvb-due { --c: #F2D16B; background: transparent; box-shadow: none; }
+html[data-skin="board"] .rvb-base { --c: #8FC0E0; background: transparent; box-shadow: none; }
+html[data-skin="board"] .rvb-extra { --c: #C9A2E8; background: transparent; box-shadow: none; }
+html[data-skin="board"] .rvb-mix { background: transparent; box-shadow: none; }
+html[data-skin="board"] .rvb-extra:not(:disabled) .rvb-n { color: #C9A2E8; }
+html[data-skin="board"] .rvb:hover:not(:disabled) { background: color-mix(in srgb, var(--c) 14%, transparent); }
+html[data-skin="board"] .modes.in-hub button[aria-pressed="true"],
+html[data-skin="board"] .modes button[aria-pressed="true"] { background: #EDEBDF; color: #22382F; }
+
+/* ======================================================================
+   RPG — пиксельная рамка, квесты и «заперто»
+   ====================================================================== */
+html:root[data-skin="rpg"] {
+  color-scheme: dark;
+  --bg: #2B2D42; --surface: #34374F; --surface-2: #3D405B; --ink: #EDF2F4; --muted: #A3A9C9;
+  --line: #0F0F1B; --trunk: #8D99AE; --accent: #FFD166; --accent-2: #EF476F;
+  --a1: #06D6A0; --a1-soft: #1F4A4A; --a2: #118AB2; --a2-soft: #1E3F58;
+  --b1: #8E6BC0; --b1-soft: #3A2F55; --b2: #E9B949; --b2-soft: #4D4126;
+  --st-none: #4A4E6D; --st-learn: #4CC9F0; --st-review: #FFD166; --st-mastered: #06D6A0;
+  --tag-be: #4CC9F0; --tag-do: #06D6A0; --tag-have: #EF476F;
+  --tag-n: #4CC9F0; --tag-v: #06D6A0; --tag-a: #EF476F; --tag-o: #FFD166;
+  --f-display: 'Press Start 2P', 'Courier New', monospace; --f-num: 'Press Start 2P', 'Courier New', monospace;
+  --f-mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+html[data-skin="rpg"] *, html[data-skin="rpg"] *::before, html[data-skin="rpg"] *::after { border-radius: 0 !important; }
+html[data-skin="rpg"] body { background-color: var(--bg); }
+html[data-skin="rpg"] :is(.hub, .stats-row, .review-panel, .set-card, .skin-tile, .acc-menu) {
+  border: 3px solid #0F0F1B; box-shadow: inset 0 0 0 2px #8D99AE, 4px 4px 0 #0F0F1B;
+}
+html[data-skin="rpg"] .hub .stats-row, html[data-skin="rpg"] .hub .review-panel { border: 0; box-shadow: none; }
+html[data-skin="rpg"] .rvb { border-width: 3px; border-color: #0F0F1B; box-shadow: 0 4px 0 #0F0F1B; background: var(--c); color: #0F0F1B; }
+html[data-skin="rpg"] .rvb:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 #0F0F1B; }
+html[data-skin="rpg"] .rvb-due { --c: #EF476F; color: #fff; }
+html[data-skin="rpg"] .rvb-base { --c: #4CC9F0; }
+html[data-skin="rpg"] .rvb-extra { --c: #8E6BC0; color: #fff; }
+html[data-skin="rpg"] .rvb-mix { --c: #06D6A0; }
+html[data-skin="rpg"] .rvb:hover:not(:disabled) { background: color-mix(in srgb, var(--c) 82%, #fff); }
+html[data-skin="rpg"] .rvb .rvb-n, html[data-skin="rpg"] .rvb .rvb-l, html[data-skin="rpg"] .rvb-due .rvb-l, html[data-skin="rpg"] .rvb-mix .rvb-l,
+html[data-skin="rpg"] .rvb-base .rvb-n, html[data-skin="rpg"] .rvb-extra .rvb-n, html[data-skin="rpg"] .rvb-due .rvb-n, html[data-skin="rpg"] .rvb-mix .rvb-n { color: inherit; }
+html[data-skin="rpg"] .rvb-n small { color: inherit; opacity: .8; }
+html[data-skin="rpg"] .rvb:not(:disabled)::after { color: inherit; }
+html[data-skin="rpg"] .rvb:disabled { background: #3D405B; color: #7C82A8; border: 3px dashed #0F0F1B; box-shadow: none; opacity: 1; }
+html[data-skin="rpg"] .rvb:disabled .rvb-n { color: #7C82A8; }
+html[data-skin="rpg"] .rvb-hint { background: transparent; color: var(--muted); }
+html[data-skin="rpg"] .rvb-hint .rvb-l b { color: var(--ink); }
+html[data-skin="rpg"] .modes.in-hub button[aria-pressed="true"],
+html[data-skin="rpg"] .modes button[aria-pressed="true"] { background: #FFD166; color: #2B2D42; }
+html[data-skin="rpg"] .bar-ticks .tk-major { background: #fff; }
+
+/* ---------- Шрифты: подписи и цифры (для всех трёх оформлений) ---------- */
+html[data-skin] :is(h1, .bhead .root .n, .rv-title, .set-card legend, .kok-t, .done-big, .skin-h) { font-family: var(--f-display); }
+html[data-skin] :is(.rvb-n, .rv-tg b, .rv-stats b) { font-family: var(--f-num); }
+html[data-skin] :is(.mono, .chip.tag, .jumpnav button, .bhead .root .cnt, .lvl-label .lp, .tbtn, .node .score, .node .status-chip, .node .src, .node .tg, .lpm, .wbtn, .fc .pos, .fc .lvlrow, .grade small, .bar-ticks .tl, .m-count, .m-kicker, .sess-meta, .mpos, .lvn) { font-family: var(--f-mono); }
+html[data-skin="notebook"] :is(.fc .front, .fc .back, .m-title, .m-score, .kok-w b),
+html[data-skin="board"] :is(.fc .front, .fc .back, .m-title, .m-score, .kok-w b) { font-family: var(--f-display); }
+
+/* Размеры: рукописные шрифты мельче обычных — чуть увеличиваем */
+html[data-skin="notebook"] h1, html[data-skin="board"] h1 { font-size: 2.1rem; font-weight: 400; }
+html[data-skin="notebook"] :is(.rv-title, .bhead .root .n, .set-card legend), html[data-skin="board"] :is(.rv-title, .bhead .root .n, .set-card legend) { font-size: 1.35em; font-weight: 400; }
+html[data-skin="notebook"] .rvb-n, html[data-skin="board"] .rvb-n { font-size: 1.9rem; font-weight: 400; }
+html[data-skin="notebook"] .rvb-due .rvb-n, html[data-skin="board"] .rvb-due .rvb-n { font-size: 2.2rem; }
+html[data-skin="board"] .rvb-n { font-size: 2.05rem; }
+html[data-skin="board"] .rvb-due .rvb-n { font-size: 2.4rem; }
+html[data-skin="notebook"] .fc .front, html[data-skin="board"] .fc .front { font-weight: 400; }
+
+/* Пиксельный шрифт очень широкий — уменьшаем и добавляем воздух */
+html[data-skin="rpg"] h1 { font-size: .85rem; line-height: 1.5; font-weight: 400; }
+html[data-skin="rpg"] :is(.rv-title, .set-card legend, .skin-h) { font-size: .64rem; line-height: 1.6; font-weight: 400; }
+html[data-skin="rpg"] .bhead .root .n { font-size: .72rem; line-height: 1.5; font-weight: 400; }
+html[data-skin="rpg"] .rvb-n { font-size: 1.05rem; font-weight: 400; }
+html[data-skin="rpg"] .rvb-due .rvb-n { font-size: 1.2rem; }
+html[data-skin="rpg"] .rvb-n small { font-size: .6em; }
+html[data-skin="rpg"] .rv-tg b { font-size: .75rem; font-weight: 400; }
+html[data-skin="rpg"] .rvb-l { font-weight: 600; }
+
+/* ПК: в узких плитках «изучать базовые / экстра» число не должно налезать на стрелку */
+@media (min-width: 1000px) {
+  html[data-skin] .hub .rvb-base, html[data-skin] .hub .rvb-extra { gap: 6px; padding-left: 12px; padding-right: 26px; }
+  html[data-skin="notebook"] .hub .rvb-n { font-size: 1.55rem; }
+  html[data-skin="notebook"] .hub .rvb-due .rvb-n { font-size: 1.9rem; }
+  html[data-skin="board"] .hub .rvb-n { font-size: 1.7rem; }
+  html[data-skin="board"] .hub .rvb-due .rvb-n { font-size: 2.1rem; }
+  html[data-skin="rpg"] .hub .rvb-n { font-size: .68rem; }
+  html[data-skin="rpg"] .hub .rvb-due .rvb-n { font-size: 1rem; }
+  html[data-skin="rpg"] .hub .rvb-l { font-size: .8rem; }
+}
