@@ -189,12 +189,12 @@ if (typeof WORD_TR !== 'undefined') {
     }
   }
   // ---- ПК: переключатель «Правила / Лексика» — внутри единого блока, слева под аккаунтом ----
-  function placeModes() {
+  function placeModes(force) {
     const md = document.querySelector('.modes'), tr = document.querySelector('.title-row');
     if (!md || !tr) return;
     if (!MQ.matches) return;
     const on = md.querySelector('button[aria-pressed="true"]');
-    const k = on ? on.dataset.mode : '';
+    const k = typeof force === 'string' ? force : (on ? on.dataset.mode : '');
     const slot = (k === 'w' || k === 'g') ? document.querySelector('#mode-' + k + ' .hub .hub-nav') : null;
     if (slot) { if (md.parentNode !== slot) slot.appendChild(md); md.classList.add('in-hub'); }
     else {
@@ -202,7 +202,12 @@ if (typeof WORD_TR !== 'undefined') {
       md.classList.remove('in-hub');
     }
   }
-  document.addEventListener('click', ev => { if (ev.target.closest('.modes button, .acc-it')) setTimeout(placeModes, 0); });
+  // переносим переключатель ещё до смены вкладки, чтобы он не мигал
+  document.addEventListener('click', ev => {
+    const b = ev.target.closest('.modes button');
+    if (b && (b.dataset.mode === 'w' || b.dataset.mode === 'g')) placeModes(b.dataset.mode);
+    if (ev.target.closest('.modes button, .acc-it')) setTimeout(placeModes, 0);
+  }, true);
   function apply() {
     mobileNav(!MQ.matches);
     let ok = 0;
@@ -212,10 +217,22 @@ if (typeof WORD_TR !== 'undefined') {
     refreshLabels(); splitStats(); placeModes();
     return ok;
   }
+  // «шторка» при загрузке: убираем, когда раскладка готова (или показан экран входа)
+  function bootDone() {
+    const de = document.documentElement;
+    if (!de.classList.contains('booting')) return;
+    requestAnimationFrame(() => requestAnimationFrame(() => de.classList.remove('booting')));
+  }
+  const authOpen = () => { const a = document.getElementById('authBox'); return a && !a.hidden; };
+  setTimeout(bootDone, 4000);
   if (apply() < MODES.length) {
     let n = 0;
-    const t = setInterval(() => { if (apply() >= MODES.length || ++n > 40) clearInterval(t); }, 250);
-  }
+    const t = setInterval(() => {
+      const done = apply() >= MODES.length;
+      if (done || authOpen()) bootDone();
+      if (done || ++n > 40) clearInterval(t);
+    }, 100);
+  } else bootDone();
   MQ.addEventListener ? MQ.addEventListener('change', apply) : MQ.addListener(apply);
 })();
 
