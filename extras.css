@@ -234,3 +234,12 @@
   #mode-w .stats-row .num, #mode-g .stats-row .num { display: none; }
   #mode-w .stats-row .bar, #mode-g .stats-row .bar { margin-top: 4px; }
 }
+
+/* «Отрабатывать изученное» — такая же кнопка-плитка, как в «Лексике» */
+.practice-panel [data-mix], .practice-panel .rv-sub { display: none !important; }
+.rv-big-one { grid-template-columns: 1fr; margin-top: 10px; }
+.rvb-mix { --c: var(--st-mastered); flex-direction: row; align-items: center; justify-content: flex-start; gap: 14px; padding: 16px 40px 16px 18px; }
+.rvb-mix .rvb-n { color: var(--st-mastered); font-size: 2rem; white-space: nowrap; flex: none; }
+.rvb-n { white-space: nowrap; }
+.rvb-mix .rvb-l { font-size: 1.05rem; font-weight: 700; color: var(--ink); }
+.rvb-mix:not(:disabled)::after { top: 50%; transform: translateY(-50%); right: 14px; }
