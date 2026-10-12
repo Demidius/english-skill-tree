@@ -313,3 +313,37 @@
   }
   .modes.in-hub button[aria-pressed="true"]::before { content: '● '; font-size: .6rem; vertical-align: 2px; color: var(--st-mastered); }
 }
+
+/* ПК: аккаунт и режимы — разные элементы: аккаунт-«пилюля» с аватаром, режимы — сегментный переключатель под чертой */
+@media (min-width: 1000px) {
+  .hub-nav { gap: 10px; }
+  .hub-nav .acc { padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  .hub-nav .acc-btn {
+    border-radius: 999px; border-width: 1px; background: transparent;
+    padding: 5px 12px 5px 5px; gap: 8px; font-size: .9rem;
+  }
+  .hub-nav .acc-btn::before {
+    content: ''; flex: none; width: 24px; height: 24px; border-radius: 50%;
+    background: color-mix(in srgb, var(--st-review) 35%, var(--surface-2));
+    border: 1px solid var(--st-review);
+  }
+  .hub-nav .acc-name { flex: 1; text-align: left; }
+  .modes.in-hub {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 4px; gap: 4px;
+  }
+  .modes.in-hub button {
+    border: 0; border-radius: 9px; padding: 7px 10px; background: transparent; box-shadow: none;
+    font-size: .88rem;
+  }
+  .modes.in-hub button:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+  .modes.in-hub button[aria-pressed="true"] {
+    background: var(--ink); color: var(--bg); box-shadow: none; border: 0;
+  }
+  .modes.in-hub button[aria-pressed="true"]::before { content: none; }
+  /* «Повторить»: число сверху, подпись снизу — не налезает на соседние кнопки */
+  .hub .rvb-due { flex-direction: column; align-items: flex-start; justify-content: center; gap: 4px; }
+  .hub .rvb-due .rvb-n { font-size: 1.5rem; }
+  .hub .rvb-due .rvb-l { font-size: .92rem; }
+  .hub .rvb { overflow: hidden; }
+}
