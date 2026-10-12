@@ -240,3 +240,17 @@ if (typeof WORD_TR !== 'undefined') {
   enhance();
   new MutationObserver(enhance).observe(document.body, { childList: true, subtree: true });
 })();
+
+// Кнопка «Фильтры» — первой слева в полосе с темами; сами фильтры раскрываются под полосой
+(function () {
+  function place() {
+    document.querySelectorAll('.mode').forEach(m => {
+      const ft = m.querySelector('.filters-toggle'), jn = m.querySelector('.jumpnav'), ct = m.querySelector('.controls');
+      if (!ft || !jn) return;
+      if (jn.firstElementChild !== ft) jn.prepend(ft);
+      if (ct && ct.previousElementSibling !== jn) jn.after(ct);
+    });
+  }
+  place();
+  new MutationObserver(place).observe(document.body, { childList: true, subtree: true });
+})();
