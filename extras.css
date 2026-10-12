@@ -228,3 +228,9 @@
 }
 .rvb:disabled .rvb-n { color: var(--muted); }
 .rvb-due .rvb-l { color: var(--ink); }
+
+/* Телефон: над полосой прогресса без строки с цифрами — только полоса, отрезки и легенда */
+@media (max-width: 999px) {
+  #mode-w .stats-row .num, #mode-g .stats-row .num { display: none; }
+  #mode-w .stats-row .bar, #mode-g .stats-row .bar { margin-top: 4px; }
+}
