@@ -1,11 +1,10 @@
-// Переключение оформлений: «Как сейчас» / «Тетрадь» / «Доска» / «RPG».
+// Переключение оформлений: «Как сейчас» / «Тетрадь» / «RPG».
 // Выбор хранится в браузере (ef_skin), применяется атрибутом data-skin на <html>.
 (function () {
   const KEY = 'ef_skin';
   const SKINS = [
     { id: 'classic',  name: 'Как сейчас', sub: 'тёмный, цвета земли', bg: '#1c1a16', prev: '<b>Aa</b><i></i><i></i>' },
     { id: 'notebook', name: 'Тетрадь',    sub: 'клетка и маркер',     bg: '#FBFCFF', prev: '<b>Aa</b><i></i><i></i>' },
-    { id: 'board',    name: 'Доска',      sub: 'мел и дерево',        bg: '#22382F', prev: '<b>Aa</b><i></i><i></i>' },
     { id: 'rpg',      name: 'RPG',        sub: 'пиксели и квесты',    bg: '#1C1C20', prev: '<b>Aa</b><i></i><i></i>' },
   ];
   const byId = id => SKINS.find(s => s.id === id) || SKINS[0];
