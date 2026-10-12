@@ -160,3 +160,13 @@
 .bar-ticks .tl em { font-style: normal; font-weight: 400; opacity: .8; }
 .bar-ticks .tl-n:first-of-type { transform: none; }
 .bar-ticks .tl-n:last-of-type { transform: translateX(-100%); }
+
+/* Телефон: «Изучать базовые» и «Изучать Экстра» — одна кнопка, разрезанная пополам */
+@media (max-width: 999px) {
+  .review-panel:not(.practice-panel) .rv-acts { grid-template-columns: 1fr 1fr; column-gap: 0; }
+  .rv-acts .m-btn[data-kind="due"] { grid-column: 1 / -1; }
+  .rv-acts .m-btn[data-kind="base"],
+  .rv-acts .m-btn[data-kind="extra"] { padding: 11px 8px; font-size: .86rem; line-height: 1.25; white-space: normal; }
+  .rv-acts .m-btn[data-kind="base"] { border-radius: 999px 0 0 999px; border-right-width: 1px; margin-right: -.5px; }
+  .rv-acts .m-btn[data-kind="extra"] { border-radius: 0 999px 999px 0; margin-left: -.5px; }
+}
