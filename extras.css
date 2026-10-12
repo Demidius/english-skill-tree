@@ -110,3 +110,7 @@
   .navrow .acc-btn { padding: 9px 9px; max-width: 26vw; font-size: .82rem; gap: 4px; }
   .navrow .acc-menu { min-width: 190px; }
 }
+
+/* «Настройки» — в выпадающем списке аккаунта, в переключателе только «Правила» и «Лексика» */
+.modes button[data-mode="s"] { display: none !important; }
+.navrow .modes { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
