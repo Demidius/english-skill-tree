@@ -63,6 +63,10 @@ wo-class|Open your books.|Откройте (ваши) книги.
 wo4-jobhunt|hand in your notice|подать (своё) заявление об уходе
 sh4-finance|live within your means|жить по (своим) средствам
 da3-makedo|do your best|сделать всё (от себя) возможное
+fo-cafe|Can I have …?|Можно мне (получить) …?
+fo-cafe|I'd like …|Я бы хотел (получить, заказать) …
+wo-class|How do you spell …?|Как пишется …? (по буквам)
+ba-phrases|Let's…|Давай (сделаем)…
 `;
   if (typeof W_BRANCHES === 'undefined') return;
   const idx = {};
