@@ -204,13 +204,13 @@ if (typeof WORD_TR !== 'undefined') {
   MQ.addEventListener ? MQ.addEventListener('change', apply) : MQ.addListener(apply);
 })();
 
-// «Интервальное повторение слов» + кнопка (i) с объяснением метода и его научной основы
+// Заголовки блоков с кнопкой (i): «Интервальное повторение слов» (Лексика) и «Отработка прочитанных правил» (Правила)
 (function () {
-  let open = false;
-  const INFO =
+  const INFO_W =
     '<p><b>Что это.</b> Слово показывается не каждый день подряд, а через растущие промежутки — примерно тогда, когда ты начинаешь его забывать. ' +
     'Оценка после ответа задаёт следующий срок: «Снова» — через несколько минут, «Трудно» — скоро, «Хорошо» и «Легко» — всё дальше и дальше. ' +
-    'Хорошо выученные слова приходят редко, трудные — часто, и время уходит на то, что действительно нужно.</p>' +
+    'Хорошо выученные слова приходят редко, трудные — часто, и время уходит на то, что действительно нужно. ' +
+    'Кнопки A1–B2 выбирают уровни, с которыми работают «Повторить» и «Изучать».</p>' +
     '<p><b>Почему это работает.</b></p><ul>' +
     '<li><b>Кривая забывания.</b> Герман Эббингауз (1885) показал: новое забывается быстро, особенно в первые часы и дни, а каждое повторение делает забывание медленнее. Поэтому следующий интервал можно делать длиннее.</li>' +
     '<li><b>Эффект распределённых повторений.</b> Одно и то же время занятий, разнесённое по дням, даёт заметно лучшее долгосрочное запоминание, чем зубрёжка за один раз. Это один из самых надёжно подтверждённых результатов психологии памяти (большой обзор — Cepeda и коллеги, 2006).</li>' +
@@ -219,21 +219,44 @@ if (typeof WORD_TR !== 'undefined') {
     '</ul>' +
     '<p><b>Откуда метод.</b> Карточки по «коробкам» придумал Себастьян Лейтнер (1970-е), компьютерный алгоритм SM-2 — Пётр Возняк (SuperMemo, 1987). На SM-2 основан Anki; здесь работает тот же принцип.</p>' +
     '<p><b>Как заниматься.</b> Понемногу, но каждый день: сначала «Повторить», потом новые слова. Оценивай честно — «Снова» не провал, а сигнал показать слово пораньше.</p>';
+  const INFO_G =
+    '<p><b>Что это.</b> Короткая тренировка по всем правилам, которые ты отметил галочкой «читано» и которые ещё не дошли до уровня 10. ' +
+    'Сессия — 20 вопросов вперемешку из разных правил; название правила показывается только после ответа. ' +
+    'Каждый ответ сразу меняет уровень своего правила: верно — вверх, ошибка — вниз (по умолчанию +1 и −2, меняется в «Настройках»). ' +
+    'Правило на уровне 10 из отработки выпадает.</p>' +
+    '<p><b>Почему это работает.</b></p><ul>' +
+    '<li><b>Эффект тестирования.</b> Вспоминать и применять правило полезнее, чем перечитывать его объяснение: каждая попытка вспомнить укрепляет память (Roediger и Karpicke, 2006). Поэтому сначала читаешь, а потом отвечаешь на вопросы.</li>' +
+    '<li><b>Перемешивание (interleaving).</b> Когда задания разных типов идут вперемешку, приходится каждый раз решать, какое правило здесь нужно, — именно этот навык нужен в живой речи. В исследованиях перемешанная тренировка давала заметно лучший результат на отложенной проверке, чем решение задач блоками по одному типу (Rohrer и Taylor, 2007; Kornell и Bjork, 2008).</li>' +
+    '<li><b>Распределённые повторения.</b> Отработка, растянутая на несколько дней, запоминается прочнее, чем один длинный подход (обзор — Cepeda и коллеги, 2006). Лучше 20 вопросов каждый день, чем 100 раз в неделю.</li>' +
+    '<li><b>Обратная связь.</b> Ты сразу видишь правильный ответ и правило, к которому относился вопрос, — так ошибка исправляется до того, как закрепится.</li>' +
+    '</ul>' +
+    '<p><b>Как заниматься.</b> Прочитай правило, отметь «читано», сделай тест по нему — а дальше раз в день запускай «Отрабатывать читанное». Уровень правил будет расти сам по мере верных ответов.</p>';
+  const PANELS = [
+    { sel: '.review-panel:not(.practice-panel) .rv-head', title: 'Интервальное повторение слов', info: INFO_W, label: 'Что такое интервальное повторение', hideSub: true },
+    { sel: '.practice-panel .rv-head', title: 'Отработка прочитанных правил', info: INFO_G, label: 'Как работает отработка правил', hideSub: 'static' },
+  ];
+  const open = {};
   function enhance() {
-    document.querySelectorAll('.review-panel:not(.practice-panel) .rv-head').forEach(h => {
-      if (h.dataset.enh) return;
-      h.dataset.enh = '1';
-      const t = h.querySelector('.rv-title'); if (!t) return;
-      const wrap = document.createElement('div'); wrap.className = 'rv-titlebar';
-      t.before(wrap); wrap.appendChild(t);
-      t.textContent = 'Интервальное повторение слов';
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'rv-info'; b.textContent = 'i';
-      b.setAttribute('aria-label', 'Что такое интервальное повторение'); b.setAttribute('aria-expanded', open ? 'true' : 'false');
-      wrap.appendChild(b);
-      const box = document.createElement('div'); box.className = 'rv-infobox'; box.innerHTML = INFO; box.hidden = !open;
-      h.appendChild(box);
-      b.addEventListener('click', () => {
-        open = !open; box.hidden = !open; b.setAttribute('aria-expanded', open ? 'true' : 'false');
+    PANELS.forEach((P, i) => {
+      document.querySelectorAll(P.sel).forEach(h => {
+        if (h.dataset.enh) return;
+        h.dataset.enh = '1';
+        const t = h.querySelector('.rv-title'); if (!t) return;
+        const wrap = document.createElement('div'); wrap.className = 'rv-titlebar';
+        t.before(wrap); wrap.appendChild(t);
+        t.textContent = P.title;
+        h.querySelectorAll('.rv-sub').forEach(s => {
+          // статичную инструкцию прячем, строку со счётчиками (читано N правил…) оставляем
+          if (P.hideSub === true || (P.hideSub === 'static' && /^Отметь/.test(s.textContent.trim()))) s.hidden = true;
+        });
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'rv-info'; b.textContent = 'i';
+        b.setAttribute('aria-label', P.label); b.setAttribute('aria-expanded', open[i] ? 'true' : 'false');
+        wrap.appendChild(b);
+        const box = document.createElement('div'); box.className = 'rv-infobox'; box.innerHTML = P.info; box.hidden = !open[i];
+        h.appendChild(box);
+        b.addEventListener('click', () => {
+          open[i] = !open[i]; box.hidden = !open[i]; b.setAttribute('aria-expanded', open[i] ? 'true' : 'false');
+        });
       });
     });
   }
