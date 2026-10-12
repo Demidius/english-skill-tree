@@ -83,7 +83,7 @@ if (typeof WORD_TR !== 'undefined') {
 })();
 
 // Единый блок на ПК: «я и мой прогресс» + повторение; на телефоне — полоса прогресса под блоком повторения.
-// Аккаунты — выпадающий список (там же «Выйти»). Фильтры — по кнопке.
+// Аккаунты — выпадающий список (там же «Настройки» и «Выйти»). Фильтры — по кнопке.
 (function () {
   const MQ = window.matchMedia('(min-width: 1000px)');
   const MODES = ['mode-w', 'mode-g'];
@@ -109,8 +109,14 @@ if (typeof WORD_TR !== 'undefined') {
       });
       const lo = document.getElementById('logoutBtn');
       const sep = document.createElement('div'); sep.className = 'acc-sep';
+      if (chips.length) menu.appendChild(sep);
+      const sb = document.querySelector('.modes button[data-mode="s"]');
+      if (sb) {
+        const it = document.createElement('button'); it.type = 'button'; it.className = 'acc-it acc-set'; it.textContent = 'Настройки';
+        if (sb.getAttribute('aria-pressed') === 'true') it.classList.add('on');
+        it.addEventListener('click', () => { close(); sb.click(); }); menu.appendChild(it);
+      }
       if (lo && !lo.hidden) {
-        if (chips.length) menu.appendChild(sep);
         const it = document.createElement('button'); it.type = 'button'; it.className = 'acc-it acc-out'; it.textContent = 'Выйти';
         it.addEventListener('click', () => { close(); lo.click(); }); menu.appendChild(it);
       } else {
