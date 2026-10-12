@@ -280,11 +280,36 @@
   .hub .rvb-due:not(:disabled)::after { top: 50%; transform: translateY(-50%); }
   .hub .rvb-base, .hub .rvb-extra { border-top-width: 2px; }
   .hub .rvb-n { font-size: 1.5rem; }
-  .hub .rvb-base, .hub .rvb-extra { padding-right: 30px; }
+  .hub .rvb-base, .hub .rvb-extra { padding-right: 34px; }
   /* «Правила»: заголовок слева, кнопка отработки справа */
   .hub .practice-panel { display: block; }
   .hub .practice-panel .pr-row { display: grid; grid-template-columns: minmax(280px, 360px) minmax(0, 1fr); column-gap: 22px; align-items: center; }
   .hub .practice-panel .rv-big-one { margin-top: 0; grid-template-columns: 1fr; grid-row: 1; grid-column: 2; }
   .hub .practice-panel .rv-head { grid-row: 1; grid-column: 1; }
   .hub .rvb-mix, .hub .rvb-hint { min-height: 64px; padding-top: 10px; padding-bottom: 10px; }
+}
+
+/* ПК: слева в блоке — аккаунт и переключатель «Правила / Лексика» в стиле остальных кнопок */
+@media (min-width: 1000px) {
+  .hub { grid-template-columns: 150px minmax(220px, 280px) minmax(0, 1fr); }
+  .hub-nav { display: flex; flex-direction: column; gap: 8px; align-self: center; min-width: 0; }
+  .hub-nav .acc-btn { width: 100%; justify-content: space-between; border-radius: 12px; border-width: 2px; padding: 8px 12px; }
+  .modes.in-hub {
+    display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0;
+    background: none; border: 0; box-shadow: none; width: 100%;
+  }
+  .modes.in-hub button {
+    width: 100%; text-align: left; margin: 0;
+    border: 2px solid var(--line); border-radius: 12px; padding: 8px 12px;
+    background: var(--surface-2); color: var(--muted);
+    font: 600 .92rem 'Manrope', sans-serif; cursor: pointer; transition: background .15s, border-color .15s;
+    box-shadow: none; transform: none;
+  }
+  .modes.in-hub button:hover { border-color: var(--muted); color: var(--ink); }
+  .modes.in-hub button[aria-pressed="true"] {
+    border-color: var(--ink); color: var(--ink);
+    background: color-mix(in srgb, var(--ink) 12%, var(--surface-2));
+    box-shadow: 0 2px 0 color-mix(in srgb, var(--ink) 35%, transparent);
+  }
+  .modes.in-hub button[aria-pressed="true"]::before { content: '● '; font-size: .6rem; vertical-align: 2px; color: var(--st-mastered); }
 }
