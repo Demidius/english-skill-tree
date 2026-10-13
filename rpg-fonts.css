@@ -94,15 +94,15 @@ html[data-skin="rpg"] .sp-rpg b { font-size: 1.5rem; }
   html[data-skin="rpg"] .rvb-due .rvb-n { font-size: 1.9rem; }
 }
 
-/* Mobile RPG: increase the type scale by 10%. */
+/* Mobile RPG: 10% larger, then another 25%. */
 @media (max-width: 999px) {
   html:root[data-skin="rpg"] {
-    font-size: 110%;
+    font-size: 137.5%;
   }
   html[data-skin="rpg"] body {
     font-size: 1rem;
   }
   html[data-skin="rpg"] .navrow .modes button {
-    font-size: clamp(.7rem, 3.63vw, .82rem);
+    font-size: clamp(.7rem, 4.5375vw, .82rem);
   }
 }
