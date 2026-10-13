@@ -55,20 +55,51 @@
     });
   }
 
-  // ---- RPG, ПК: уровень под именем и буква в аватаре ----
+  // ---- RPG, ПК: уровень героя в карточке профиля, единый вид блока со шкалами ----
+  const LEGEND = '<span><span class="dot" style="background:var(--st-none)"></span>новое (0)</span>' +
+    '<span><span class="dot" style="background:var(--st-learn)"></span>изучаю (1–4)</span>' +
+    '<span><span class="dot" style="background:var(--st-review)"></span>повторяю (5–9)</span>' +
+    '<span><span class="dot" style="background:var(--st-mastered)"></span>выучено (10)</span>';
+  const setTxt = (el, v) => { if (el && el.textContent !== v) el.textContent = v; };
   function rpgProfile() {
     if (document.documentElement.getAttribute('data-skin') !== 'rpg') return;
+    // выучено слов — основа уровня героя (1 уровень за 50 слов)
+    const wn = document.querySelector('#mode-w .stats-row .num');
+    const wm = ((wn && wn.textContent) || '').match(/выучено\s+(\d+)\s+из\s+(\d+)/);
+    const words = wm ? +wm[1] : 0;
+    const lvl = 1 + Math.floor(words / 50), into = words % 50;
     document.querySelectorAll('.hub').forEach(hub => {
-      const me = hub.querySelector('.hub-me'), row = hub.querySelector('.stats-row'); if (!me || !row) return;
+      const mode = hub.closest('#mode-g') ? 'g' : 'w';
+      const me = hub.querySelector('.hub-me'), row = hub.querySelector('.stats-row'), nav = hub.querySelector('.hub-nav');
+      if (!me || !row) return;
+      // верхняя строка блока со шкалами: что считаем и сколько выучено
       let meta = me.querySelector('.rpg-meta');
       if (!meta) { meta = document.createElement('div'); meta.className = 'rpg-meta'; meta.innerHTML = '<b></b><span></span>'; me.prepend(meta); }
-      const t = (row.querySelector('.num') || {}).textContent || '';
-      let a = '', b = '', m = t.match(/выучено\s+(\d+)\s+из\s+(\d+)/);
-      if (m) { a = 'ур. ' + (1 + Math.floor(+m[1] / 50)); b = m[1] + ' / ' + m[2]; }
-      else if ((m = t.match(/начато\s+(\d+)\s+из\s+(\d+)/))) { a = 'правила'; b = m[1] + ' / ' + m[2]; }
-      const x = meta.children[0], y = meta.children[1];
-      if (x.textContent !== a) x.textContent = a;
-      if (y.textContent !== b) y.textContent = b;
+      let done = 0, total = 0;
+      if (mode === 'w') { if (wm) { done = +wm[1]; total = +wm[2]; } }
+      else {
+        const bar = row.querySelector('.bar');
+        const m = ((bar && bar.title) || '').match(/выучено \(10\):\s*(\d+).*из\s+(\d+)/);
+        if (m) { done = +m[1]; total = +m[2]; }
+      }
+      setTxt(meta.children[0], mode === 'w' ? 'Слова' : 'Правила');
+      setTxt(meta.children[1], 'выучено ' + done + ' / ' + total);
+      // одинаковая легенда в обоих режимах
+      const lg = row.querySelector('.legend');
+      if (lg && lg.dataset.uni !== '1') { lg.innerHTML = LEGEND; lg.dataset.uni = '1'; }
+      // уровень героя под именем
+      if (nav) {
+        let lv = nav.querySelector('.rpg-lvl');
+        if (!lv) {
+          lv = document.createElement('div'); lv.className = 'rpg-lvl';
+          lv.innerHTML = '<b></b><span></span><i><u></u></i>';
+          const acc = nav.querySelector('.acc'); if (acc) acc.after(lv); else nav.prepend(lv);
+        }
+        setTxt(lv.children[0], 'ур. ' + lvl);
+        setTxt(lv.children[1], into + ' / 50 до ' + (lvl + 1) + '-го');
+        const w = (into / 50 * 100).toFixed(0) + '%';
+        if (lv.querySelector('u').style.width !== w) lv.querySelector('u').style.width = w;
+      }
     });
     document.querySelectorAll('.acc-btn').forEach(btn => {
       const n = ((btn.querySelector('.acc-name') || {}).textContent || '').trim();
