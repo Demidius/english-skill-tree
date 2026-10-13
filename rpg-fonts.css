@@ -1,0 +1,95 @@
+/* RPG typography: Pixelify Sans for UI, Press Start 2P for the site title. */
+html:root[data-skin="rpg"] {
+  --f-display: 'Pixelify Sans', 'Manrope', sans-serif;
+  --f-num: 'Pixelify Sans', 'Manrope', sans-serif;
+  --f-mono: 'Pixelify Sans', 'IBM Plex Mono', monospace;
+}
+html[data-skin="rpg"] body {
+  font-family: 'Pixelify Sans', 'Manrope', sans-serif;
+  font-size: 16px;
+}
+html[data-skin="rpg"] :is(
+  h2, h3, .r-h, .help-body h3,
+  button, input, select, textarea, .mono, .progress-big .num,
+  .bhead .root .n, .bhead .root .cnt, .lvl-label .diamond span,
+  .lvl-label .lp, .node, .node .score, .node .status-chip,
+  .node .src, .node .tg, .m-kicker, .m-title, .m-count,
+  .m-score, .m-opt .k, .m-rid, .m-sum, .sess-meta, .mpos,
+  .lpm, .lvn, .wl .chg, .fc .front, .fc .back, .fc .pos,
+  .fc .lvlrow, .grade small, .done-big, .r-level-l,
+  .xsep, .set-card legend, .rv-title, .rvb, .rvb-n,
+  .rvb-l, .rv-tg b, .rv-stats b, .rpg-meta,
+  .rpg-meta b, .rpg-lvl b, .rpg-lvl span, .legend,
+  .bar-ticks .tl, .wlv-c b, .wlv-c span, .wlv-topic,
+  .kok-t, .kok-w b, .skin-h, .sp-rpg, .boot-t, .boot-m
+) {
+  font-family: 'Pixelify Sans', 'Manrope', sans-serif !important;
+}
+html[data-skin="rpg"] h1 {
+  font-family: 'Press Start 2P', 'Courier New', monospace !important;
+}
+html[data-skin="rpg"] :is(.rulepage, .rulepage .r-form, .rf-en, .fc .exs) {
+  font-family: 'Manrope', system-ui, sans-serif !important;
+}
+html[data-skin="rpg"] :is(.rv-title, .set-card legend, .skin-h) {
+  font-size: 1.15rem;
+  line-height: 1.35;
+  font-weight: 600;
+}
+html[data-skin="rpg"] .bhead .root .n {
+  font-size: 1.1rem;
+  line-height: 1.3;
+  font-weight: 600;
+}
+html[data-skin="rpg"] :is(
+  .node .score, .node .status-chip, .node .src, .node .tg,
+  .tbtn, .wbtn.wtest, .xsep, .fc .pos, .grade small
+) {
+  font-size: .8rem;
+}
+html[data-skin="rpg"] :is(.rv-tg b, .rv-stats b) {
+  font-size: 1rem;
+  font-weight: 600;
+}
+html[data-skin="rpg"] .rpg-meta b { font-weight: 600; }
+html[data-skin="rpg"] .sp-rpg b { font-size: 1.5rem; }
+@media (min-width: 1000px) {
+  html[data-skin="rpg"] .hub .rv-title { font-size: 1.2rem; }
+  html[data-skin="rpg"] .hub .rvb-n {
+    font-size: 1.8rem;
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+  html[data-skin="rpg"] #mode-w .hub .rvb .rvb-n {
+    letter-spacing: 0;
+  }
+  html[data-skin="rpg"] .hub .rvb-l {
+    font-size: 1.05rem;
+    line-height: 1.3;
+  }
+  html[data-skin="rpg"] .hub .rv-tg b { font-size: 1.05rem; }
+  html[data-skin="rpg"] .rpg-meta b { font-size: 1.3rem; }
+  html[data-skin="rpg"] #mode-w .rpg-meta b { font-size: 1.3rem; }
+  html[data-skin="rpg"] .rpg-lvl b { font-size: 1rem; }
+  html[data-skin="rpg"] .rpg-lvl span { font-size: .85rem; }
+}
+@media (max-width: 999px) {
+  html[data-skin="rpg"] .bhead .root .n {
+    font-size: 1.1rem;
+    line-height: 1.3;
+    height: 2.6em;
+  }
+  html[data-skin="rpg"][data-wview="levels"] .wlv-c b {
+    font-size: 1.2rem;
+    line-height: 1.3;
+  }
+  html[data-skin="rpg"][data-wview="levels"] #mode-w .wlv-topic {
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+  html[data-skin="rpg"] .rvb-n {
+    font-size: 1.6rem;
+    font-weight: 600;
+  }
+  html[data-skin="rpg"] .rvb-due .rvb-n { font-size: 1.9rem; }
+}
