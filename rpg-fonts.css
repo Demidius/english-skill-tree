@@ -1,11 +1,11 @@
-/* RPG typography: Pixelify Sans for UI, Press Start 2P for the site title. */
+/* RPG typography: Handjet for the interface and site title. */
 html:root[data-skin="rpg"] {
-  --f-display: 'Pixelify Sans', 'Manrope', sans-serif;
-  --f-num: 'Pixelify Sans', 'Manrope', sans-serif;
-  --f-mono: 'Pixelify Sans', 'IBM Plex Mono', monospace;
+  --f-display: 'Handjet', 'Manrope', sans-serif;
+  --f-num: 'Handjet', 'Manrope', sans-serif;
+  --f-mono: 'Handjet', 'IBM Plex Mono', monospace;
 }
 html[data-skin="rpg"] body {
-  font-family: 'Pixelify Sans', 'Manrope', sans-serif;
+  font-family: 'Handjet', 'Manrope', sans-serif;
   font-size: 16px;
 }
 html[data-skin="rpg"] :is(
@@ -23,10 +23,13 @@ html[data-skin="rpg"] :is(
   .bar-ticks .tl, .wlv-c b, .wlv-c span, .wlv-topic,
   .kok-t, .kok-w b, .skin-h, .sp-rpg, .boot-t, .boot-m
 ) {
-  font-family: 'Pixelify Sans', 'Manrope', sans-serif !important;
+  font-family: 'Handjet', 'Manrope', sans-serif !important;
 }
 html[data-skin="rpg"] h1 {
-  font-family: 'Press Start 2P', 'Courier New', monospace !important;
+  font-family: 'Handjet', 'Manrope', sans-serif !important;
+  font-size: 1.4rem;
+  line-height: 1.25;
+  font-weight: 700;
 }
 html[data-skin="rpg"] :is(.rulepage, .rulepage .r-form, .rf-en, .fc .exs) {
   font-family: 'Manrope', system-ui, sans-serif !important;
