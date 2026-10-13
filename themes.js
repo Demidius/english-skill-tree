@@ -38,7 +38,83 @@
     sec.addEventListener('click', ev => { const t = ev.target.closest('.skin-tile'); if (t) set(t.dataset.skin); });
     const intro = wrap.querySelector('.set-intro');
     if (intro) intro.after(sec); else wrap.prepend(sec);
+    // вид таблицы слов на телефоне
+    const vs = document.createElement('section'); vs.className = 'skin-pick wview-pick'; vs.setAttribute('aria-label', 'Таблица слов на телефоне');
+    const cv = getView();
+    vs.innerHTML = '<h3 class="skin-h">Таблица слов на телефоне</h3><p class="skin-note">Как листать «Лексику» на узком экране. Выбор сохраняется на этом устройстве.</p><div class="skin-grid">' +
+      [['topics', 'По темам', 'одна тема, внутри уровни A1–B2'], ['levels', 'По уровням', 'один уровень, внутри все темы']].map(v =>
+        '<button type="button" class="skin-tile wview-tile" data-wview="' + v[0] + '" aria-pressed="' + (v[0] === cv) + '">' +
+        '<span class="skin-prev wv-prev wv-' + v[0] + '"><i></i><i></i><i></i></span><span class="skin-name">' + v[1] + '</span><span class="skin-sub">' + v[2] + '</span></button>').join('') +
+      '</div>';
+    vs.addEventListener('click', ev => { const t = ev.target.closest('.wview-tile'); if (t) setView(t.dataset.wview); });
+    sec.after(vs);
   }
+
+  // ---- «Лексика» на телефоне: по темам (как было) или по уровням ----
+  const VKEY = 'ef_wview', LKEY = 'ef_wlvl', LVS = ['A1', 'A2', 'B1', 'B2'];
+  const LVNAME = { A1: 'Beginner', A2: 'Elementary', B1: 'Intermediate', B2: 'Upper-intermediate' };
+  function getView() { try { return localStorage.getItem(VKEY) === 'levels' ? 'levels' : 'topics'; } catch (e) { return 'topics'; } }
+  function getLv() { try { const v = localStorage.getItem(LKEY); return LVS.includes(v) ? v : 'A1'; } catch (e) { return 'A1'; } }
+  function setView(v) {
+    try { localStorage.setItem(VKEY, v); } catch (e) {}
+    document.querySelectorAll('.wview-tile').forEach(t => t.setAttribute('aria-pressed', String(t.dataset.wview === v)));
+    levelView();
+  }
+  function setLv(l) { try { localStorage.setItem(LKEY, l); } catch (e) {} levelView(); }
+  function levelView() {
+    const de = document.documentElement;
+    const on = getView() === 'levels';
+    if (on) { if (de.getAttribute('data-wview') !== 'levels') de.setAttribute('data-wview', 'levels'); }
+    else if (de.hasAttribute('data-wview')) de.removeAttribute('data-wview');
+    const m = document.getElementById('mode-w'); if (!m) return;
+    const tree = m.querySelector('.tree'); if (!tree) return;
+    const lv = getLv();
+    if (tree.dataset.lv !== lv) tree.dataset.lv = lv;
+    // переключатель уровней над таблицей
+    let nav = m.querySelector('.wlv-nav');
+    if (!nav) {
+      nav = document.createElement('div'); nav.className = 'wlv-nav';
+      nav.innerHTML = '<button type="button" class="wlv-a" data-d="-1" aria-label="Предыдущий уровень">‹</button>' +
+        '<div class="wlv-c"><b></b><span></span></div>' +
+        '<button type="button" class="wlv-a" data-d="1" aria-label="Следующий уровень">›</button>';
+      nav.addEventListener('click', ev => {
+        const b = ev.target.closest('.wlv-a'); if (!b) return;
+        const i = LVS.indexOf(getLv()) + (+b.dataset.d);
+        if (i >= 0 && i < LVS.length) { setLv(LVS[i]); const t = m.querySelector('.wlv-nav'); if (t) t.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
+      });
+    }
+    if (nav.nextElementSibling !== tree) tree.before(nav);
+    if (nav.dataset.lv !== lv) {
+      nav.dataset.lv = lv;
+      nav.querySelector('b').textContent = lv + ' · ' + LVNAME[lv];
+      nav.querySelector('span').textContent = (LVS.indexOf(lv) + 1) + ' / ' + LVS.length;
+      nav.querySelector('[data-d="-1"]').disabled = lv === LVS[0];
+      nav.querySelector('[data-d="1"]').disabled = lv === LVS[LVS.length - 1];
+    }
+    // подписи тем над карточками уровня
+    if (!on) return;
+    const names = {};
+    tree.querySelectorAll(':scope > .bhead').forEach(h => {
+      const n = h.querySelector('.root .n'), r = h.querySelector('.root');
+      names[h.dataset.branch] = { n: n ? n.textContent.trim() : h.dataset.branch, c: r ? getComputedStyle(r).backgroundColor : '' };
+    });
+    tree.querySelectorAll(':scope > .cell').forEach(cell => {
+      const info = names[cell.dataset.branch]; if (!info) return;
+      let t = cell.firstElementChild;
+      if (!t || !t.classList.contains('wlv-topic')) { t = document.createElement('div'); t.className = 'wlv-topic'; cell.prepend(t); }
+      if (t.textContent !== info.n) t.textContent = info.n;
+      if (info.c && t.style.getPropertyValue('--bc') !== info.c) t.style.setProperty('--bc', info.c);
+    });
+  }
+  // в режиме «по уровням» кнопки тем в полосе прокручивают к теме внутри уровня
+  document.addEventListener('click', ev => {
+    const chip = ev.target.closest('#mode-w .jumpnav button[data-key]');
+    if (!chip || getView() !== 'levels' || window.matchMedia('(min-width: 1000px)').matches) return;
+    setTimeout(() => {
+      const cell = document.querySelector('#mode-w .tree > .cell.band-' + getLv() + '[data-branch="' + chip.dataset.key + '"]');
+      if (cell) cell.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    }, 60);
+  });
 
   // ---- быстрый пункт в списке аккаунта: переключает оформления по кругу ----
   function ensureMenu() {
@@ -109,7 +185,7 @@
   }
 
   apply(get());
-  const run = () => { ensureSettings(); ensureMenu(); rpgProfile(); };
+  const run = () => { ensureSettings(); ensureMenu(); rpgProfile(); levelView(); };
   run();
   new MutationObserver(run).observe(document.body, { childList: true, subtree: true });
 })();
