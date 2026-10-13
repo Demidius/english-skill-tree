@@ -149,7 +149,18 @@ html[data-skin="rpg"] .rvb-l { font-weight: 600; }
   html[data-skin="rpg"] .hub-nav { grid-column: 1; grid-row: 1; align-self: stretch; display: flex; flex-direction: column; justify-content: center; gap: 10px; padding: 10px; border: 3px solid #8D99AE; background: #26262B; }
   html[data-skin="rpg"] .hub-me { grid-column: 3; grid-row: 1; align-self: stretch; justify-content: space-evenly; gap: 6px; padding: 12px 14px; border: 3px solid #8D99AE; background: #26262B; }
   html[data-skin="rpg"] .hub-me .stats-row { display: contents; }
-  html[data-skin="rpg"] .hub-work { grid-column: 2; grid-row: 1; align-self: stretch; min-height: 196px; display: flex; flex-direction: column; justify-content: center; }
+  html[data-skin="rpg"] .hub-work { grid-column: 2; grid-row: 1; align-self: stretch; height: 196px; display: flex; flex-direction: column; justify-content: flex-start; }
+  html[data-skin="rpg"] .hub-work > .review-panel { flex: 1; min-height: 0; }
+  /* заголовок блока всегда на одном месте; объяснение (i) открывается поверх, не раздвигая шапку */
+  html[data-skin="rpg"] .hub .rv-head { position: relative; }
+  html[data-skin="rpg"] .hub .rv-infobox {
+    position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 30; max-height: 60vh; overflow: auto;
+    background: #26262B; border: 3px solid #8D99AE; box-shadow: 4px 4px 0 #101013; margin: 0;
+  }
+  /* «Правила»: подсказка/кнопка занимает всё место под заголовком */
+  html[data-skin="rpg"] .hub .practice-panel { display: flex; flex-direction: column; }
+  html[data-skin="rpg"] .hub .practice-panel .pr-row { flex: 1; grid-template-rows: auto minmax(0, 1fr); align-items: stretch; }
+  html[data-skin="rpg"] .hub .practice-panel .rv-big-one, html[data-skin="rpg"] .hub .practice-panel .rv-big-one .rvb { height: 100%; }
 
   /* профиль: квадратный аватар с буквой, имя */
   html[data-skin="rpg"] .hub-nav .acc { padding: 0; border: 0; }
