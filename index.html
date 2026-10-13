@@ -30,6 +30,9 @@
 html:not(.booting):not(.auth-wait) .boot{opacity:0;pointer-events:none;}
 html.booting body, html.auth-wait body{overflow:hidden;}
 .boot-m{font:400 .8rem 'IBM Plex Mono',ui-monospace,monospace;opacity:.6;}
+/* смена аккаунта: кнопки действий притушены, пока грузится прогресс */
+html.switching :is(.rv-big .rvb, .rv-acts .m-btn, [data-mix], .tbtn, .lvstep, .rread){opacity:.4 !important;pointer-events:none !important;cursor:progress !important;filter:grayscale(.5);transition:opacity .15s}
+html.switching .acc-btn::after{content:'…';margin-left:4px;opacity:.8}
 </style>
 </head>
 <body>
@@ -101,7 +104,7 @@ html.booting body, html.auth-wait body{overflow:hidden;}
 <script src="migration.js"></script>
 <script src="app.js"></script>
 <script src="extras.js?v=20261013-1"></script>
-<script src="themes.js?v=20261013-12"></script>
+<script src="themes.js?v=20261013-13"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
