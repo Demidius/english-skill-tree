@@ -109,3 +109,37 @@ html[data-skin="rpg"] .sp-rpg b { font-size: 1.5rem; }
     font-size: clamp(.7rem, 4.5375vw, .82rem);
   }
 }
+
+/* Mobile RPG: readable labels inside buttons. */
+@media (max-width: 999px) {
+  html[data-skin="rpg"] .navrow .modes button {
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.2;
+    min-height: 44px;
+    padding: 8px 6px;
+  }
+  html[data-skin="rpg"] .navrow .acc-btn {
+    font-size: 1rem;
+    line-height: 1.2;
+    min-height: 44px;
+  }
+  html[data-skin="rpg"] :is(.jumpnav button, .filters-toggle) {
+    font-size: 1rem;
+    line-height: 1.2;
+    min-height: 40px;
+  }
+  html[data-skin="rpg"] .rv-tg b {
+    font-size: 1.2rem;
+    line-height: 1.2;
+  }
+  html[data-skin="rpg"] .rvb-l {
+    font-size: 1.1rem;
+    line-height: 1.25;
+  }
+  html[data-skin="rpg"] :is(.wbtn.wtest, .tbtn) {
+    font-size: 1rem;
+    line-height: 1.2;
+    min-height: 32px;
+  }
+}
