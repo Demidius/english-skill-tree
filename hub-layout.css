@@ -26,3 +26,16 @@
   html[data-skin="rpg"] .hub .rvb-base .rvb-l,
   html[data-skin="rpg"] .hub .rvb-extra .rvb-l { font-size: clamp(1.05rem, 1.15vw, 1.6rem); }
 }
+
+/* RPG, ПК: блок «Слова» справа — крупнее шрифты, чтобы занять всё место */
+@media (min-width: 1000px) {
+  html[data-skin="rpg"] .hub-me { gap: 10px; }
+  html[data-skin="rpg"] .rpg-meta { font-size: .95rem; }
+  html[data-skin="rpg"] .rpg-meta b { font-size: .85rem; }
+  html[data-skin="rpg"] .hub .stats-row .bar { height: 16px; }
+  html[data-skin="rpg"] .hub-me .bar-ticks { height: 26px; }
+  html[data-skin="rpg"] .hub-me .bar-ticks .tk-major { height: 16px; top: -4px; }
+  html[data-skin="rpg"] .hub-me .bar-ticks .tl { top: 12px; font-size: .74rem; }
+  html[data-skin="rpg"] .hub .legend { grid-template-columns: auto auto; justify-content: space-between; font-size: .8rem; gap: 8px 10px; white-space: nowrap; }
+  html[data-skin="rpg"] .hub .legend .dot { width: 12px; height: 12px; }
+}
