@@ -1,0 +1,234 @@
+/* RPG hub: consistent spacing, readable type and responsive panels. */
+@media (min-width: 1000px) {
+  html[data-skin="rpg"] #mode-w .hub {
+    grid-template-columns: 184px minmax(0, 1fr) 288px;
+    grid-template-rows: auto;
+    gap: 24px;
+    padding: 20px;
+    border: 1px solid #626778;
+    background: #23242c;
+    box-shadow: 0 4px 0 #14151b;
+  }
+  html[data-skin="rpg"] #mode-w .hub-nav {
+    padding: 0;
+    border: 0;
+    background: none;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  html[data-skin="rpg"] #mode-w .hub-nav .acc-btn {
+    padding: 8px;
+    border: 1px solid #555968;
+    background: #1b1c23;
+    min-height: 56px;
+  }
+  html[data-skin="rpg"] #mode-w .hub-nav .acc-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1rem;
+  }
+  html[data-skin="rpg"] #mode-w .rpg-lvl {
+    gap: 8px;
+    padding: 0;
+    grid-template-columns: 1fr;
+  }
+  html[data-skin="rpg"] #mode-w .rpg-lvl span {
+    text-align: left;
+    font-size: .78rem;
+  }
+  html[data-skin="rpg"] #mode-w .modes.in-hub {
+    border: 1px solid #484c5a;
+    padding: 4px;
+    gap: 4px;
+  }
+  html[data-skin="rpg"] #mode-w .modes.in-hub button {
+    min-height: 40px;
+    font-size: .92rem;
+    padding: 8px 12px;
+  }
+  html[data-skin="rpg"] #mode-w .hub-work {
+    height: auto;
+    min-width: 0;
+    padding: 0;
+  }
+  html[data-skin="rpg"] #mode-w .hub .review-panel:not(.practice-panel) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-areas: "head" "lvls" "big" !important;
+    grid-template-rows: auto auto minmax(128px, 1fr);
+    gap: 16px;
+    align-items: stretch;
+  }
+  html[data-skin="rpg"] #mode-w .hub .rv-title {
+    font: 700 1.1rem/1.4 'Manrope', sans-serif;
+    color: #f1f0f6;
+  }
+  html[data-skin="rpg"] #mode-w .rv-info {
+    border: 1px solid #656b7f;
+    color: #bfc5d7;
+    width: 30px;
+    height: 30px;
+  }
+  html[data-skin="rpg"] #mode-w .hub .review-panel:not(.practice-panel) .rv-lvls {
+    grid-area: lvls;
+    justify-self: start;
+    align-self: start;
+    width: 100%;
+    max-width: 520px;
+    margin: 0;
+    gap: 8px;
+  }
+  html[data-skin="rpg"] #mode-w .hub .review-panel:not(.practice-panel) .rv-tg {
+    min-height: 44px;
+    padding: 10px 12px !important;
+    justify-content: center;
+    align-items: center;
+    border-width: 1px;
+  }
+  html[data-skin="rpg"] #mode-w .hub .rv-tg b {
+    font-size: .85rem;
+    line-height: 1.4;
+  }
+  html[data-skin="rpg"] #mode-w .hub .review-panel:not(.practice-panel) .rv-big {
+    margin: 0;
+    align-self: stretch;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: 12px;
+  }
+  html[data-skin="rpg"] #mode-w .hub .rvb {
+    min-height: 128px;
+    padding: 18px 32px 18px 18px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    border: 1px solid var(--c);
+    background: color-mix(in srgb, var(--c) 16%, #1b1c23);
+    color: #f4f1f7;
+    box-shadow: 0 3px 0 #14151b;
+    transition: background .15s, border-color .15s;
+  }
+  html[data-skin="rpg"] #mode-w .hub .rvb .rvb-n {
+    order: 0;
+    font: 700 clamp(1.5rem, 1.9vw, 2rem)/1.15 'IBM Plex Mono', monospace;
+    letter-spacing: -.04em;
+    color: inherit;
+  }
+  html[data-skin="rpg"] #mode-w .hub .rvb .rvb-n small {
+    font-size: .52em;
+    opacity: .7;
+  }
+  html[data-skin="rpg"] #mode-w .hub .rvb .rvb-l {
+    order: 1;
+    font: 600 1rem/1.35 'Manrope', sans-serif;
+    color: inherit;
+  }
+  html[data-skin="rpg"] #mode-w .hub .rvb-due {
+    --c: #f36b91;
+    border-width: 2px;
+    background: #633046;
+  }
+  html[data-skin="rpg"] #mode-w .hub .rvb-base { --c: #4cc9f0; }
+  html[data-skin="rpg"] #mode-w .hub .rvb-extra { --c: #ae8ce4; }
+  html[data-skin="rpg"] #mode-w .hub .rvb:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--c) 28%, #1b1c23);
+  }
+  html[data-skin="rpg"] #mode-w .hub .rvb:focus-visible,
+  html[data-skin="rpg"] #mode-w .hub .rv-tg:focus-visible {
+    outline: 2px solid #ffd166;
+    outline-offset: 4px;
+  }
+  html[data-skin="rpg"] #mode-w .hub .rvb:not(:disabled)::after {
+    top: auto;
+    bottom: 20px;
+    right: 14px;
+    transform: none;
+    color: var(--c);
+  }
+  html[data-skin="rpg"] #mode-w .hub .rvb:disabled {
+    border: 1px dashed #535868;
+    background: #262831;
+    color: #abb1c4;
+    box-shadow: none;
+  }
+  html[data-skin="rpg"] #mode-w .hub-me {
+    padding: 0 0 0 20px;
+    border: 0;
+    border-left: 1px solid #484c5a;
+    background: none;
+    box-shadow: none;
+    justify-content: center;
+    gap: 14px;
+  }
+  html[data-skin="rpg"] #mode-w .rpg-meta {
+    gap: 10px;
+    padding: 0;
+    border: 0;
+  }
+  html[data-skin="rpg"] #mode-w .rpg-meta b {
+    font-size: .85rem;
+    line-height: 1.5;
+    text-shadow: none;
+  }
+  html[data-skin="rpg"] #mode-w .rpg-meta span {
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+  html[data-skin="rpg"] #mode-w .hub .stats-row .bar {
+    height: 16px;
+    border: 1px solid #101013;
+    margin-top: 0;
+    box-shadow: none;
+  }
+  html[data-skin="rpg"] #mode-w .hub-me .bar-ticks .tk-major {
+    height: 16px;
+    top: -16px;
+    opacity: .65;
+  }
+  html[data-skin="rpg"] #mode-w .hub .legend {
+    gap: 8px 12px;
+    font-size: .8rem;
+  }
+  html[data-skin="rpg"] #mode-w .hub .legend > span {
+    padding: 4px 0;
+    min-height: 30px;
+    border: 0;
+    background: none;
+    box-shadow: none;
+  }
+}
+@media (min-width: 1000px) and (max-width: 1199px) {
+  html[data-skin="rpg"] #mode-w .hub {
+    grid-template-columns: 184px minmax(0, 1fr);
+    gap: 20px;
+  }
+  html[data-skin="rpg"] #mode-w .hub-me {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 24px;
+    padding: 16px 0 0;
+    border-left: 0;
+    border-top: 1px solid #484c5a;
+  }
+  html[data-skin="rpg"] #mode-w .hub .legend {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 999px) {
+  html[data-skin="rpg"] #mode-w .rv-title {
+    font: 700 1rem/1.4 'Manrope', sans-serif;
+  }
+  html[data-skin="rpg"] #mode-w .rvb {
+    border-width: 1px;
+    box-shadow: 0 3px 0 #14151b;
+  }
+  html[data-skin="rpg"] #mode-w .rvb:focus-visible {
+    outline: 2px solid #ffd166;
+    outline-offset: 3px;
+  }
+}
