@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<script>document.documentElement.classList.add('booting');try{var __s=localStorage.getItem('ef_skin')||'rpg';if(__s!=='classic')document.documentElement.setAttribute('data-skin',__s);if(localStorage.getItem('ef_wview')==='levels')document.documentElement.setAttribute('data-wview','levels')}catch(e){document.documentElement.setAttribute('data-skin','rpg')}</script>
+<script>document.documentElement.classList.add('booting');try{var __s=localStorage.getItem('ef_skin')||'rpg';if(__s!=='classic')document.documentElement.setAttribute('data-skin',__s);if(localStorage.getItem('ef_wview')!=='topics')document.documentElement.setAttribute('data-wview','levels')}catch(e){document.documentElement.setAttribute('data-skin','rpg');document.documentElement.setAttribute('data-wview','levels')}</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>English File · Skill Tree</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -100,7 +100,7 @@ html.booting body{overflow:hidden;}
 <script src="migration.js"></script>
 <script src="app.js"></script>
 <script src="extras.js?v=20261013-1"></script>
-<script src="themes.js?v=20261013-10"></script>
+<script src="themes.js?v=20261013-11"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
