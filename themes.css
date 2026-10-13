@@ -249,3 +249,43 @@ html[data-skin="rpg"] .rvb-l { font-weight: 600; }
   html[data-wview="levels"][data-skin] #mode-w .wlv-topic { font-family: var(--f-display); }
   html[data-wview="levels"][data-skin="rpg"] #mode-w .wlv-topic { font-size: .66rem; line-height: 1.6; padding: 8px 10px; }
 }
+
+/* ======================================================================
+   Телефон: «кнопки веток» — [‹]  название (i) / счётчик / полоса  [›]
+   (ветки в «Правилах» и «Лексике» по темам, переключатель уровней в «Лексике» по уровням)
+   ====================================================================== */
+@media (max-width: 999px) {
+  .bhead .root {
+    display: grid; grid-template-columns: 54px minmax(0, 1fr) auto 54px;
+    grid-template-areas: "prev title info next" "prev ru ru next" "prev cnt cnt next" "prev pb pb next";
+    column-gap: 10px; align-items: center; padding: 10px;
+  }
+  .bhead .root .mnav { display: contents; }
+  .bhead .root .mpos { display: none; }
+  .bhead .root .marrow { grid-area: prev; width: 100%; height: 100%; min-height: 72px; margin: 0; border-width: 2px; border-radius: 10px; font-size: 2rem; }
+  .bhead .root .marrow[data-dir="1"] { grid-area: next; }
+  .bhead .root .n { grid-area: title; padding-right: 0; font-size: 1.25rem; align-self: end; }
+  .bhead .root .info { grid-area: info; position: static; align-self: start; margin: 0; }
+  .bhead .root .ru { grid-area: ru; }
+  .bhead .root .cnt { grid-area: cnt; margin-top: 6px; padding-top: 0; }
+  .bhead .root .pb { grid-area: pb; }
+  html[data-skin="rpg"] .bhead .root .n { font-size: .78rem; }
+
+  html[data-wview="levels"] #mode-w .wlv-nav {
+    --lvc: var(--a1);
+    display: grid; grid-template-columns: 54px minmax(0, 1fr) 54px; column-gap: 10px; align-items: stretch;
+    padding: 10px; border: 2px solid var(--lvc); border-left-width: 2px;
+  }
+  html[data-wview="levels"] #mode-w .wlv-nav[data-lv="A2"] { --lvc: var(--a2); }
+  html[data-wview="levels"] #mode-w .wlv-nav[data-lv="B1"] { --lvc: var(--b1); }
+  html[data-wview="levels"] #mode-w .wlv-nav[data-lv="B2"] { --lvc: var(--b2); }
+  html[data-wview="levels"] .wlv-a {
+    width: 100%; height: auto; min-height: 72px; border-radius: 10px; border: 2px solid var(--lvc);
+    background: color-mix(in srgb, var(--lvc) 18%, var(--surface-2)); font-size: 2rem;
+  }
+  html[data-wview="levels"] .wlv-c { align-items: flex-start; justify-content: center; gap: 4px; text-align: left; }
+  html[data-wview="levels"] .wlv-c b { font-size: 1.25rem; line-height: 1.2; }
+  html[data-wview="levels"] .wlv-c span { font-size: .74rem; }
+  html[data-wview="levels"] .wlv-pb { display: block; width: 100%; height: 4px; margin-top: 2px; background: var(--line); border-radius: 999px; overflow: hidden; }
+  html[data-wview="levels"] .wlv-pb u { display: block; height: 100%; background: var(--lvc); text-decoration: none; }
+}
