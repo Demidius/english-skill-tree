@@ -1,0 +1,28 @@
+/* ======================================================================
+   RPG, широкий экран: кнопки уровней A1–B2 — в верхней строке справа от заголовка,
+   под ними на всю ширину три крупные кнопки с увеличенными подписями и цифрами
+   ====================================================================== */
+@media (min-width: 1400px) {
+  html[data-skin="rpg"] .hub .review-panel:not(.practice-panel) {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-areas: "head" "big" !important;
+    grid-template-rows: auto minmax(0, 1fr);
+    row-gap: 12px; align-items: stretch;
+  }
+  /* уровни — в той же строке, что и заголовок, прижаты вправо (место под кнопку (i) оставлено) */
+  html[data-skin="rpg"] .hub .review-panel:not(.practice-panel) .rv-lvls {
+    grid-area: 1 / 1; justify-self: end; align-self: center;
+    width: min(56%, 900px); max-width: none; margin-right: 52px; z-index: 2; gap: 10px;
+  }
+  html[data-skin="rpg"] .hub .review-panel:not(.practice-panel) .rv-tg { padding: 10px 6px !important; min-height: 52px; justify-content: center; }
+  html[data-skin="rpg"] .hub .rv-tg b { font-size: clamp(.95rem, 1.05vw, 1.4rem); }
+  html[data-skin="rpg"] .hub .review-panel:not(.practice-panel) .rv-big { margin-top: 0; align-self: stretch; }
+
+  /* крупнее подписи и цифры на кнопках */
+  html[data-skin="rpg"] .hub .rvb-due .rvb-n { font-size: clamp(1.3rem, 1.6vw, 2.2rem); }
+  html[data-skin="rpg"] .hub .rvb-due .rvb-l { font-size: clamp(1.2rem, 1.3vw, 1.8rem); }
+  html[data-skin="rpg"] .hub .rvb-base .rvb-n,
+  html[data-skin="rpg"] .hub .rvb-extra .rvb-n { font-size: clamp(1.4rem, 1.8vw, 2.4rem); }
+  html[data-skin="rpg"] .hub .rvb-base .rvb-l,
+  html[data-skin="rpg"] .hub .rvb-extra .rvb-l { font-size: clamp(1.05rem, 1.15vw, 1.6rem); }
+}
