@@ -117,3 +117,29 @@
     box-shadow: 0 0 0 2px #101013;
   }
 }
+
+/* RPG: подписи уровней отдельно от полосы прогресса */
+@media (min-width: 1000px) {
+  html[data-skin="rpg"] #mode-w .hub-me .bar-ticks {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    height: 44px;
+    margin-top: 0;
+    padding-top: 10px;
+    box-sizing: border-box;
+  }
+  html[data-skin="rpg"] #mode-w .hub-me .bar-ticks .tl {
+    position: static;
+    transform: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: .8rem;
+    line-height: 1;
+  }
+  html[data-skin="rpg"] #mode-w .hub-me .bar-ticks .tk-major {
+    top: -20px;
+    height: 20px;
+  }
+}
