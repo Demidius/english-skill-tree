@@ -1,14 +1,15 @@
-// Переключение оформлений: «Как сейчас» / «Тетрадь» / «RPG».
+// Переключение оформлений: «RPG» (по умолчанию) / «Классика» / «Тетрадь».
 // Выбор хранится в браузере (ef_skin), применяется атрибутом data-skin на <html>.
 (function () {
   const KEY = 'ef_skin';
+  const DEF = 'rpg'; // оформление по умолчанию — для тех, кто ещё ничего не выбирал
   const SKINS = [
-    { id: 'classic',  name: 'Как сейчас', sub: 'тёмный, цвета земли', bg: '#1c1a16', prev: '<b>Aa</b><i></i><i></i>' },
+    { id: 'classic',  name: 'Классика',   sub: 'тёмный, цвета земли', bg: '#1c1a16', prev: '<b>Aa</b><i></i><i></i>' },
     { id: 'notebook', name: 'Тетрадь',    sub: 'клетка и маркер',     bg: '#FBFCFF', prev: '<b>Aa</b><i></i><i></i>' },
     { id: 'rpg',      name: 'RPG',        sub: 'пиксели и квесты',    bg: '#1C1C20', prev: '<b>Aa</b><i></i><i></i>' },
   ];
-  const byId = id => SKINS.find(s => s.id === id) || SKINS[0];
-  function get() { try { return byId(localStorage.getItem(KEY)).id; } catch (e) { return 'classic'; } }
+  const byId = id => SKINS.find(s => s.id === id) || SKINS.find(s => s.id === DEF);
+  function get() { try { return byId(localStorage.getItem(KEY) || DEF).id; } catch (e) { return DEF; } }
   function apply(id) {
     const de = document.documentElement;
     if (id === 'classic') de.removeAttribute('data-skin'); else de.setAttribute('data-skin', id);
