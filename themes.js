@@ -42,7 +42,7 @@
     const vs = document.createElement('section'); vs.className = 'skin-pick wview-pick'; vs.setAttribute('aria-label', 'Таблица слов на телефоне');
     const cv = getView();
     vs.innerHTML = '<h3 class="skin-h">Таблица слов на телефоне</h3><p class="skin-note">Как листать «Лексику» на узком экране. Выбор сохраняется на этом устройстве.</p><div class="skin-grid">' +
-      [['topics', 'По темам', 'одна тема, внутри уровни A1–B2'], ['levels', 'По уровням', 'один уровень, внутри все темы']].map(v =>
+      [['levels', 'По уровням', 'один уровень, внутри все темы'], ['topics', 'По темам', 'одна тема, внутри уровни A1–B2']].map(v =>
         '<button type="button" class="skin-tile wview-tile" data-wview="' + v[0] + '" aria-pressed="' + (v[0] === cv) + '">' +
         '<span class="skin-prev wv-prev wv-' + v[0] + '"><i></i><i></i><i></i></span><span class="skin-name">' + v[1] + '</span><span class="skin-sub">' + v[2] + '</span></button>').join('') +
       '</div>';
@@ -53,7 +53,8 @@
   // ---- «Лексика» на телефоне: по темам (как было) или по уровням ----
   const VKEY = 'ef_wview', LKEY = 'ef_wlvl', LVS = ['A1', 'A2', 'B1', 'B2'];
   const LVNAME = { A1: 'Beginner', A2: 'Elementary', B1: 'Intermediate', B2: 'Upper-intermediate' };
-  function getView() { try { return localStorage.getItem(VKEY) === 'levels' ? 'levels' : 'topics'; } catch (e) { return 'topics'; } }
+  // по умолчанию — «по уровням»; «по темам» только если выбрано вручную
+  function getView() { try { return localStorage.getItem(VKEY) === 'topics' ? 'topics' : 'levels'; } catch (e) { return 'levels'; } }
   function getLv() { try { const v = localStorage.getItem(LKEY); return LVS.includes(v) ? v : 'A1'; } catch (e) { return 'A1'; } }
   function setView(v) {
     try { localStorage.setItem(VKEY, v); } catch (e) {}
