@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<script>document.documentElement.classList.add('booting');try{var __s=localStorage.getItem('ef_skin')||'rpg';if(__s!=='classic')document.documentElement.setAttribute('data-skin',__s);if(localStorage.getItem('ef_wview')!=='topics')document.documentElement.setAttribute('data-wview','levels')}catch(e){document.documentElement.setAttribute('data-skin','rpg');document.documentElement.setAttribute('data-wview','levels')}</script>
+<script>document.documentElement.classList.add('booting','auth-wait');setTimeout(function(){document.documentElement.classList.remove('auth-wait')},9000);try{var __s=localStorage.getItem('ef_skin')||'rpg';if(__s!=='classic')document.documentElement.setAttribute('data-skin',__s);if(localStorage.getItem('ef_wview')!=='topics')document.documentElement.setAttribute('data-wview','levels')}catch(e){document.documentElement.setAttribute('data-skin','rpg');document.documentElement.setAttribute('data-wview','levels')}</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>English File · Skill Tree</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -27,12 +27,13 @@
 .boot-t{font:600 1.6rem/1.2 'Fraunces',Georgia,serif;letter-spacing:.01em;}
 .boot-s{width:34px;height:34px;border-radius:50%;border:3px solid color-mix(in srgb,currentColor 20%,transparent);border-top-color:var(--st-mastered,#4a8a5a);animation:bootspin .8s linear infinite;}
 @keyframes bootspin{to{transform:rotate(360deg)}}
-html:not(.booting) .boot{opacity:0;pointer-events:none;}
-html.booting body{overflow:hidden;}
+html:not(.booting):not(.auth-wait) .boot{opacity:0;pointer-events:none;}
+html.booting body, html.auth-wait body{overflow:hidden;}
+.boot-m{font:400 .8rem 'IBM Plex Mono',ui-monospace,monospace;opacity:.6;}
 </style>
 </head>
 <body>
-<div class="boot" aria-hidden="true"><div class="boot-t">English File · Skill Tree</div><div class="boot-s"></div></div>
+<div class="boot" aria-hidden="true"><div class="boot-t">English File · Skill Tree</div><div class="boot-s"></div><div class="boot-m">загружаю прогресс…</div></div>
 
 <header class="top">
   <div class="title-row">
@@ -100,7 +101,7 @@ html.booting body{overflow:hidden;}
 <script src="migration.js"></script>
 <script src="app.js"></script>
 <script src="extras.js?v=20261013-1"></script>
-<script src="themes.js?v=20261013-11"></script>
+<script src="themes.js?v=20261013-12"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
