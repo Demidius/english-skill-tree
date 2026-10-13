@@ -15,6 +15,7 @@
     const m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute('content', byId(id).bg);
     document.querySelectorAll('.skin-tile').forEach(t => t.setAttribute('aria-pressed', String(t.dataset.skin === id)));
     document.querySelectorAll('.acc-skin').forEach(i => { i.textContent = 'Оформление: ' + byId(id).name; });
+    if (typeof rpgProfile === 'function') rpgProfile();
   }
   function set(id) {
     try { localStorage.setItem(KEY, id); } catch (e) {}
@@ -53,8 +54,30 @@
     });
   }
 
+  // ---- RPG, ПК: уровень под именем и буква в аватаре ----
+  function rpgProfile() {
+    if (document.documentElement.getAttribute('data-skin') !== 'rpg') return;
+    document.querySelectorAll('.hub').forEach(hub => {
+      const me = hub.querySelector('.hub-me'), row = hub.querySelector('.stats-row'); if (!me || !row) return;
+      let meta = me.querySelector('.rpg-meta');
+      if (!meta) { meta = document.createElement('div'); meta.className = 'rpg-meta'; meta.innerHTML = '<b></b><span></span>'; me.prepend(meta); }
+      const t = (row.querySelector('.num') || {}).textContent || '';
+      let a = '', b = '', m = t.match(/выучено\s+(\d+)\s+из\s+(\d+)/);
+      if (m) { a = 'ур. ' + (1 + Math.floor(+m[1] / 50)); b = m[1] + ' / ' + m[2]; }
+      else if ((m = t.match(/начато\s+(\d+)\s+из\s+(\d+)/))) { a = 'правила'; b = m[1] + ' / ' + m[2]; }
+      const x = meta.children[0], y = meta.children[1];
+      if (x.textContent !== a) x.textContent = a;
+      if (y.textContent !== b) y.textContent = b;
+    });
+    document.querySelectorAll('.acc-btn').forEach(btn => {
+      const n = ((btn.querySelector('.acc-name') || {}).textContent || '').trim();
+      const ini = (n[0] || '?').toUpperCase();
+      if (btn.dataset.ini !== ini) btn.dataset.ini = ini;
+    });
+  }
+
   apply(get());
-  const run = () => { ensureSettings(); ensureMenu(); };
+  const run = () => { ensureSettings(); ensureMenu(); rpgProfile(); };
   run();
   new MutationObserver(run).observe(document.body, { childList: true, subtree: true });
 })();
