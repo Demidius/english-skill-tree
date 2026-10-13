@@ -71,12 +71,12 @@
     const tree = m.querySelector('.tree'); if (!tree) return;
     const lv = getLv();
     if (tree.dataset.lv !== lv) tree.dataset.lv = lv;
-    // переключатель уровней над таблицей
+    // переключатель уровней над таблицей: [‹]  A1 · Beginner / счётчик / полоса  [›]
     let nav = m.querySelector('.wlv-nav');
     if (!nav) {
       nav = document.createElement('div'); nav.className = 'wlv-nav';
       nav.innerHTML = '<button type="button" class="wlv-a" data-d="-1" aria-label="Предыдущий уровень">‹</button>' +
-        '<div class="wlv-c"><b></b><span></span></div>' +
+        '<div class="wlv-c"><b></b><span></span><i class="wlv-pb"><u></u></i></div>' +
         '<button type="button" class="wlv-a" data-d="1" aria-label="Следующий уровень">›</button>';
       nav.addEventListener('click', ev => {
         const b = ev.target.closest('.wlv-a'); if (!b) return;
@@ -85,12 +85,27 @@
       });
     }
     if (nav.nextElementSibling !== tree) tree.before(nav);
-    if (nav.dataset.lv !== lv) {
-      nav.dataset.lv = lv;
-      nav.querySelector('b').textContent = lv + ' · ' + LVNAME[lv];
-      nav.querySelector('span').textContent = (LVS.indexOf(lv) + 1) + ' / ' + LVS.length;
-      nav.querySelector('[data-d="-1"]').disabled = lv === LVS[0];
-      nav.querySelector('[data-d="1"]').disabled = lv === LVS[LVS.length - 1];
+    // сколько слов уровня выучено (по счётчикам «14/14» на карточках), не чаще раза в 400 мс
+    const now = Date.now();
+    if (now - (levelView.t || 0) > 400) {
+      levelView.t = now;
+      let d = 0, t = 0;
+      tree.querySelectorAll(':scope > .cell.band-' + lv + ' .node .src').forEach(s => {
+        const mm = s.textContent.match(/(\d+)\s*\/\s*(\d+)/); if (mm) { d += +mm[1]; t += +mm[2]; }
+      });
+      const pct = t ? Math.round(d / t * 100) : 0;
+      const sig = lv + '|' + d + '|' + t;
+      if (nav.dataset.sig !== sig) {
+        nav.dataset.sig = sig; nav.dataset.lv = lv;
+        nav.querySelector('b').textContent = lv + ' · ' + LVNAME[lv];
+        nav.querySelector('span').textContent = d + ' / ' + t + ' слов · ' + pct + '%';
+        nav.querySelector('u').style.width = pct + '%';
+        nav.setAttribute('aria-label', 'Уровень ' + (LVS.indexOf(lv) + 1) + ' из ' + LVS.length);
+        nav.querySelector('[data-d="-1"]').disabled = lv === LVS[0];
+        nav.querySelector('[data-d="1"]').disabled = lv === LVS[LVS.length - 1];
+      }
+    } else if (!levelView.p) {
+      levelView.p = setTimeout(() => { levelView.p = 0; levelView(); }, 420);
     }
     // подписи тем над карточками уровня
     if (!on) return;
