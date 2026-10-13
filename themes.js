@@ -190,3 +190,25 @@
   run();
   new MutationObserver(run).observe(document.body, { childList: true, subtree: true });
 })();
+
+// ---- шторка: держим, пока не определились аккаунт и прогресс (чтобы не мелькал «Гость») ----
+(function () {
+  const de = document.documentElement;
+  if (!de.classList.contains('auth-wait')) return;
+  const t0 = Date.now(); let chipAt = 0;
+  function ready() {
+    const a = document.getElementById('authBox'); if (a && !a.hidden) return true;      // экран входа
+    const f = document.getElementById('offlineFlag'); const on = f && f.dataset.on;
+    if (on === '1') return true;                                                       // режим «без регистрации»
+    if (on !== '0') return false;                                                      // вход ещё не определился
+    const chip = document.querySelector('#profList .pchip[data-active="1"]');        // вошли: ждём профиль…
+    if (!chip) return false;
+    if (!chipAt) chipAt = Date.now();
+    const n = document.querySelector('#mode-w .stats-row .num');                        // …и пришедший прогресс
+    if (/(выучено|повторяю|изучаю)\s+[1-9]/.test(n ? n.textContent : '')) return true;
+    return Date.now() - chipAt > 2000;                                                 // новый аккаунт без прогресса
+  }
+  let iv;
+  function done() { clearInterval(iv); requestAnimationFrame(() => requestAnimationFrame(() => de.classList.remove('auth-wait'))); }
+  iv = setInterval(() => { if (ready() || Date.now() - t0 > 8000) done(); }, 100);
+})();
