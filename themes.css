@@ -195,3 +195,57 @@ html[data-skin="rpg"] .rvb-l { font-weight: 600; }
   html[data-skin="rpg"] .hub .practice-panel .rv-head { grid-column: 1; grid-row: 1; }
   html[data-skin="rpg"] .hub .practice-panel .rv-big-one { grid-column: 1; grid-row: 2; }
 }
+
+/* ======================================================================
+   «Лексика» на телефоне — вид «по уровням»: один уровень, внутри все темы
+   ====================================================================== */
+.wlv-nav, .wlv-topic { display: none; }
+.wv-prev { align-items: stretch; gap: 4px; background: var(--surface-2); border: 1px solid var(--line); }
+.wv-prev i { width: auto; height: auto; flex: 1; border-radius: 4px; }
+.wv-topics i { background: var(--a1); } .wv-topics i:nth-of-type(2) { background: var(--a2); } .wv-topics i:nth-of-type(3) { background: var(--b1); }
+.wv-topics, .wv-levels { flex-direction: column; }
+.wv-levels i:nth-of-type(1) { background: #4a8a5a; } .wv-levels i:nth-of-type(2) { background: #b5482b; } .wv-levels i:nth-of-type(3) { background: #4c7ea8; }
+@media (max-width: 999px) {
+  html[data-wview="levels"] #mode-w .wlv-nav {
+    display: flex; align-items: center; gap: 10px; margin: 12px 0 10px; padding: 12px; border-radius: 12px;
+    background: var(--surface); border: 1px solid var(--line);
+  }
+  html[data-wview="levels"] #mode-w .wlv-nav[data-lv="A1"] { border-left: 6px solid var(--a1); }
+  html[data-wview="levels"] #mode-w .wlv-nav[data-lv="A2"] { border-left: 6px solid var(--a2); }
+  html[data-wview="levels"] #mode-w .wlv-nav[data-lv="B1"] { border-left: 6px solid var(--b1); }
+  html[data-wview="levels"] #mode-w .wlv-nav[data-lv="B2"] { border-left: 6px solid var(--b2); }
+  html[data-wview="levels"] .wlv-a {
+    flex: none; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line);
+    background: var(--surface-2); color: var(--ink); font-size: 1.3rem; line-height: 1; cursor: pointer;
+  }
+  html[data-wview="levels"] .wlv-a:disabled { opacity: .35; cursor: default; }
+  html[data-wview="levels"] .wlv-c { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; }
+  html[data-wview="levels"] .wlv-c b { font: 600 1.05rem 'Fraunces', Georgia, serif; color: var(--ink); }
+  html[data-wview="levels"] .wlv-c span { font: 400 .72rem 'IBM Plex Mono', monospace; color: var(--muted); }
+  html[data-wview="levels"][data-skin] .wlv-c b { font-family: var(--f-display); }
+  html[data-wview="levels"][data-skin="rpg"] .wlv-c b { font-size: .7rem; }
+
+  /* показываем только выбранный уровень, все темы подряд */
+  html[data-wview="levels"] #mode-w .tree > .bhead,
+  html[data-wview="levels"] #mode-w .tree > .corner { display: none !important; }
+  html[data-wview="levels"] #mode-w .tree > .cell,
+  html[data-wview="levels"] #mode-w .tree > .lvl-label { display: none !important; }
+  html[data-wview="levels"] #mode-w .tree[data-lv="A1"] > .band-A1:not(.empty),
+  html[data-wview="levels"] #mode-w .tree[data-lv="A2"] > .band-A2:not(.empty),
+  html[data-wview="levels"] #mode-w .tree[data-lv="B1"] > .band-B1:not(.empty),
+  html[data-wview="levels"] #mode-w .tree[data-lv="B2"] > .band-B2:not(.empty) { display: block !important; }
+  html[data-wview="levels"] #mode-w .tree[data-lv] > .lvl-label.band-A1,
+  html[data-wview="levels"] #mode-w .tree[data-lv] > .lvl-label.band-A2,
+  html[data-wview="levels"] #mode-w .tree[data-lv] > .lvl-label.band-B1,
+  html[data-wview="levels"] #mode-w .tree[data-lv] > .lvl-label.band-B2 { display: none !important; }
+  html[data-wview="levels"] #mode-w .tree > .cell { margin-bottom: 14px; border-radius: 12px; scroll-margin-top: 80px; }
+  html[data-wview="levels"] #mode-w .wlv-nav { scroll-margin-top: 80px; }
+
+  /* подпись темы над её карточками */
+  html[data-wview="levels"] #mode-w .wlv-topic {
+    display: block; margin: 4px 0 8px; padding: 6px 10px; border-radius: 8px;
+    background: var(--bc, var(--surface-2)); color: #fff; font: 600 .95rem 'Fraunces', Georgia, serif;
+  }
+  html[data-wview="levels"][data-skin] #mode-w .wlv-topic { font-family: var(--f-display); }
+  html[data-wview="levels"][data-skin="rpg"] #mode-w .wlv-topic { font-size: .66rem; line-height: 1.6; padding: 8px 10px; }
+}
