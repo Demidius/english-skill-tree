@@ -67,6 +67,8 @@ fo-cafe|Can I have …?|Можно мне (получить) …?
 fo-cafe|I'd like …|Я бы хотел (получить, заказать) …
 wo-class|How do you spell …?|Как пишется …? (по буквам)
 ba-phrases|Let's…|Давай (сделаем)…
+to-places|post office|почта (отделение, здание)
+sh2-shops|jeweller's|ювелирный магазин
 `;
   if (typeof W_BRANCHES === 'undefined') return;
   const idx = {};
