@@ -212,3 +212,48 @@
   function done() { clearInterval(iv); requestAnimationFrame(() => requestAnimationFrame(() => de.classList.remove('auth-wait'))); }
   iv = setInterval(() => { if (ready() || Date.now() - t0 > 8000) done(); }, 100);
 })();
+
+// ---- смена аккаунта: кнопки действий выключены, пока не загрузится прогресс нового профиля ----
+(function () {
+  const de = document.documentElement;
+  const BLOCK = '.rv-big .rvb, .rv-acts .m-btn, [data-mix], .tbtn, .lvstep, .rread';
+  const stat = () => {
+    const w = document.querySelector('#mode-w .stats-row .num'), g = document.querySelector('#mode-g .stats-row .num');
+    const gb = document.querySelector('#mode-g .stats-row .bar');
+    return ((w && w.textContent) || '') + '|' + ((g && g.textContent) || '') + '|' + ((gb && gb.title) || '');
+  };
+  const active = () => { const c = document.querySelector('#profList .pchip[data-active="1"]'); return c ? c.textContent : ''; };
+  let iv = null;
+  function start(prev) {
+    if (iv) clearInterval(iv);
+    const t0 = Date.now(); let tChip = 0, base = '';
+    de.classList.add('switching');
+    iv = setInterval(() => {
+      const now = Date.now();
+      if (!tChip) {
+        if (active() !== prev) { tChip = now; base = stat(); }   // профиль переключился, ждём его данные
+        else if (now - t0 > 2500) return stop();                  // переключение не случилось
+      } else {
+        const s = stat();
+        if (s !== base && now - tChip > 250) return stop();        // пришёл прогресс нового профиля
+        if (now - tChip > 2500) return stop();                      // профиль без прогресса — цифры не изменятся
+      }
+      if (now - t0 > 8000) stop();                                  // страховка
+    }, 100);
+  }
+  function stop() { clearInterval(iv); iv = null; setTimeout(() => de.classList.remove('switching'), 150); }
+  // начало: выбор другого аккаунта в выпадающем списке
+  document.addEventListener('click', ev => {
+    const it = ev.target.closest('.acc-menu .acc-it');
+    if (!it || it.classList.contains('acc-set') || it.classList.contains('acc-out') || it.classList.contains('acc-skin') || it.classList.contains('on')) return;
+    if (document.querySelectorAll('#profList .pchip').length < 2) return;
+    start(active());   // запоминаем текущий профиль до того, как приложение переключит выбор
+  }, true);
+  // пока идёт загрузка — действия не срабатывают (и мышью, и клавиатурой)
+  ['click', 'pointerdown', 'keydown'].forEach(type => document.addEventListener(type, ev => {
+    if (!de.classList.contains('switching')) return;
+    if (type === 'keydown' && ev.key !== 'Enter' && ev.key !== ' ') return;
+    const t = ev.target.closest && ev.target.closest(BLOCK);
+    if (t) { ev.preventDefault(); ev.stopPropagation(); }
+  }, true));
+})();
