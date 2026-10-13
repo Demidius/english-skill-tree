@@ -141,14 +141,14 @@ html[data-skin="rpg"] .rvb-l { font-weight: 600; }
 }
 
 /* ======================================================================
-   RPG, ПК: шапка «карточка профиля слева, остальное справа»
+   RPG, ПК: шапка на всю ширину — профиль слева, действия в центре, шкалы справа
    ====================================================================== */
 .rpg-meta { display: none; }
 @media (min-width: 1000px) {
-  html[data-skin="rpg"] .hub { grid-template-columns: 224px minmax(0, 1fr); grid-template-rows: auto 1fr; column-gap: 20px; row-gap: 0; align-items: stretch; padding: 14px; }
-  html[data-skin="rpg"] .hub-nav { grid-column: 1; grid-row: 1; align-self: stretch; display: flex; flex-direction: column; gap: 10px; padding: 10px; border: 3px solid #8D99AE; border-bottom: 0; background: #26262B; }
-  html[data-skin="rpg"] .hub-me { grid-column: 1; grid-row: 2; align-self: stretch; justify-content: flex-start; gap: 8px; padding: 10px; border: 3px solid #8D99AE; border-top: 2px dashed #44444E; background: #26262B; }
-  html[data-skin="rpg"] .hub-work { grid-column: 2; grid-row: 1 / span 2; align-self: start; }
+  html[data-skin="rpg"] .hub { grid-template-columns: 224px minmax(0, 1fr) 290px; grid-template-rows: auto; column-gap: 20px; row-gap: 0; align-items: stretch; padding: 14px; max-width: none; }
+  html[data-skin="rpg"] .hub-nav { grid-column: 1; grid-row: 1; align-self: stretch; display: flex; flex-direction: column; justify-content: center; gap: 10px; padding: 10px; border: 3px solid #8D99AE; background: #26262B; }
+  html[data-skin="rpg"] .hub-me { grid-column: 3; grid-row: 1; align-self: stretch; justify-content: center; gap: 8px; padding: 12px; border: 3px solid #8D99AE; background: #26262B; }
+  html[data-skin="rpg"] .hub-work { grid-column: 2; grid-row: 1; align-self: center; }
 
   /* профиль: квадратный аватар с буквой, имя */
   html[data-skin="rpg"] .hub-nav .acc { padding: 0; border: 0; }
