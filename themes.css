@@ -139,3 +139,39 @@ html[data-skin="rpg"] .rvb-l { font-weight: 600; }
   html[data-skin="rpg"] .hub .rvb-due .rvb-n { font-size: 1rem; }
   html[data-skin="rpg"] .hub .rvb-l { font-size: .8rem; }
 }
+
+/* ======================================================================
+   RPG, ПК: шапка «карточка профиля слева, остальное справа»
+   ====================================================================== */
+.rpg-meta { display: none; }
+@media (min-width: 1000px) {
+  html[data-skin="rpg"] .hub { grid-template-columns: 224px minmax(0, 1fr); grid-template-rows: auto 1fr; column-gap: 20px; row-gap: 0; align-items: stretch; padding: 14px; }
+  html[data-skin="rpg"] .hub-nav { grid-column: 1; grid-row: 1; align-self: stretch; display: flex; flex-direction: column; gap: 10px; padding: 10px; border: 3px solid #8D99AE; border-bottom: 0; background: #26262B; }
+  html[data-skin="rpg"] .hub-me { grid-column: 1; grid-row: 2; align-self: stretch; justify-content: flex-start; gap: 8px; padding: 10px; border: 3px solid #8D99AE; border-top: 2px dashed #44444E; background: #26262B; }
+  html[data-skin="rpg"] .hub-work { grid-column: 2; grid-row: 1 / span 2; align-self: start; }
+
+  /* профиль: квадратный аватар с буквой, имя */
+  html[data-skin="rpg"] .hub-nav .acc { padding: 0; border: 0; }
+  html[data-skin="rpg"] .hub-nav .acc-btn { width: 100%; justify-content: flex-start; gap: 10px; padding: 6px; border: 2px solid #000; background: #1C1C20; }
+  html[data-skin="rpg"] .hub-nav .acc-btn::before {
+    content: attr(data-ini); width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center;
+    background: #FFD166; color: #2B2D42; border: 2px solid #000; font: 400 .8rem 'Press Start 2P', 'Courier New', monospace;
+  }
+  html[data-skin="rpg"] .hub-nav .acc-name { flex: 1; text-align: left; font-size: .95rem; }
+  html[data-skin="rpg"] .modes.in-hub { background: #1C1C20; border: 2px solid #000; padding: 3px; gap: 3px; }
+
+  /* уровень и опыт */
+  html[data-skin="rpg"] .rpg-meta { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font: 600 .72rem 'IBM Plex Mono', monospace; color: #FFD166; }
+  html[data-skin="rpg"] .rpg-meta span { color: #AEB2C7; font-weight: 400; }
+  html[data-skin="rpg"] .hub .stats-row .bar { height: 12px; }
+  html[data-skin="rpg"] .hub .legend { font-size: .66rem; gap: 3px 10px; }
+
+  /* правая часть: заголовок → уровни → кнопки, одна под другой */
+  html[data-skin="rpg"] .hub .review-panel:not(.practice-panel) { grid-template-columns: minmax(0, 1fr) !important; grid-template-areas: "head" "lvls" "big" !important; row-gap: 12px; align-items: start; }
+  html[data-skin="rpg"] .hub .review-panel:not(.practice-panel) .rv-lvls { max-width: 440px; }
+  html[data-skin="rpg"] .hub .review-panel:not(.practice-panel) .rv-big { margin-top: 2px; align-self: start; }
+  html[data-skin="rpg"] .hub .rvb { min-height: 92px; }
+  html[data-skin="rpg"] .hub .practice-panel .pr-row { grid-template-columns: minmax(0, 1fr); row-gap: 14px; }
+  html[data-skin="rpg"] .hub .practice-panel .rv-head { grid-column: 1; grid-row: 1; }
+  html[data-skin="rpg"] .hub .practice-panel .rv-big-one { grid-column: 1; grid-row: 2; }
+}
