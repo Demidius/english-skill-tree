@@ -1,14 +1,15 @@
-// Переключение оформлений: «RPG» (по умолчанию) / «Классика» / «Тетрадь».
+// Переключение оформлений: «RPG» (по умолчанию) / «Классика».
 // Выбор хранится в браузере (ef_skin), применяется атрибутом data-skin на <html>.
 (function () {
   const KEY = 'ef_skin';
   const DEF = 'rpg'; // оформление по умолчанию — для тех, кто ещё ничего не выбирал
   const SKINS = [
     { id: 'classic',  name: 'Классика',   sub: 'тёмный, современный', bg: '#0F1115', prev: '<b>Aa</b><i></i><i></i>' },
-    { id: 'notebook', name: 'Тетрадь',    sub: 'клетка и маркер',     bg: '#FBFCFF', prev: '<b>Aa</b><i></i><i></i>' },
     { id: 'rpg',      name: 'RPG',        sub: 'пиксели и квесты',    bg: '#1C1C20', prev: '<b>Aa</b><i></i><i></i>' },
   ];
   const byId = id => SKINS.find(s => s.id === id) || SKINS.find(s => s.id === DEF);
+  // оформление, которого больше нет (например «Тетрадь»), заменяем на стандартное
+  try { const v = localStorage.getItem(KEY); if (v && !SKINS.some(s => s.id === v)) localStorage.setItem(KEY, DEF); } catch (e) {}
   function get() { try { return byId(localStorage.getItem(KEY) || DEF).id; } catch (e) { return DEF; } }
   function apply(id) {
     const de = document.documentElement;
