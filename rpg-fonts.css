@@ -100,7 +100,7 @@ html[data-skin="rpg"] .sp-rpg b { font-size: 1.5rem; }
 /* Mobile RPG: 10% larger, then another 25%. */
 @media (max-width: 999px) {
   html:root[data-skin="rpg"] {
-    font-size: 137.5%;
+    font-size: calc(137.5% * var(--fs, 1));
   }
   html[data-skin="rpg"] body {
     font-size: 1rem;
@@ -148,12 +148,30 @@ html[data-skin="rpg"] .sp-rpg b { font-size: 1.5rem; }
    interface up (everything is in rem) and widen the tree columns to fit. */
 @media (min-width: 1000px) {
   html:root[data-skin="rpg"] {
-    font-size: 143.75%; /* 23px */
+    font-size: calc(143.75% * var(--fs, 1)); /* 23px при обычном размере */
   }
   html[data-skin="rpg"] body {
     font-size: 1rem;
   }
   html[data-skin="rpg"] .tree {
-    grid-template-columns: 180px repeat(var(--cols), 350px);
+    grid-template-columns: calc(180px * var(--fs, 1)) repeat(var(--cols), calc(350px * var(--fs, 1)));
+  }
+}
+
+/* Настройка «Размер шрифта» (font-size.js ставит --fs на <html>): для всех оформлений.
+   Оформление RPG задаёт свой базовый размер выше и тоже умножает его на --fs. */
+html:root {
+  font-size: calc(100% * var(--fs, 1));
+}
+.tree {
+  grid-template-columns: calc(132px * var(--fs, 1)) repeat(var(--cols), calc(248px * var(--fs, 1)));
+}
+.fs-prev { align-items: center; }
+.fs-prev b { margin: 0 auto; }
+/* Крупный шрифт на телефоне: число в кнопках «изучать» переносится, а не вылезает за край. */
+@media (max-width: 999px) {
+  html:is([data-fs="l"], [data-fs="xl"]) :is(.rvb-base, .rvb-extra) {
+    flex-wrap: wrap;
+    row-gap: 2px;
   }
 }
