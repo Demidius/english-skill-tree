@@ -1,9 +1,12 @@
 /* RPG hub: consistent spacing, readable type and responsive panels. */
 @media (min-width: 1000px) {
   html[data-skin="rpg"] #mode-w .hub-work {
-    height: auto;
     min-width: 0;
     padding: 0;
+  }
+  /* высоту панели задаёт hub-sync.js (одинаковую в «Правилах» и «Лексике»), середина растягивается */
+  html[data-skin="rpg"] .hub-work {
+    height: auto;
   }
   html[data-skin="rpg"] #mode-w .hub .review-panel:not(.practice-panel) {
     display: grid;
