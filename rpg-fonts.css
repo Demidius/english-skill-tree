@@ -143,3 +143,17 @@ html[data-skin="rpg"] .sp-rpg b { font-size: 1.5rem; }
     min-height: 32px;
   }
 }
+
+/* Desktop RPG: Handjet is narrow with a small x-height, so scale the whole
+   interface up (everything is in rem) and widen the tree columns to fit. */
+@media (min-width: 1000px) {
+  html:root[data-skin="rpg"] {
+    font-size: 143.75%; /* 23px */
+  }
+  html[data-skin="rpg"] body {
+    font-size: 1rem;
+  }
+  html[data-skin="rpg"] .tree {
+    grid-template-columns: 180px repeat(var(--cols), 350px);
+  }
+}
