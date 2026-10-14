@@ -293,6 +293,17 @@ ba3-adverbs|fairly|довольно, достаточно (умеренно, f�
 ba3-adverbs|almost|почти (a…)
 ba4-adverbs|hopefully|надеюсь (наречие, 1 слово)
 ba4-quantifiers|a bit of|немного (чего-то, 3 слова)
+da-routine-2|check emails|проверять (электронную) почту
+da3-errands|sort out the post|разобрать (бумажную) почту
+ho-things|key|ключ (от двери)
+fo-food-2|onion|лук (овощ)
+na4-plants|leaf|лист (дерева)
+ho2-kitchen|tap|кран (водопроводный)
+wo-class-2|board|доска (школьная)
+wo-class|pen|ручка (для письма)
+to-places|square|площадь (в городе)
+na-world|world|мир (весь свет, Земля)
+na-world|star|звезда (на небе)
 `;
   if (typeof W_BRANCHES === 'undefined') return;
   const idx = {};
