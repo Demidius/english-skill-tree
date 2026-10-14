@@ -299,6 +299,7 @@ html:not([data-skin]) .acc-it { border-radius: 8px; }
 html:not([data-skin]) .acc-it:hover { background: var(--c-hover); }
 html:not([data-skin]) #tip {
   background: var(--surface-2);
+  color: var(--ink);
   border: 1px solid var(--line);
 }
 
