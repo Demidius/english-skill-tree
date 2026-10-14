@@ -4,7 +4,7 @@
   const KEY = 'ef_skin';
   const DEF = 'rpg'; // оформление по умолчанию — для тех, кто ещё ничего не выбирал
   const SKINS = [
-    { id: 'classic',  name: 'Классика',   sub: 'тёмный, цвета земли', bg: '#1c1a16', prev: '<b>Aa</b><i></i><i></i>' },
+    { id: 'classic',  name: 'Классика',   sub: 'тёмный, современный', bg: '#0F1115', prev: '<b>Aa</b><i></i><i></i>' },
     { id: 'notebook', name: 'Тетрадь',    sub: 'клетка и маркер',     bg: '#FBFCFF', prev: '<b>Aa</b><i></i><i></i>' },
     { id: 'rpg',      name: 'RPG',        sub: 'пиксели и квесты',    bg: '#1C1C20', prev: '<b>Aa</b><i></i><i></i>' },
   ];
