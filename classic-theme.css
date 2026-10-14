@@ -107,11 +107,26 @@ html:not([data-skin]) .rvb:hover:not(:disabled) {
   border-color: color-mix(in srgb, var(--c, var(--accent)) 55%, var(--line));
 }
 html:not([data-skin]) .rvb:disabled { background: var(--surface); opacity: .55; }
+/* переключатель уровней: цвет уровня виден и во включённом, и в выключенном виде
+   (--lc задаёт app.js на самой кнопке) */
 html:not([data-skin]) .rv-tg {
-  background: var(--surface-2);
-  border-color: var(--line);
+  background: color-mix(in srgb, var(--lc) 12%, var(--surface-2));
+  border: 2px solid color-mix(in srgb, var(--lc) 38%, var(--line));
   border-radius: 10px;
 }
+html:not([data-skin]) .rv-tg:not(.on) b { color: color-mix(in srgb, var(--lc) 78%, var(--ink)); }
+html:not([data-skin]) .rv-tg:not(.on) span { color: var(--muted); }
+html:not([data-skin]) .rv-tg:hover:not(.on) {
+  background: color-mix(in srgb, var(--lc) 24%, var(--surface-2));
+  border-color: var(--lc);
+}
+html:not([data-skin]) .rv-tg.on {
+  background: var(--lc);
+  border-color: var(--lc);
+  color: #0E1016;
+}
+html:not([data-skin]) .rv-tg.on b,
+html:not([data-skin]) .rv-tg.on span { color: #0E1016; }
 
 /* ---------- 5. Дерево: заголовки веток, уровни, карточки ---------- */
 html:not([data-skin]) .bhead .root {
@@ -178,13 +193,13 @@ html:not([data-skin]) .m-btn.ghost:hover {
   color: var(--ink);
 }
 
-html:not([data-skin]) :is(.chip, .jumpnav button, .filters-toggle, .acc-btn, .wlv-a, .add-form input) {
+html:not([data-skin]) :is(.chip, .jumpnav button, .filters-toggle, .acc-btn, .add-form input) {
   background: var(--surface-2);
   border-color: var(--line);
   color: var(--ink);
   border-radius: 10px;
 }
-html:not([data-skin]) :is(.chip, .jumpnav button, .filters-toggle, .acc-btn, .wlv-a):hover:not(:disabled) {
+html:not([data-skin]) :is(.chip, .jumpnav button, .filters-toggle, .acc-btn):hover:not(:disabled) {
   background: var(--c-hover);
   border-color: var(--c-line-2);
 }
