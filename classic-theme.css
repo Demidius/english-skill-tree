@@ -1,0 +1,293 @@
+/* ======================================================================
+   classic-theme.css — «Классика»: современная тёмная тема.
+   Подключается последним, после ui-shell.css. Всё под html:not([data-skin]),
+   поэтому RPG и «Тетрадь» не затрагиваются.
+   ====================================================================== */
+
+/* ---------- 1. Палитра ---------- */
+html:root:not([data-skin]) {
+  color-scheme: dark;
+
+  --bg:        #0F1115;
+  --surface:   #171A20;
+  --surface-2: #1E222A;
+  --ink:       #E7EAF0;
+  --muted:     #98A1B0;
+  --line:      #2A2F39;
+  --trunk:     #343B47;
+  --accent:    #6D8BFF;
+  --accent-2:  #F2667A;
+
+  --a1: #3FBF84;  --a1-soft: #141C19;
+  --a2: #2FA3A3;  --a2-soft: #121D1E;
+  --b1: #5B8DEF;  --b1-soft: #141924;
+  --b2: #D9A227;  --b2-soft: #201B12;
+
+  --st-none:     #2A2F39;
+  --st-learn:    #58A6FF;
+  --st-review:   #E3A52B;
+  --st-mastered: #3FBF84;
+
+  --tag-be: #58A6FF;  --tag-do: #3FBF84;  --tag-have: #F2667A;
+  --tag-n:  #58A6FF;  --tag-v:  #3FBF84;  --tag-a:    #F2667A;  --tag-o: #B08CFF;
+
+  /* оболочка: мягкие тени вместо «бумажных» торцов */
+  --ui-r:     10px;
+  --ui-r-win: 16px;
+  --ui-edge:    none;
+  --ui-edge-on: none;
+  --ui-scrim: rgba(6, 8, 12, .66);
+  --ui-win-shadow: 0 24px 64px rgba(0, 0, 0, .55), 0 2px 8px rgba(0, 0, 0, .35);
+  --c-hover: #272C36;   /* подсветка при наведении */
+  --c-line-2: #39404D;  /* контур при наведении */
+}
+
+/* ---------- 2. Типографика: один гротеск, плотные заголовки ---------- */
+html:not([data-skin]) :is(
+  h1, h2, h3, .m-title, .m-score, .rv-title,
+  .set-card legend, .wlv-c b, .wlv-topic, .kok-t, .done-big,
+  .skin-h, .auth-card h2
+) {
+  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+  font-weight: 700;
+  letter-spacing: -.015em;
+}
+html:not([data-skin]) .bhead .root .n,
+html:not([data-skin]) .boot .boot-t {
+  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+  font-weight: 700;
+  letter-spacing: -.015em;
+}
+html:not([data-skin]) .title-row h1 { font-weight: 800; letter-spacing: -.025em; }
+
+/* ---------- 3. Шапка ---------- */
+html:not([data-skin]) header.top {
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  box-shadow: none;
+}
+html:not([data-skin]) header.top::before { content: none; }
+/* маленький акцентный знак перед названием */
+html:not([data-skin]) .title-row h1::before {
+  content: '';
+  display: inline-block;
+  width: 10px; height: 10px;
+  margin-right: 10px;
+  border-radius: 3px;
+  background: var(--accent);
+  vertical-align: 1px;
+}
+html:not([data-skin]) .title-row .sub { color: var(--muted); border-left-color: var(--line); }
+
+/* ---------- 4. Панели: хаб, прогресс, настройки ---------- */
+html:not([data-skin]) :is(.hub, .stats-row, .set-card, .mig-box) {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .35);
+}
+html:not([data-skin]) .hub .stats-row { border: 0; box-shadow: none; background: none; }
+html:not([data-skin]) .hub-me { border-right-color: var(--line); }
+html:not([data-skin]) .hub-nav .acc { border-bottom-color: var(--line); }
+html:not([data-skin]) .rv-title { font-size: 1.05rem; }
+html:not([data-skin]) .bar { background: var(--st-none); }
+html:not([data-skin]) .rv-infobox {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+
+/* большие кнопки повторения в хабе */
+html:not([data-skin]) .rvb {
+  background: var(--surface-2);
+  border-color: var(--line);
+  border-radius: 12px;
+}
+html:not([data-skin]) .rvb:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--c, var(--accent)) 16%, var(--surface-2));
+  border-color: color-mix(in srgb, var(--c, var(--accent)) 55%, var(--line));
+}
+html:not([data-skin]) .rvb:disabled { background: var(--surface); opacity: .55; }
+html:not([data-skin]) .rv-tg {
+  background: var(--surface-2);
+  border-color: var(--line);
+  border-radius: 10px;
+}
+
+/* ---------- 5. Дерево: заголовки веток, уровни, карточки ---------- */
+html:not([data-skin]) .bhead .root {
+  border-radius: 14px;
+  filter: saturate(.9) brightness(.93);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12), 0 2px 12px rgba(0, 0, 0, .35);
+}
+html:not([data-skin]) .bhead .root .n { font-size: 1.05rem; }
+html:not([data-skin]) .bhead .root .pb { background: rgba(0, 0, 0, .28); }
+
+html:not([data-skin]) .node {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--st-none);
+  border-radius: 12px;
+}
+@media (hover: hover) {
+  html:not([data-skin]) .node:hover {
+    border-color: var(--c-line-2);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .45);
+  }
+}
+html:not([data-skin]) .node[data-status="mastered"] {
+  background: color-mix(in srgb, var(--st-mastered) 9%, var(--surface));
+}
+html:not([data-skin]) .node .score,
+html:not([data-skin]) .node .status-chip { border-radius: 6px; }
+html:not([data-skin]) .node.plan { background: var(--surface-2); }
+html:not([data-skin]) :is(.info, .tbtn, .wbtn, .say) {
+  background: var(--surface-2);
+  border-color: var(--line);
+  color: var(--muted);
+}
+html:not([data-skin]) :is(.info, .tbtn, .wbtn, .say):hover {
+  background: var(--c-hover);
+  border-color: var(--accent);
+  color: var(--ink);
+}
+html:not([data-skin]) .lvl-label .lbar { background: var(--st-none); }
+html:not([data-skin]) .row-sep { border-top-color: var(--line); }
+html:not([data-skin]) .wl .row { border-bottom-color: var(--line); }
+
+/* ---------- 6. Кнопки ---------- */
+html:not([data-skin]) .m-btn:not(.ghost) {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0E1016;
+  font-weight: 700;
+  box-shadow: none;
+}
+html:not([data-skin]) .m-btn:not(.ghost):hover {
+  background: #8AA2FF;
+  border-color: #8AA2FF;
+}
+html:not([data-skin]) .m-btn:active:not(:disabled) { transform: translateY(1px); }
+html:not([data-skin]) .m-btn.ghost {
+  background: var(--surface-2);
+  border-color: var(--line);
+  color: var(--ink);
+}
+html:not([data-skin]) .m-btn.ghost:hover {
+  background: var(--c-hover);
+  border-color: var(--c-line-2);
+  color: var(--ink);
+}
+
+html:not([data-skin]) :is(.chip, .jumpnav button, .filters-toggle, .acc-btn, .wlv-a, .add-form input) {
+  background: var(--surface-2);
+  border-color: var(--line);
+  color: var(--ink);
+  border-radius: 10px;
+}
+html:not([data-skin]) :is(.chip, .jumpnav button, .filters-toggle, .acc-btn, .wlv-a):hover:not(:disabled) {
+  background: var(--c-hover);
+  border-color: var(--c-line-2);
+}
+html:not([data-skin]) .chip[data-active="1"],
+html:not([data-skin]) .jumpnav button[data-active="1"],
+html:not([data-skin]) .filters-toggle[aria-expanded="true"],
+html:not([data-skin]) .rv-info[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--accent) 24%, var(--surface-2));
+  border-color: var(--accent);
+  color: var(--ink);
+  box-shadow: none;
+}
+html:not([data-skin]) .chip.danger { background: var(--accent-2); border-color: var(--accent-2); color: #140A0C; }
+
+html:not([data-skin]) .modes {
+  background: var(--surface-2);
+  border-color: var(--line);
+  border-radius: 12px;
+}
+html:not([data-skin]) .modes button { color: var(--muted); border-radius: 9px; }
+html:not([data-skin]) .modes button:hover { color: var(--ink); }
+html:not([data-skin]) .modes button[aria-pressed="true"],
+html:not([data-skin]) .modes.in-hub button[aria-pressed="true"] {
+  background: var(--accent);
+  color: #0E1016;
+  border-color: var(--accent);
+  box-shadow: none;
+}
+html:not([data-skin]) .modes.in-hub button[aria-pressed="true"]::before { content: none; }
+html:not([data-skin]) .modes.in-hub button:hover:not([aria-pressed="true"]) { background: var(--c-hover); }
+
+/* ---------- 7. Окна ---------- */
+html:not([data-skin]) :is(.modal, .auth-card, .acc-menu) {
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+html:not([data-skin]) .modal .m-top {
+  background: color-mix(in srgb, var(--surface-2) 70%, var(--surface));
+  border-bottom-color: var(--line);
+  box-shadow: none;
+}
+html:not([data-skin]) .m-kicker { color: var(--accent); letter-spacing: .06em; }
+html:not([data-skin]) .m-close { color: var(--muted); }
+html:not([data-skin]) .m-close:hover { background: var(--c-hover); border-color: var(--line); color: var(--ink); }
+
+html:not([data-skin]) .m-opt {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+html:not([data-skin]) .m-opt:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-2));
+  border-color: var(--accent);
+}
+html:not([data-skin]) .m-opt .k {
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--muted);
+  border-radius: 6px;
+}
+html:not([data-skin]) .m-opt.ok {
+  border-color: var(--st-mastered);
+  background: color-mix(in srgb, var(--st-mastered) 16%, var(--surface-2));
+}
+html:not([data-skin]) .m-opt.no {
+  border-color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-2) 16%, var(--surface-2));
+}
+html:not([data-skin]) :is(.m-rule, .rulepage .r-form) {
+  background: var(--surface-2);
+  border-color: var(--line);
+  border-radius: 10px;
+}
+html:not([data-skin]) .m-dots span { background: var(--st-none); }
+html:not([data-skin]) .m-dots span.cur { background: var(--accent); }
+
+html:not([data-skin]) .auth-main {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0E1016;
+  font-weight: 700;
+  box-shadow: none;
+}
+html:not([data-skin]) .auth-main:hover { background: #8AA2FF; border-color: #8AA2FF; }
+html:not([data-skin]) .auth-alt {
+  background: var(--surface-2);
+  border-color: var(--line);
+  color: var(--ink);
+}
+html:not([data-skin]) .auth-alt:hover { background: var(--c-hover); border-color: var(--c-line-2); }
+html:not([data-skin]) .auth-card input {
+  background: var(--surface-2);
+  border-color: var(--line);
+  border-radius: 10px;
+}
+html:not([data-skin]) .acc-it { border-radius: 8px; }
+html:not([data-skin]) .acc-it:hover { background: var(--c-hover); }
+html:not([data-skin]) #tip {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+
+/* ---------- 8. Превью «Классики» в настройках (видно из любого оформления) ---------- */
+.sp-classic { background: #0F1115; color: #E7EAF0; border: 1px solid #2A2F39; }
+.sp-classic i:nth-of-type(1) { background: #6D8BFF; }
+.sp-classic i:nth-of-type(2) { background: #3FBF84; }
