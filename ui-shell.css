@@ -407,8 +407,3 @@ html[data-skin="rpg"] .modes button[aria-pressed="true"] {
 /* Выпадающее меню аккаунта в RPG */
 html[data-skin="rpg"] .acc-it:hover { background: color-mix(in srgb, var(--accent) 22%, var(--surface-2)); }
 html[data-skin="rpg"] .acc-sep { background: color-mix(in srgb, var(--ui-frame) 55%, transparent); height: 2px; }
-
-/* --- Тетрадь: рамки окон чернилами, кнопки без жёстких теней --- */
-html[data-skin="notebook"] :is(.modal, .auth-card, .acc-menu) { border-color: var(--ink); border-width: 1.5px; }
-html[data-skin="notebook"] .m-btn { box-shadow: none; }
-html[data-skin="notebook"] .modal .m-top { box-shadow: none; }
