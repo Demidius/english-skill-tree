@@ -1,0 +1,348 @@
+// «Промт»: задания для любой нейросети по отрабатываемым правилам и ввод кода изменений уровней.
+// Кнопка появляется рядом с «Отрабатывать изученное». Окно: вкладка «Промт» (тип задания,
+// выбор правил, готовый текст для копирования) и вкладка «Ввести код» (превью и применение).
+//
+// Код от нейросети: EFST1|TAG|id:уровень:оценка|…  (оценка: + верно, - ошибка, 0 не встретилось)
+// Уровень в коде — тот, что был в промте. Сайт сравнивает его с текущим: так один и тот же код
+// не применится дважды даже на другом устройстве. Шаг изменения берётся из «Настроек»
+// (COEF.rulesPractice: верно / ошибка).
+(function () {
+  if (typeof G === 'undefined' || !G.rulesData) return;
+
+  const PREFIX = 'EFST1';
+  const GMAX = 10;
+  const USED_KEY = 'ef_prompt_used';
+  const TYPES = {
+    translate: { name: 'Перевод RU → EN', sub: 'тексты на русском → разбор → код', code: true, def: 8 },
+    fix:       { name: 'Найди ошибки',    sub: 'предложения с ошибками → разбор → код', code: true, def: 8 },
+    dialog:    { name: 'Диалог',          sub: 'разговор на эти правила → разбор → код', code: true, def: 6 },
+    explain:   { name: 'Объяснение',      sub: 'разбор слабых тем, без кода', code: false, def: 4 },
+  };
+  const LV_ORDER = { A1: 0, A2: 1, B1: 2, B2: 3 };
+
+  // справочник правил: суть и пример из data-grammar.js
+  const INFO = {};
+  G_BRANCHES.forEach(b => Object.keys(b.cells).forEach(lk => (b.cells[lk] || []).forEach(c => {
+    INFO[c[0]] = { title: c[1], gloss: c[2] || '', ex: c[3] || '', branch: b.name, level: lk };
+  })));
+
+  let S = null; // состояние окна
+
+  // ---------- кнопка ----------
+  const ICON = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2.5h10a1 1 0 0 1 1 1v6.5a1 1 0 0 1-1 1H7l-3 2.5V11H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M5 5.7h6M5 8h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
+  function ensureButton() {
+    document.querySelectorAll('#mode-g .practice-panel .rv-big-one').forEach(box => {
+      if (box.querySelector('.rvb-prompt')) return;
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'rvb rvb-prompt';
+      b.title = 'Задание для нейросети по отрабатываемым правилам и ввод кода изменений';
+      b.innerHTML = '<span class="rvb-ico">' + ICON + '</span><span class="rvb-l">Промт</span>';
+      b.addEventListener('click', ev => { ev.stopPropagation(); open('prompt'); });
+      box.appendChild(b);
+      box.classList.add('has-prompt');
+    });
+  }
+  ensureButton();
+  new MutationObserver(ensureButton).observe(document.body, { childList: true, subtree: true });
+
+  // ---------- данные ----------
+  function rules() {
+    return G.rulesData().filter(r => INFO[r.id]).sort((a, b) =>
+      a.lv - b.lv || LV_ORDER[a.level] - LV_ORDER[b.level] || a.title.localeCompare(b.title));
+  }
+  function visibleRules() {
+    const all = rules();
+    return S.scope === 'read' ? all.filter(r => r.read) : all;
+  }
+  function defaultSel(type) {
+    const n = TYPES[type].def;
+    const pool = rules().filter(r => r.read && r.lv < GMAX);
+    return new Set(pool.slice(0, n).map(r => r.id));
+  }
+  function newTag() {
+    const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let t = ''; for (let i = 0; i < 4; i++) t += A[Math.floor(Math.random() * A.length)];
+    return t;
+  }
+  function profileKey() { return (typeof current !== 'undefined' && current) || 'local'; }
+  function usedTags() {
+    try { const o = JSON.parse(lsGet(USED_KEY) || '{}'); return o[profileKey()] || []; } catch (e) { return []; }
+  }
+  function markUsed(tag) {
+    try {
+      const o = JSON.parse(lsGet(USED_KEY) || '{}');
+      const a = (o[profileKey()] || []).filter(t => t !== tag); a.push(tag);
+      o[profileKey()] = a.slice(-60);
+      lsSet(USED_KEY, JSON.stringify(o));
+    } catch (e) {}
+  }
+
+  // ---------- текст промта ----------
+  function ruleLines(ids) {
+    const byId = {}; rules().forEach(r => byId[r.id] = r);
+    return ids.map((id, i) => {
+      const f = INFO[id], r = byId[id];
+      return (i + 1) + '. ' + id + ' — ' + f.title + ' (' + f.level + ', ' + f.branch + '): ' + f.gloss +
+        (f.ex ? '. Пример: ' + f.ex : '') + ' — мой уровень ' + (r ? r.lv : 0) + '/10';
+    }).join('\n');
+  }
+  function orderedSel() {
+    return rules().filter(r => S.sel.has(r.id)).map(r => r.id);
+  }
+  function buildPrompt() {
+    const ids = orderedSel();
+    if (!ids.length) return '';
+    const lvls = [...new Set(ids.map(id => INFO[id].level))].sort((a, b) => LV_ORDER[a] - LV_ORDER[b]);
+    const head =
+      'Ты — опытный преподаватель английского для русскоязычных учеников. Я занимаюсь по учебникам English File ' +
+      '(в этом занятии — уровни ' + lvls.join(', ') + ') и отрабатываю конкретные грамматические правила. ' +
+      'Общайся со мной по-русски; английский — только в заданиях, примерах и исправлениях.\n\n' +
+      'Правила для отработки (id — название, уровень учебника, суть, пример; в конце — мой текущий уровень владения правилом по шкале 0–10):\n' +
+      ruleLines(ids) + '\n\n' +
+      'Правила с уровнем 0–4 я знаю слабо — давай их проще и чаще; с уровнем 8–9 — в более сложных контекстах.\n\n';
+    const body = {
+      translate:
+        'Задание — перевод с русского на английский.\n' +
+        '1. Напиши 3 коротких связных текста на русском, по 4–6 предложений, на бытовые темы (работа, путешествия, друзья, планы, выходные и т. п.). ' +
+        'Каждое правило из списка должно понадобиться при переводе хотя бы 2 раза. Лексика — не сложнее уровня B1. ' +
+        'Не подсказывай, где какое правило, и не давай перевод.\n' +
+        '2. Остановись и жди мой перевод. Ничего не разбирай заранее.\n' +
+        '3. Когда я пришлю перевод, разбери его по предложениям:\n' +
+        '   — мой вариант → правильный вариант, если есть ошибка;\n' +
+        '   — коротко по-русски: в чём ошибка и к какому правилу (id) она относится;\n' +
+        '   — если вариант верный, но звучит неестественно, предложи более естественный и отметь, что это не ошибка;\n' +
+        '   — ошибки не по правилам из списка (слова, предлоги, артикли, порядок слов) отмечай отдельно — на оценку правил они не влияют.\n' +
+        '4. Итог по каждому правилу из списка: «верно» — все употребления правильные; «ошибка» — хотя бы одна ошибка именно в этом правиле; ' +
+        '«не встретилось» — если я обошёл конструкцию. Потом коротко: какие правила можно повышать, какие стоит повторить и что именно повторить.\n',
+      fix:
+        'Задание — найди и исправь ошибки.\n' +
+        '1. Напиши 12 пронумерованных предложений на английском. Примерно в половине из них должна быть ошибка именно в правилах из списка ' +
+        '(каждое правило — минимум в 2 предложениях: с ошибкой и без), остальные предложения — правильные. ' +
+        'Ошибки делай типичными для русскоязычных учеников. Не помечай, где ошибки и какие правила проверяются.\n' +
+        '2. Остановись и жди мой ответ: я напишу номера предложений с ошибками и исправленные варианты.\n' +
+        '3. Разбери мой ответ: какие ошибки я нашёл и исправил верно, какие пропустил, где «исправил» правильное предложение. ' +
+        'Для каждой ошибки — правильный вариант и короткое объяснение по-русски со ссылкой на правило (id).\n' +
+        '4. Итог по каждому правилу: «верно» — я нашёл и правильно исправил все ошибки этого правила и не испортил правильные предложения; ' +
+        '«ошибка» — пропустил или неверно исправил хотя бы одну; «не встретилось» — если правила в предложениях не было. ' +
+        'Потом коротко: какие правила можно повышать, какие повторить.\n',
+      dialog:
+        'Задание — разговорная практика.\n' +
+        '1. Предложи на выбор 3 бытовые ситуации для диалога, дождись моего выбора и начни разговор на английском. ' +
+        'Задавай вопросы так, чтобы мне приходилось отвечать с помощью правил из списка (по очереди охвати все). ' +
+        'В одном сообщении — один-два вопроса, говори просто.\n' +
+        '2. Во время диалога ошибки не исправляй, просто продолжай разговор. Сделай 10–12 реплик или закончи раньше, если я напишу «итог».\n' +
+        '3. После диалога разбери мои реплики: мой вариант → правильный, коротко по-русски, со ссылкой на правило (id). ' +
+        'Ошибки не по правилам из списка отмечай отдельно — на оценку правил они не влияют.\n' +
+        '4. Итог по каждому правилу: «верно» — все употребления правильные; «ошибка» — хотя бы одна ошибка в этом правиле; ' +
+        '«не встретилось» — если я его не использовал. Потом коротко: какие правила можно повышать, какие повторить.\n',
+      explain:
+        'Задание — объясни эти правила, начиная с того, где у меня самый низкий уровень. Для каждого правила:\n' +
+        '1. Простое объяснение по-русски: когда употребляется и как строится (утверждение, отрицание, вопрос).\n' +
+        '2. Чем отличается от похожих конструкций, которые путают русскоязычные, — с примерами «так — не так».\n' +
+        '3. 4–5 примеров из жизни с переводом.\n' +
+        '4. Мини-тест из 5 заданий (вставить пропуск или перевести фразу). Ответы дай в самом конце под заголовком «Ответы».\n',
+    }[S.type];
+    const code = !TYPES[S.type].code ? '' :
+      '5. В самом конце выведи код для моего сайта — одной строкой в блоке кода, строго в формате:\n' +
+      PREFIX + '|' + S.tag + '|id:уровень:оценка|id:уровень:оценка|…\n' +
+      '— перечисли все правила из списка;\n' +
+      '— id и уровень бери ровно из списка (уровень — мой текущий, не меняй его);\n' +
+      '— оценка: + верно, - ошибка, 0 не встретилось.\n' +
+      'Пример формата: ' + PREFIX + '|' + S.tag + '|id1:7:+|id2:3:-|id3:5:0\n' +
+      'Сам уровни не повышай и не понижай — сайт пересчитает их по этим оценкам.\n';
+    return head + body + code;
+  }
+
+  // ---------- разбор кода ----------
+  const CODE_RE = new RegExp(PREFIX + '\\s*\\|\\s*([A-Za-z0-9]{3,8})((?:\\s*\\|\\s*[A-Za-z0-9-]+\\s*:\\s*\\d{1,2}\\s*:\\s*[+\\-−–—0=])+)', 'i');
+  function parseCode(txt) {
+    const m = String(txt || '').match(CODE_RE);
+    if (!m) return null;
+    const items = [];
+    m[2].split('|').forEach(part => {
+      const mm = part.trim().match(/^([A-Za-z0-9-]+)\s*:\s*(\d{1,2})\s*:\s*([+\-−–—0=])$/);
+      if (!mm) return;
+      const c = mm[3];
+      items.push({ id: mm[1].toLowerCase(), from: Math.min(GMAX, +mm[2]), sign: c === '+' ? 1 : (c === '0' || c === '=') ? 0 : -1 });
+    });
+    return { tag: m[1].toUpperCase(), items };
+  }
+  function clamp(v) { return Math.max(0, Math.min(GMAX, v)); }
+  function plan(parsed) {
+    const byId = {}; rules().forEach(r => byId[r.id] = r);
+    const seen = new Set();
+    return parsed.items.filter(it => !seen.has(it.id) && seen.add(it.id)).map(it => {
+      const r = byId[it.id];
+      if (!r) return Object.assign({}, it, { kind: 'unknown', on: false });
+      if (it.sign === 0) return Object.assign({}, it, { r, kind: 'skip', to: r.lv, on: false });
+      const d = it.sign > 0 ? COEF.rulesPractice.ok : COEF.rulesPractice.wrong;
+      const exp = clamp(it.from + d);
+      if (r.lv === it.from) return Object.assign({}, it, { r, d, kind: 'ok', to: exp, on: exp !== r.lv });
+      if (r.lv === exp) return Object.assign({}, it, { r, d, kind: 'done', to: r.lv, on: false });
+      return Object.assign({}, it, { r, d, kind: 'moved', to: clamp(r.lv + d), on: true });
+    });
+  }
+
+  // ---------- окно ----------
+  function open(tab) {
+    if (typeof needProfile === 'function' && needProfile()) return;
+    S = { tab: tab || 'prompt', type: 'translate', scope: 'read', tag: newTag(), touched: false,
+          sel: defaultSel('translate'), codeText: '', parsed: null, rows: null, msg: '' };
+    if (!rules().some(r => r.read)) S.scope = 'all';
+    modal.classList.remove('rulepage', 'testm');
+    openModal(owner);
+    modal.classList.add('pt-modal');
+    render();
+  }
+  function tabs() {
+    return '<div class="pt-tabs" role="tablist">' +
+      [['prompt', 'Промт'], ['code', 'Ввести код']].map(([k, l]) =>
+        '<button type="button" class="chip" role="tab" data-pt-tab="' + k + '" data-active="' + (S.tab === k ? 1 : 0) + '" aria-selected="' + (S.tab === k) + '">' + l + '</button>'
+      ).join('') + '</div>';
+  }
+  function render() {
+    // сохраняем прокрутку окна и списка правил: перерисовка идёт после каждой галочки
+    const keep = modal.scrollTop;
+    const list = modal.querySelector('.pt-rules'), keepList = list ? list.scrollTop : 0;
+    modal.innerHTML = mHead('Нейросеть · отработка правил', S.tab === 'prompt' ? 'Промт для нейросети' : 'Код изменений') + tabs() +
+      (S.tab === 'prompt' ? renderPrompt() : renderCode());
+    modal.scrollTop = keep;
+    const l2 = modal.querySelector('.pt-rules'); if (l2) l2.scrollTop = keepList;
+  }
+  function renderPrompt() {
+    const list = visibleRules();
+    const txt = buildPrompt();
+    const nSel = S.sel.size;
+    return '<div class="m-count pt-h">1. Что делаем</div>' +
+      '<div class="pt-types">' + Object.keys(TYPES).map(k =>
+        '<button type="button" class="m-opt pt-type" data-pt-type="' + k + '" aria-pressed="' + (S.type === k) + '">' +
+        '<b>' + esc(TYPES[k].name) + '</b><span>' + esc(TYPES[k].sub) + '</span></button>').join('') + '</div>' +
+      '<div class="m-count pt-h">2. Правила · выбрано ' + nSel + '</div>' +
+      '<div class="pt-tools">' +
+        '<button type="button" class="chip" data-pt-scope="read" data-active="' + (S.scope === 'read' ? 1 : 0) + '">«Изучено»</button>' +
+        '<button type="button" class="chip" data-pt-scope="all" data-active="' + (S.scope === 'all' ? 1 : 0) + '">Все правила</button>' +
+        '<span class="pt-sp"></span>' +
+        '<button type="button" class="chip" data-pt-pick="weak">Самые слабые ' + TYPES[S.type].def + '</button>' +
+        '<button type="button" class="chip" data-pt-pick="none">Снять</button>' +
+      '</div>' +
+      (list.length ?
+        '<div class="pt-rules">' + list.map(r =>
+          '<label class="pt-rule"><input type="checkbox" data-pt-id="' + esc(r.id) + '"' + (S.sel.has(r.id) ? ' checked' : '') + '>' +
+          '<span class="pt-rt">' + esc(r.title) + '</span>' +
+          '<span class="pt-rm">' + esc(r.level) + ' · ' + esc(INFO[r.id].branch) + '</span>' +
+          '<span class="pt-lv" data-b="' + (r.lv >= GMAX ? 'm' : r.lv >= 5 ? 'r' : r.lv > 0 ? 'l' : '0') + '">' + r.lv + '</span></label>').join('') +
+        '</div>' :
+        '<p class="pt-note">Нет правил с отметкой «изучено». Переключись на «Все правила» или отметь галочкой «изучено» правила в дереве.</p>') +
+      '<div class="m-count pt-h">3. Скопируй и вставь в любую нейросеть</div>' +
+      (txt ?
+        '<textarea class="pt-text" readonly rows="9" aria-label="Текст промта">' + esc(txt) + '</textarea>' +
+        '<p class="pt-note">ChatGPT, Claude, Gemini, DeepSeek — подойдёт любая. ' +
+          (TYPES[S.type].code ? 'В конце разбора нейросеть выдаст код <code>' + PREFIX + '|' + S.tag + '|…</code> — вставь его на вкладке «Ввести код».' : 'Это задание без кода: уровни не меняются.') +
+        '</p>' :
+        '<p class="pt-note">Отметь хотя бы одно правило.</p>') +
+      '<div class="m-actions">' +
+        (TYPES[S.type].code ? '<button type="button" class="m-btn ghost" data-pt-tab="code">Ввести код</button>' : '') +
+        '<button type="button" class="m-btn" data-pt-copy' + (txt ? '' : ' disabled') + '>' + (S.copied ? 'Скопировано ✓' : 'Скопировать промт') + '</button>' +
+      '</div>';
+  }
+  function verdictTxt(x) {
+    if (x.kind === 'unknown') return 'нет такого правила';
+    if (x.kind === 'skip') return 'не встретилось';
+    return (x.sign > 0 ? 'верно' : 'ошибка') + ' · ' + sgn(x.d);
+  }
+  function renderCode() {
+    let prev = '';
+    if (S.rows) {
+      const used = usedTags().includes(S.parsed.tag);
+      const notes = [];
+      if (used) notes.push('Код <b>' + esc(S.parsed.tag) + '</b> уже применяли на этом устройстве.');
+      if (S.rows.some(x => x.kind === 'done')) notes.push('Где уровень уже равен итоговому, код, похоже, уже применён — эти строки выключены.');
+      if (S.rows.some(x => x.kind === 'moved')) notes.push('Где уровень изменился с момента промта, шаг считается от текущего уровня.');
+      if (S.rows.some(x => x.kind === 'unknown')) notes.push('Правила с неизвестным id пропущены.');
+      const any = S.rows.some(x => x.on);
+      prev = '<div class="m-count pt-h">Что изменится · ' + esc(typeof currentName === 'function' && currentName() ? currentName() : 'этот браузер') + '</div>' +
+        (notes.length ? '<p class="pt-note pt-warn">' + notes.join(' ') + '</p>' : '') +
+        '<div class="wl pt-res">' + S.rows.map((x, i) => {
+          const can = x.kind === 'ok' || x.kind === 'moved' || x.kind === 'done';
+          const title = x.r ? x.r.title : x.id;
+          const chg = !x.r ? '—' : x.kind === 'skip' ? String(x.r.lv) : x.kind === 'done' ? 'уже ' + x.r.lv : x.r.lv + ' → ' + x.to;
+          return '<label class="row pt-row" data-kind="' + x.kind + '">' +
+            '<input type="checkbox" data-pt-row="' + i + '"' + (x.on ? ' checked' : '') + (can ? '' : ' disabled') + '>' +
+            '<span class="en">' + esc(title) + '</span><span class="ru">' + esc(verdictTxt(x)) + '</span>' +
+            '<span class="chg">' + esc(chg) + '</span></label>';
+        }).join('') + '</div>' +
+        '<div class="m-actions"><button type="button" class="m-btn" data-pt-apply' + (any ? '' : ' disabled') + '>Применить</button></div>';
+    }
+    return '<p class="pt-note pt-lead">Вставь ответ нейросети целиком или только строку с кодом — сайт сам найдёт <code>' + PREFIX + '|…</code>. ' +
+      'Шаги изменения уровня — из «Настроек»: верно ' + sgn(COEF.rulesPractice.ok) + ', ошибка ' + sgn(COEF.rulesPractice.wrong) + '.</p>' +
+      '<textarea class="pt-text pt-in" rows="4" placeholder="' + PREFIX + '|ABCD|pres-simple:7:+|past-cont:3:-" aria-label="Код от нейросети">' + esc(S.codeText) + '</textarea>' +
+      (S.msg ? '<p class="pt-msg" role="status">' + S.msg + '</p>' : '') +
+      (S.rows ? prev : '<div class="m-actions"><button type="button" class="m-btn" data-pt-check>Проверить код</button></div>');
+  }
+
+  function check() {
+    const ta = modal.querySelector('.pt-in');
+    S.codeText = ta ? ta.value : S.codeText;
+    S.parsed = parseCode(S.codeText);
+    S.rows = null;
+    if (!S.parsed) { S.msg = 'Код не найден. Он начинается с <code>' + PREFIX + '|</code> и выглядит так: <code>' + PREFIX + '|ABCD|pres-simple:7:+</code>.'; render(); return; }
+    if (!S.parsed.items.length) { S.msg = 'В коде нет ни одного правила.'; render(); return; }
+    S.rows = plan(S.parsed);
+    if (usedTags().includes(S.parsed.tag)) S.rows.forEach(x => x.on = false);
+    S.msg = '';
+    render();
+  }
+  function apply() {
+    if (!S.rows) return;
+    if (typeof needProfile === 'function' && needProfile()) return;
+    if (typeof canWrite === 'function' && !canWrite()) { S.msg = 'Это профиль другого ученика — менять его уровни нельзя.'; render(); return; }
+    const todo = S.rows.filter(x => x.on && x.r && x.to !== x.r.lv);
+    todo.forEach(x => G.setRuleLevel(x.id, x.to));
+    markUsed(S.parsed.tag);
+    S.msg = todo.length ? 'Готово: изменено правил — ' + todo.length + '.' : 'Изменений нет.';
+    S.rows = null; S.codeText = '';
+    render();
+  }
+  function copy() {
+    const ta = modal.querySelector('.pt-text'); if (!ta) return;
+    const done = () => { S.copied = true; const b = modal.querySelector('[data-pt-copy]'); if (b) b.textContent = 'Скопировано ✓'; };
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(ta.value).then(done, () => { ta.select(); try { document.execCommand('copy'); done(); } catch (e) {} });
+    } else { ta.select(); try { document.execCommand('copy'); done(); } catch (e) {} }
+  }
+
+  const owner = {
+    onClick(ev) {
+      const t = ev.target;
+      const tab = t.closest('[data-pt-tab]'); if (tab) { S.tab = tab.dataset.ptTab; S.msg = ''; render(); return; }
+      const ty = t.closest('[data-pt-type]');
+      if (ty) { S.type = ty.dataset.ptType; S.copied = false; if (!S.touched) S.sel = defaultSel(S.type); S.tag = newTag(); render(); return; }
+      const sc = t.closest('[data-pt-scope]'); if (sc) { S.scope = sc.dataset.ptScope; render(); return; }
+      const pk = t.closest('[data-pt-pick]');
+      if (pk) { S.touched = true; S.copied = false; S.sel = pk.dataset.ptPick === 'weak' ? defaultSel(S.type) : new Set(); S.tag = newTag(); render(); return; }
+      if (t.closest('[data-pt-copy]')) { copy(); return; }
+      if (t.closest('[data-pt-check]')) { check(); return; }
+      if (t.closest('[data-pt-apply]')) { apply(); return; }
+    },
+    onChange(ev) {
+      const t = ev.target;
+      if (t.matches('[data-pt-id]')) {
+        S.touched = true; S.copied = false;
+        if (t.checked) S.sel.add(t.dataset.ptId); else S.sel.delete(t.dataset.ptId);
+        S.tag = newTag(); render(); return;
+      }
+      if (t.matches('[data-pt-row]') && S.rows) {
+        S.rows[+t.dataset.ptRow].on = t.checked;
+        const b = modal.querySelector('[data-pt-apply]'); if (b) b.disabled = !S.rows.some(x => x.on);
+      }
+    },
+    onKey(ev) {
+      if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey) && S && S.tab === 'code') { check(); ev.preventDefault(); }
+    },
+    onClose() { S = null; modal.classList.remove('pt-modal'); },
+  };
+  modal.addEventListener('input', ev => { if (S && ev.target.matches('.pt-in')) S.codeText = ev.target.value; });
+
+  window.PROMPTS = { open };
+})();
