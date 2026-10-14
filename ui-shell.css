@@ -169,6 +169,11 @@ html[data-skin="rpg"] header.top .navrow {
   padding: 7px;
 }
 .acc-it { min-height: var(--ui-hit); display: flex; align-items: center; }
+/* Меню должно быть поверх всего: у .acc в RPG-хабе свой z-index, из-за которого
+   меню пряталось под «Фильтрами» (sticky, z-index 2) и карточками */
+.acc { position: relative; z-index: 50; }
+html[data-skin="rpg"] .hub-nav .acc { z-index: 50; }
+.acc-menu { z-index: 51; }
 .rv-infobox, #tip {
   border-radius: var(--ui-r);
   box-shadow: 0 10px 30px rgba(20, 17, 12, .22);
