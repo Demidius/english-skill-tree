@@ -96,4 +96,7 @@ html[data-skin="rpg"] .modal.pt-modal textarea.pt-text { font-family: 'IBM Plex 
   .pt-rule { grid-template-columns: auto minmax(0, 1fr) auto; }
   .pt-rm { display: none; }
   .rvb-prompt { min-width: 76px; padding: 8px 10px; }
+  /* пока нет правил «изучено», слева длинная подсказка — кнопку ставим под ней во всю ширину */
+  #mode-g .practice-panel .rv-big-one.has-prompt:has(.rvb-hint) { grid-template-columns: minmax(0, 1fr); }
+  .rv-big-one.has-prompt:has(.rvb-hint) .rvb-prompt { flex-direction: row; gap: 10px; }
 }

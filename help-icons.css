@@ -1,0 +1,8 @@
+/* Значки подсказок «?» (help-icons.js): прямой шрифт вместо курсивного «i» */
+.info, .rv-info { font-style: normal !important; }
+.info, .rv-info { font-family: inherit; }
+
+/* Значок на шапке ветки: при нажатии (на телефоне «наведение» залипает) фон белый —
+   знак делаем тёмным, иначе в тёмных темах он сливался с фоном */
+.bhead .root .info:hover,
+.bhead .root .info[data-pinned="1"] { background: #fff; color: #1a1a1e; border-color: #fff; }
