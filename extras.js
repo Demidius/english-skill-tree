@@ -252,6 +252,7 @@ if (typeof WORD_TR !== 'undefined') {
     '<p><b>Откуда метод.</b> Карточки по «коробкам» придумал Себастьян Лейтнер (1970-е), компьютерный алгоритм SM-2 — Пётр Возняк (SuperMemo, 1987). На SM-2 основан Anki; здесь работает тот же принцип.</p>' +
     '<p><b>Как заниматься.</b> Понемногу, но каждый день: сначала «Повторить», потом новые слова. Оценивай честно — «Снова» не провал, а сигнал показать слово пораньше.</p>';
   const INFO_G =
+    '<p><b>Кнопки.</b> «Быстрый тест» запускает тренировку на сайте. «Изучать с AI» открывает промты для объяснений и заданий в нейросети. Число в заголовке — сколько отмеченных тем с уровнем ниже 10 доступно для быстрого теста.</p>' +
     '<p><b>Что это.</b> Короткая тренировка по всем правилам, которые ты отметил галочкой «изучено» и которые ещё не дошли до уровня 10. ' +
     'Сессия — 20 вопросов вперемешку из разных правил; название правила показывается только после ответа. ' +
     'Каждый ответ сразу меняет уровень своего правила: верно — вверх, ошибка — вниз (по умолчанию +1 и −2, меняется в «Настройках»). ' +
@@ -262,10 +263,10 @@ if (typeof WORD_TR !== 'undefined') {
     '<li><b>Распределённые повторения.</b> Отработка, растянутая на несколько дней, запоминается прочнее, чем один длинный подход (обзор — Cepeda и коллеги, 2006). Лучше 20 вопросов каждый день, чем 100 раз в неделю.</li>' +
     '<li><b>Обратная связь.</b> Ты сразу видишь правильный ответ и правило, к которому относился вопрос, — так ошибка исправляется до того, как закрепится.</li>' +
     '</ul>' +
-    '<p><b>Как заниматься.</b> Разбери правило, отметь «изучено», сделай тест по нему — а дальше раз в день запускай «Отрабатывать изученное». Уровень правил будет расти сам по мере верных ответов.</p>';
+    '<p><b>Как заниматься.</b> Разбери правило, отметь «изучено», сделай тест по нему — а дальше раз в день запускай «Быстрый тест». Уровень правил будет расти сам по мере верных ответов.</p>';
   const PANELS = [
     { sel: '.review-panel:not(.practice-panel) .rv-head', title: 'Интервальное повторение слов', info: INFO_W, label: 'Что такое интервальное повторение', hideSub: true },
-    { sel: '.practice-panel .rv-head', title: 'Отработка изученных правил', info: INFO_G, label: 'Как работает отработка правил', hideSub: 'static' },
+    { sel: '.practice-panel .rv-head', keepTitle: true, info: INFO_G, label: 'Как работает отработка правил', hideSub: 'static' },
   ];
   const open = {};
   function enhance() {
@@ -276,7 +277,7 @@ if (typeof WORD_TR !== 'undefined') {
         const t = h.querySelector('.rv-title'); if (!t) return;
         const wrap = document.createElement('div'); wrap.className = 'rv-titlebar';
         t.before(wrap); wrap.appendChild(t);
-        t.textContent = P.title;
+        if (!P.keepTitle) t.textContent = P.title;
         h.querySelectorAll('.rv-sub').forEach(s => {
           // статичную инструкцию прячем, строку со счётчиками (изучено N правил…) оставляем
           if (P.hideSub === true || (P.hideSub === 'static' && /^Отметь/.test(s.textContent.trim()))) s.hidden = true;
@@ -429,43 +430,4 @@ if (typeof WORD_TR !== 'undefined') {
   function run() { document.querySelectorAll('.review-panel:not(.practice-panel)').forEach(build); }
   run();
   new MutationObserver(run).observe(document.body, { childList: true, subtree: true });
-})();
-
-// «Отработка изученных правил»: кнопка в стиле кнопок «Лексики» — с числом правил в отработке
-(function () {
-  function build(panel) {
-    const mix = panel.querySelector('[data-mix]'); if (!mix) return;
-    const sub = panel.querySelector('.rv-sub');
-    const txt = sub ? sub.textContent : '';
-    const m = txt.match(/(?:Изучено|Читано) правил:\s*(\d+),\s*из них не на 10:\s*(\d+)/);
-    const read = m ? +m[1] : 0, pool = m ? +m[2] : 0;
-    const sig = read + '|' + pool + '|' + mix.disabled;
-    let box = panel.querySelector('.rv-big');
-    if (box && box.dataset.sig === sig) return;
-    if (box) box.remove();
-    box = document.createElement('div'); box.className = 'rv-big rv-big-one'; box.dataset.sig = sig;
-    if (mix.disabled) {
-      // отрабатывать нечего — подсказка, что сделать; нажатие ведёт к галочкам «изучено»
-      const msg = read
-        ? 'Все изученные правила уже на уровне 10. Отметь галочкой «изучено» следующие правила.'
-        : 'Отметь галочкой <b>☑ изучено</b> правила, которые ты разобрал, — и здесь появятся вопросы по ним.';
-      box.innerHTML = '<button type="button" class="rvb rvb-hint"><span class="rvb-ico">☑</span><span class="rvb-l">' + msg + '</span></button>';
-      box.firstChild.addEventListener('click', () => {
-        const cb = document.querySelector('#mode-g .node[data-id]:not([hidden]) .rread');
-        if (!cb) return;
-        cb.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        cb.classList.remove('rread-ping'); void cb.offsetWidth; cb.classList.add('rread-ping');
-      });
-    } else {
-      box.innerHTML = '<button type="button" class="rvb rvb-mix">' +
-        '<span class="rvb-n">' + pool + '<small> / ' + read + '</small></span>' +
-        '<span class="rvb-l">Отрабатывать изученное</span></button>';
-      box.firstChild.title = pool + ' правил в отработке из ' + read + ' отмеченных «изучено»';
-      box.firstChild.addEventListener('click', () => { if (!mix.disabled) mix.click(); });
-    }
-    mix.before(box);
-  }
-  function run() { document.querySelectorAll('.practice-panel').forEach(build); }
-  run();
-  new MutationObserver(run).observe(document.body, { childList: true, subtree: true, characterData: true });
 })();

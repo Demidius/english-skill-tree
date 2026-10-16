@@ -1,5 +1,5 @@
 // «Промт»: задания для любой нейросети по отрабатываемым правилам и ввод кода изменений уровней.
-// Кнопка появляется рядом с «Отрабатывать изученное». Окно: вкладка «Промт» (тип задания,
+// Кнопка «Изучать с AI» в блоке отработки. Окно: вкладка «Промт» (тип задания,
 // выбор правил, готовый текст для копирования) и вкладка «Ввести код» (превью и применение).
 //
 // Код от нейросети: EFST1|TAG|id:уровень:оценка|…  (оценка: + верно, - ошибка, 0 не встретилось)
@@ -47,24 +47,6 @@
   })));
 
   let S = null; // состояние окна
-
-  // ---------- кнопка ----------
-  const ICON = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2.5h10a1 1 0 0 1 1 1v6.5a1 1 0 0 1-1 1H7l-3 2.5V11H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M5 5.7h6M5 8h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
-  function ensureButton() {
-    document.querySelectorAll('#mode-g .practice-panel .rv-big-one').forEach(box => {
-      if (box.querySelector('.rvb-prompt')) return;
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'rvb rvb-prompt';
-      b.title = 'Задание для нейросети по отрабатываемым правилам и ввод кода изменений';
-      b.innerHTML = '<span class="rvb-ico">' + ICON + '</span><span class="rvb-l">Промт</span>';
-      b.addEventListener('click', ev => { ev.stopPropagation(); open('prompt'); });
-      box.appendChild(b);
-      box.classList.add('has-prompt');
-    });
-  }
-  ensureButton();
-  new MutationObserver(ensureButton).observe(document.body, { childList: true, subtree: true });
 
   // ---------- данные ----------
   function rules() {
