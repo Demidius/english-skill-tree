@@ -247,5 +247,5 @@ html[data-skin="rpg"] .rvb-l { font-weight: 600; }
     line-height: 1.3; height: 2.6em; align-self: end; text-wrap: balance; overflow-wrap: anywhere;
   }
   .bhead .root .ru { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-  html[data-skin="rpg"] .bhead .root .n { font-size: .6rem; line-height: 1.5; height: 3em; }
+  html[data-skin="rpg"] .bhead .root .n { font-size: .72rem; line-height: 1.5; height: 3em; }
 }
