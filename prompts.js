@@ -225,7 +225,7 @@
     if (topicId && !INFO[topicId]) return;
     if (typeof needProfile === 'function' && needProfile()) return;
     S = { tab: tab || 'prompt', topicId: topicId || null, type: topicId ? 'explain' : 'translate', scope: topicId ? 'all' : 'read', tag: newTag(), touched: !!topicId,
-          sel: topicId ? new Set([topicId]) : defaultSel('translate'), textLength: 2, lengthOpen: false, codeText: '', parsed: null, rows: null, msg: '', returnFocus: document.activeElement };
+          sel: topicId ? new Set([topicId]) : defaultSel('translate'), textLength: 2, lengthOpen: false, manualOpen: false, codeText: '', parsed: null, rows: null, msg: '', returnFocus: document.activeElement };
     if (!rules().some(r => r.read)) S.scope = 'all';
     modal.classList.remove('rulepage', 'testm');
     openModal(owner);
@@ -302,18 +302,17 @@
           '<span class="pt-lv" data-b="' + (r.lv >= GMAX ? 'm' : r.lv >= 5 ? 'r' : r.lv > 0 ? 'l' : '0') + '">' + r.lv + '</span></label>').join('') +
         '</div>' :
         '<p class="pt-note">Нет правил с отметкой «изучено». Переключись на «Все правила» или отметь галочкой «изучено» правила в дереве.</p>') +
-      '<div class="m-count pt-h">3. Скопируй и вставь в любую нейросеть</div>' +
-      (txt ?
-        '<textarea class="pt-text" readonly rows="9" aria-label="Текст промта">' + esc(txt) + '</textarea>' +
-        '<p class="pt-note">Кнопки передают запрос в чат и копируют его про запас. Для DeepSeek и слишком длинных промтов: сначала скопируй, затем открой чат и вставь текст. ' +
-          (TYPES[S.type].code ? 'В конце разбора нейросеть выдаст код <code data-pt-code-example>' + PREFIX + '|' + S.tag + '|…</code> — вставь его на вкладке «Ввести код».' : 'Это задание без кода: уровни не меняются.') +
-        '</p>' :
-        '<p class="pt-note">Отметь хотя бы одно правило.</p>') +
-      '<div class="m-actions pt-actions">' +
-        (TYPES[S.type].code ? '<button type="button" class="m-btn ghost" data-pt-tab="code">Ввести код</button>' : '') +
-        '<button type="button" class="m-btn" data-pt-copy' + (txt ? '' : ' disabled') + '>' + (S.copied ? 'Скопировано ✓' : 'Скопировать промт') + '</button>' +
+      '<section class="pt-actions pt-launch" aria-labelledby="ptLaunchTitle">' +
+        '<h3 id="ptLaunchTitle" class="m-count pt-h">3. Начни занятие</h3>' +
+        '<p class="pt-note">' + (txt ? 'Выбери чат — задание по выбранным темам уже подготовлено.' : 'Сначала отметь хотя бы одну тему.') + '</p>' +
         chatLinks(txt, false) + launchStatus() +
-      '</div>';
+      '</section>' +
+      (txt ? '<details class="pt-manual"' + (S.manualOpen ? ' open' : '') + '><summary>Посмотреть или скопировать промт вручную</summary>' +
+        '<p class="pt-note">Запасной способ, если чат не принял задание: скопируй текст и вставь его в поле сообщения.</p>' +
+        '<textarea class="pt-text" readonly rows="5" aria-label="Текст промта">' + esc(txt) + '</textarea>' +
+        '<button type="button" class="m-btn ghost" data-pt-copy>' + (S.copied ? 'Скопировано ✓' : 'Скопировать промт') + '</button></details>' : '') +
+      '<div class="pt-return"><p class="pt-note">После занятия вернись сюда и внеси результаты из ответа нейросети.</p>' +
+        '<button type="button" class="m-btn ghost" data-pt-tab="code">Внести результаты занятия</button></div>';
   }
   function lengthLabel() {
     const length = TEXT_LENGTHS[S.textLength];
@@ -339,8 +338,6 @@
     if (textarea) textarea.value = text;
     const group = modal.querySelector('.pt-ai-actions');
     if (group) group.replaceWith(el('div', '', chatLinks(text, false)).querySelector('.pt-ai-actions'));
-    const example = modal.querySelector('[data-pt-code-example]');
-    if (example) example.textContent = PREFIX + '|' + S.tag + '|…';
     const copyButton = modal.querySelector('[data-pt-copy]');
     if (copyButton) copyButton.textContent = 'Скопировать промт';
     const status = modal.querySelector('.pt-launch-status');
@@ -517,6 +514,9 @@
     if (ev.target.matches('.pt-in')) S.codeText = ev.target.value;
     if (ev.target.matches('[data-pt-length]')) updateTextLength(ev.target);
   });
+  modal.addEventListener('toggle', ev => {
+    if (S && ev.target.isConnected && ev.target.matches('.pt-manual')) S.manualOpen = ev.target.open;
+  }, true);
 
   window.PROMPTS = { open, openTopic: id => open('prompt', id) };
 })();
