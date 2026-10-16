@@ -1,0 +1,61 @@
+.access-wrap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;max-width:1200px;margin:24px auto}
+.access-card{padding:22px;background:var(--panel,#26262c);border:2px solid var(--line,#7e879b);color:var(--ink,#eef1f6);min-width:0}
+.access-card h2{margin:0 0 16px;font-size:1.6rem}
+.access-card h2 span{color:var(--accent,#ffd75e)}
+.access-card p{line-height:1.65}
+.access-card .m-btn{max-width:100%;white-space:normal}
+.access-choice{display:block;border:1px solid var(--line,#777);padding:14px;margin:10px 0;cursor:pointer}
+.access-choice:has(input:checked){border-color:var(--accent,#ffd75e);background:#ffd75e13}
+.access-choice small{display:block;margin:5px 0 0 25px;opacity:.75;font-size:.85em}
+.access-field{display:block;margin:18px 0 10px}
+.access-field input{box-sizing:border-box;display:block;width:100%;margin-top:8px;padding:12px;background:var(--bg,#1c1c20);color:inherit;border:1px solid var(--line,#777);font:inherit;min-width:0}
+.access-note{font-size:.88em;opacity:.75}
+.access-result{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.access-result code{overflow-wrap:anywhere}
+.access-person{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:12px 0;border-bottom:1px solid #80808044}
+.access-person>span,.access-person>code{flex:1;min-width:80px;overflow-wrap:anywhere}
+.access-status{margin:16px auto;max-width:1200px;min-height:1.5em;color:var(--accent,#ffd75e)}
+.access-warning{padding:12px;border:1px solid #ffd75e;color:#ffd75e}
+.access-invites{margin-top:18px}
+.access-invites summary{cursor:pointer}
+.access-card button:disabled{opacity:.45;cursor:wait}
+html.readonly :is(.lvstep,.rread,.r-read input,.lvle button,.rv-acts button,[data-mix],.tbtn,[data-practice-action],.rvb){opacity:.45;cursor:not-allowed!important}
+html.readonly .lvle button{pointer-events:none}
+.acc-group{padding:8px 12px 4px;opacity:.6;font-size:.8em}
+.admin-shell{max-width:1280px;margin:28px auto;padding:0 18px}
+.admin-head{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.admin-head h1{flex:1}
+.admin-layout{display:grid;grid-template-columns:320px minmax(0,1fr);gap:18px;margin-top:20px}
+.admin-list{max-height:70vh;overflow:auto}
+.admin-list button{display:block;width:100%;text-align:left;overflow-wrap:anywhere;padding:12px;background:transparent;border:1px solid #80808055;color:inherit;cursor:pointer}
+.admin-editor textarea{box-sizing:border-box;width:100%;min-height:420px;background:#1c1c20;color:#eef1f6;border:1px solid #7e879b;padding:12px;font:14px/1.5 monospace}
+.admin-editor label{display:block;margin:16px 0 8px}
+.admin-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0}
+.admin-editor input,.admin-shell select{background:#1c1c20;color:inherit;border:1px solid #7e879b;padding:10px;font:inherit;max-width:100%}
+.admin-path{overflow-wrap:anywhere}
+.admin-error{color:#ffd75e}
+.admin-diff{white-space:pre-wrap;max-height:240px;overflow:auto;background:#1c1c20;padding:12px}
+.access-friends{margin-top:14px}
+@media(max-width:720px){.access-wrap,.admin-layout{grid-template-columns:1fr}
+.access-wrap{margin:16px 12px}
+.access-card{padding:16px}
+.access-card h2{font-size:1.5rem}
+.access-status{margin:12px}
+.admin-list{max-height:250px}
+}
+
+html[data-skin] #accountSettings, #accountSettings{font-family:'Manrope',sans-serif;font-size:14px;line-height:1.55;text-shadow:none}
+#accountSettings .access-card h2{font-family:var(--f-display,'Handjet'),sans-serif;font-size:1.8rem}
+#accountSettings .access-card :is(p,label,small,code){text-shadow:none}
+#accountSettings .access-card button{font-size:1.1rem}
+#accountSettings .access-choice{min-height:56px}
+#accountSettings .access-status{font-family:'Manrope',sans-serif}
+#viewFlag{color:var(--ink);font-family:'Manrope',sans-serif;font-size:.85rem;line-height:1.5}
+
+html[data-skin="rpg"] .admin-shell h1{font:700 1.8rem/1.2 'Manrope',sans-serif;margin:0}
+.admin-shell{font-family:'Manrope',sans-serif}
+.admin-shell h2{font-family:'Manrope',sans-serif;font-size:1.25rem}
+.admin-shell :is(button,input,select){font-family:'Manrope',sans-serif}
+.admin-shell .admin-editor{padding:20px}
+.admin-shell .admin-editor textarea{font-family:ui-monospace,Consolas,monospace}
+.admin-shell .admin-error{line-height:1.6}

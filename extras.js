@@ -101,7 +101,9 @@ if (typeof WORD_TR !== 'undefined') {
     function fill() {
       menu.innerHTML = '';
       const chips = [...document.querySelectorAll('#profList .pchip')];
+      let group='';
       chips.forEach(ch => {
+        if(ch.dataset.group!==group){group=ch.dataset.group;const label=document.createElement('div');label.className='acc-group';label.textContent=({self:'Мой аккаунт',friend:'Друзья',public:'Открыт по ссылке'})[group]||'';menu.appendChild(label);}
         const it = document.createElement('button'); it.type = 'button'; it.className = 'acc-it'; it.setAttribute('role', 'menuitem');
         it.textContent = ch.textContent; if (ch.dataset.active === '1') it.classList.add('on');
         it.addEventListener('click', () => { close(); ch.click(); });
@@ -112,7 +114,7 @@ if (typeof WORD_TR !== 'undefined') {
       if (chips.length) menu.appendChild(sep);
       const sb = document.querySelector('.modes button[data-mode="s"]');
       if (sb) {
-        const it = document.createElement('button'); it.type = 'button'; it.className = 'acc-it acc-set'; it.textContent = 'Настройки';
+        const it = document.createElement('button'); it.type = 'button'; it.className = 'acc-it acc-set'; it.textContent = 'Аккаунт, друзья и настройки';
         if (sb.getAttribute('aria-pressed') === 'true') it.classList.add('on');
         it.addEventListener('click', () => { close(); sb.click(); }); menu.appendChild(it);
       }

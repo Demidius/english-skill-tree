@@ -25,7 +25,7 @@ function applyCoef(src){
 }
 function sgn(n){ return (n>0?'+':n<0?'−':'')+Math.abs(n); }
 function currentName(){ const p=profiles.find(p=>p.id===current); return p?p.name:''; }
-function needProfile(){ if(db && !current){ document.getElementById('newName').focus(); return true; } return false; }
+function needProfile(){ if(!canWrite()){ alert('Это только просмотр. Выбери свой аккаунт, чтобы заниматься и менять прогресс.'); return true; } return false; }
 function onWriteError(e){
   if(e && ['invalid_argument','not_granted','revoked','permission_denied','forbidden','permission-denied','unauthenticated'].includes(e.code)){
     document.getElementById('roFlag').hidden=false;
@@ -387,13 +387,14 @@ const G = (function(){
   function gbarHTML(l){ let h='<span class="gbar" data-b="'+gband(l)+'">'; for(let i=1;i<=GMAX;i++) h+='<i class="'+(i<=l?'on':'')+'"></i>'; return h+'</span>'; }
   function gEdit(id){
     const l=glv[id];
+    if(!canWrite()) return '<p class="access-note">Уровень правила: '+l+' / '+GMAX+' · только просмотр</p>';
     let h='<div class="r-level"><span class="r-level-l">Уровень правила</span><span class="lvle" data-gid="'+id+'" data-l="'+l+'" data-b="'+gband(l)+'" role="group" aria-label="Уровень правила">'+
       '<button type="button" class="lvb" data-gset="'+Math.max(0,l-1)+'" title="Понизить"'+(l<=0?' disabled':'')+' aria-label="Понизить">−</button><span class="lvsegs">';
     for(let i=1;i<=GMAX;i++) h+='<button type="button" class="lvs'+(i<=l?' on':'')+'" data-gset="'+(i===l?i-1:i)+'" title="'+(i===l?'Понизить до '+(i-1):'Поставить уровень '+i)+'" aria-label="уровень '+i+'"></button>';
     return h+'</span><span class="lvn">'+l+'</span><button type="button" class="lvb" data-gset="'+Math.min(GMAX,l+1)+'" title="Повысить"'+(l>=GMAX?' disabled':'')+' aria-label="Повысить">+</button></span>'+
       '</div>';
   }
-  function readEdit(id){ return '<label class="r-read"><input type="checkbox" data-rread'+(readM[id]?' checked':'')+'> читано <span>— отметка для себя, на уровень не влияет</span></label>'; }
+  function readEdit(id){ return '<label class="r-read"><input type="checkbox" data-rread'+(readM[id]?' checked':'')+(!canWrite()?' disabled':'')+'> читано <span>— отметка для себя, на уровень не влияет</span></label>'; }
   const TEST_SVG='<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 3.2l1 1 1.7-1.9M2 8.2l1 1 1.7-1.9M6.8 3.6h3.4M6.8 8.6h3.4" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const BOOK_SVG='<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M1.5 2.2c1.6-.6 3.1-.5 4.5.4v7.6c-1.4-.9-2.9-1-4.5-.4zM10.5 2.2c-1.6-.6-3.1-.5-4.5.4v7.6c1.4-.9 2.9-1 4.5-.4z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>';
   function cardNode(c){
@@ -605,6 +606,7 @@ const G = (function(){
   function cycle(id){ if(glv[id]<GMAX) setLevelG(id, glv[id]+1); }
   function markMastered(id){ setLevelG(id, GMAX); }
   function saveScore(id, score, total){
+    if(needProfile()) return;
     scores[id]={score,total}; paintScore(id);
     if(db && current && canWrite()) db.collection('profiles/'+current+'/tests').doc(id).set({score, total, at:Date.now()}).catch(onWriteError);
     else if(local) lsSet(LKEY+'_scores', JSON.stringify(scores));
@@ -622,7 +624,7 @@ const G = (function(){
       Object.keys(scores).forEach(k=>delete scores[k]);
       qs.docs.forEach(doc=>{ const v=doc.data(); if(v && (doc.id in CARDS) && typeof v.score==='number') scores[doc.id]={score:v.score, total:v.total||10}; });
       ALL.forEach(paintScore);
-    },()=>{});
+    },()=>{ACCOUNT.denied(pid);});
     unsubP=db.collection('profiles/'+pid+'/progress').onSnapshot(qs=>{
       if(current!==pid) return;
       ALL.forEach(id=>setG(id,0));
@@ -632,7 +634,7 @@ const G = (function(){
         if(typeof v.lv==='number') setG(doc.id, v.lv);
         else if(STATUS_ORDER.includes(v.status)) setG(doc.id, STATUS_FROM_OLD[v.status]); });
       refresh();
-    },()=>{});
+    },()=>{ACCOUNT.denied(pid);});
   }
   function initLocal(){
     try{
@@ -659,6 +661,7 @@ const G = (function(){
   function optLabel(o){ return o==='—' ? '— (ничего не нужно)' : o; }
   function head(){ return mHead('Тест · '+T.kicker, T.title); }
   function openTest(id){
+    if(needProfile()) return;
     if(!TESTS[id]) return;
     const card=CARDS[id]; const b=G_BRANCHES.find(x=>x.key===card.branch); const lv=LEVELS.find(l=>l.key===card.level);
     modal.classList.remove('rulepage'); ruleId=null;
@@ -1011,6 +1014,7 @@ const W = (function(){
   }
   function lvlEdit(id,w){
     const l=lvl(id,w.k), k=esc(w.k);
+    if(!canWrite()) return '<span class="access-note">Уровень '+l+' / '+MAXL+' · просмотр</span>';
     let h='<span class="lvle" data-k="'+k+'" data-l="'+l+'" data-b="'+band(l)+'" role="group" aria-label="Уровень слова '+esc(w.en)+'">'+
       '<button type="button" class="lvb" data-setl="'+Math.max(0,l-1)+'" title="Понизить уровень"'+(l<=0?' disabled':'')+' aria-label="Понизить">−</button>'+
       '<span class="lvsegs">';
@@ -1270,6 +1274,7 @@ const W = (function(){
     if(autoSay) say(S.queue[0].en);
   }
   function grade(g){
+    if(needProfile()) return;
     if(!S || S.mode!=='session' || !S.flipped || !S.queue.length) return;
     const id=S.queue[0].tid;
     if(!S.wait) S.wait=[];
@@ -1394,7 +1399,7 @@ const W = (function(){
       });
       Object.keys(prog).forEach(k=>{ if(!seen.has(k) && !dirty.has(k)) delete prog[k]; });
       refresh();
-    },()=>{});
+    },()=>{ACCOUNT.denied(pid);});
   }
   function initLocal(){
     try{
@@ -1465,9 +1470,12 @@ const SETTINGS = (function(){
       '<div class="set-actions"><span class="set-msg" id="coefMsg" role="status">'+esc(msg)+'</span>'+
       '<button type="button" class="m-btn ghost" id="coefReset">Вернуть по умолчанию</button>'+
       '<button type="submit" class="m-btn">Сохранить</button></div></form></div>';
+    if(db && !ACCOUNT.isAdmin){ root.querySelectorAll('#coefForm button,#coefForm input').forEach(e=>e.disabled=true); }
+    ACCOUNT.mount(root);
   }
   function read(){ const o={}; root.querySelectorAll('input[data-g]').forEach(i=>{ (o[i.dataset.g]=o[i.dataset.g]||{})[i.dataset.k]=Math.round(+i.value||0); }); return o; }
   function save(o){
+    if(db && !ACCOUNT.isAdmin) return;
     applyCoef(o);
     if(db) db.doc('settings/coef').set(Object.assign(JSON.parse(JSON.stringify(COEF)),{scale:10, updatedAt:Date.now()}))
       .then(()=>{ msg='Сохранено'; setMsg(); }).catch(e=>{ msg='Не удалось сохранить'; setMsg(); onWriteError(e); });
@@ -1476,11 +1484,12 @@ const SETTINGS = (function(){
   }
   function setMsg(){ const m=document.getElementById('coefMsg'); if(m) m.textContent=msg; }
   root.addEventListener('click',ev=>{
+    if(!ev.target.closest('#coefForm') || (db && !ACCOUNT.isAdmin)) return;
     const b=ev.target.closest('[data-step]');
     if(b){ const i=document.getElementById(b.dataset.for); i.value=Math.max(+i.min,Math.min(+i.max,(+i.value||0)+(+b.dataset.step)*(+i.dataset.step||1))); msg='Есть несохранённые изменения'; setMsg(); return; }
     if(ev.target.id==='coefReset'){ msg=''; save(JSON.parse(JSON.stringify(COEF_DEFAULT))); render(); }
   });
-  root.addEventListener('input',()=>{ msg='Есть несохранённые изменения'; setMsg(); });
+  root.addEventListener('input',ev=>{ if(ev.target.closest('#coefForm')){msg='Есть несохранённые изменения';setMsg();} });
   root.addEventListener('submit',ev=>{ ev.preventDefault(); save(read()); render(); });
   function load(){
     if(db){ db.doc('settings/coef').onSnapshot(s=>{ const v=s&&s.exists?s.data():null; applyCoef(v); if(!root.hidden && !msg.startsWith('Есть')) render(); },()=>{}); }
@@ -1520,74 +1529,41 @@ setMode(mode);
 
 // ================= profiles (shared by both modes) =================
 var ME=null;
-function canWrite(){ return !ME || current===ME; }
+function canWrite(){ return db ? !!ME && current===ME : local; }
 const PKEY='ef_skilltree_profile';
 const profList=document.getElementById('profList');
-const confirmBox=document.getElementById('confirmBox');
-let pendingDelete=null;
 function selectProfile(id){
   if(!db) return;
   W.flushAll();
-  current=id; if(id) lsSet(PKEY, id);
+  if(owner) closeModal();
+  current=id;
+  document.documentElement.classList.toggle('readonly',!canWrite()); if(id) lsSet(PKEY, id);
   G.select(id); W.select(id);
   renderProfiles();
 }
 function renderProfiles(){
   const vf=document.getElementById('viewFlag');
   const cp=profiles.find(p=>p.id===current);
-  if(ME && current && current!==ME && cp){ vf.textContent='Ты смотришь прогресс «'+cp.name+'». Это только просмотр — изменения не сохранятся. Чтобы вернуться к себе, нажми на свой ник.'; vf.hidden=false; }
+  if(current && current!==ME && cp){ vf.textContent='Прогресс «'+cp.name+'» · только просмотр. Менять данные и проходить задания здесь нельзя.'; vf.hidden=false; }
   else vf.hidden=true;
   profList.innerHTML='';
-  if(!profiles.length){ profList.appendChild(el('span','hint','Добавь первого ученика →')); return; }
+  if(!profiles.length){ profList.appendChild(el('span','hint',ME?'Загрузка профиля…':'Профиль закрыт или недоступен')); return; }
   profiles.forEach(p=>{
     const b=el('button','pchip'); b.type='button';
     b.dataset.active=p.id===current?'1':'0';
+    b.dataset.group=p.group||'self';
     b.appendChild(document.createTextNode(p.id===ME ? p.name+' (я)' : p.name));
-    if(false){
-      const x=el('span','x','×'); x.title='Удалить ученика'; x.setAttribute('role','button');
-      x.addEventListener('click',ev=>{ ev.stopPropagation(); askDelete(p); });
-      b.appendChild(x);
-    }
     b.addEventListener('click',()=>{ if(p.id!==current) selectProfile(p.id); });
     profList.appendChild(b);
   });
 }
-function askDelete(p){ pendingDelete=p; document.getElementById('confirmText').textContent='Удалить «'+p.name+'»?'; confirmBox.hidden=false; }
-document.getElementById('confirmNo').addEventListener('click',()=>{ pendingDelete=null; confirmBox.hidden=true; });
-document.getElementById('confirmYes').addEventListener('click',()=>{
-  const p=pendingDelete; pendingDelete=null; confirmBox.hidden=true;
-  if(!p||!db) return;
-  db.doc('profiles/'+p.id).delete().catch(onWriteError);
-});
-document.getElementById('addForm').addEventListener('submit',ev=>{
-  ev.preventDefault();
-  const inp=document.getElementById('newName');
-  const name=inp.value.trim().slice(0,30);
-  if(!name||!db) return;
-  inp.value='';
-  db.collection('profiles').add({name, createdAt:Date.now()}).then(ref=>selectProfile(ref.id)).catch(onWriteError);
-});
-
 G.refresh(); W.refresh();
 
-const FB_CONFIG={
-  apiKey:"AIzaSyDMLtjjGnFBLPF_nhVk_gz7RfHtRUY8ECI",
-  authDomain:"english-skill-tree-01.firebaseapp.com",
-  projectId:"english-skill-tree-01",
-  storageBucket:"english-skill-tree-01.firebasestorage.app",
-  messagingSenderId:"727269577290",
-  appId:"1:727269577290:web:789bd8a809897af3128cb3"
-};
 const SKIP_KEY='ef_auth_skip';
 const authBox=document.getElementById('authBox');
 const authErr=document.getElementById('authErr');
-let fbAuth=null, unsubMe=null;
-function nickToEmail(nick){
-  const n=nick.trim().toLowerCase();
-  if(/^[a-z0-9._-]+$/.test(n)) return n+'@users.skilltree.app';
-  const hex=Array.from(new TextEncoder().encode(n)).map(b=>b.toString(16).padStart(2,'0')).join('');
-  return 'x-'+hex+'@users.skilltree.app';
-}
+let fbAuth=null;
+const nickToEmail = nick => SkillFirebase.nickToEmail(nick);
 function authMsg(code){
   return ({
     'auth/invalid-credential':'Неверный ник или пароль.',
@@ -1626,7 +1602,11 @@ async function doAuth(register){
 }
 document.getElementById('authForm').addEventListener('submit',ev=>{ ev.preventDefault(); doAuth(false); });
 document.getElementById('authReg').addEventListener('click',()=>doAuth(true));
-document.getElementById('authSkip').addEventListener('click',()=>{ lsSet(SKIP_KEY,'1'); showAuth(false); startLocal(); });
+document.getElementById('authSkip').addEventListener('click',()=>{
+  lsSet(SKIP_KEY,'1');
+  if(cloudStarted){const u=new URL(location.href);u.searchParams.delete('profile');u.searchParams.delete('friend');location.replace(u);return;}
+  showAuth(false);startLocal();
+});
 document.getElementById('goLogin').addEventListener('click',ev=>{ ev.preventDefault(); if(fbAuth) showAuth(true); else alert('Сервер входа сейчас недоступен. Попробуй позже.'); });
 document.getElementById('logoutBtn').addEventListener('click',()=>{ if(!fbAuth) return; W.flushAll(); fbAuth.signOut().then(()=>location.reload()); });
 
@@ -1639,91 +1619,57 @@ function startLocal(){
   SETTINGS.load();
   G.initLocal(); W.initLocal();
 }
-function startCloud(user){
-  db=firebase.firestore();
+let cloudStarted=false;
+// Mutating controls remain inert for a friend/public view, including keyboard activation.
+document.addEventListener('click',ev=>{
+  if(canWrite()) return;
+  if(ev.target.closest('.lvstep,.rread,[data-gset],[data-setl],[data-rid],.rvb,.tbtn,[data-kind],[data-rread]')){
+    ev.preventDefault();ev.stopImmediatePropagation();
+  }
+},true);
+async function startCloud(user){
+  if(cloudStarted) return; cloudStarted=true;
+  db=firebase.firestore(); ME=user?user.uid:null; local=false;
   document.getElementById('profileBar').hidden=false;
   document.getElementById('offlineFlag').dataset.on='0';
-  document.getElementById('logoutBtn').hidden=false;
+  document.getElementById('logoutBtn').hidden=!user;
   SETTINGS.load();
-  const uid=user.uid, me=db.doc('profiles/'+uid);
-  ME=uid;
-  me.get().then(snap=>{
-    if(!snap.exists){
-      const nick=pendingNick || (user.email||'').split('@')[0];
-      return me.set({name:nick, createdAt:Date.now()});
-    }
-  }).catch(onWriteError).finally(()=>{
-    unsubMe=db.collection('profiles').onSnapshot(qs=>{
-      profiles=qs.docs.map(doc=>{ const v=doc.data()||{}; return {id:doc.id, name:String(v.name||'Без имени'), createdAt:v.createdAt||0}; })
-        .sort((a,b)=>(a.id===uid?-1:b.id===uid?1:a.createdAt-b.createdAt));
-      if(!current || !profiles.some(p=>p.id===current)) selectProfile(uid);
-      else { renderProfiles(); G.stats(); W.stats(); }
-      offerImport(qs);
-    },()=>{
-      profiles=[{id:uid, name:pendingNick||'Я', createdAt:0}];
-      if(current!==uid) selectProfile(uid); else renderProfiles();
-    });
+  if(user){
+    const me=db.doc('profiles/'+user.uid);
+    try {
+      const snap=await me.get();
+      if(!snap.exists) await me.set({name:pendingNick || (user.email||'').split('@')[0], visibility:'private', createdAt:Date.now()});
+    } catch(e){onWriteError(e);}
+  }
+  let openedLink=false;
+  ACCOUNT.start({db,user,
+    onProfiles(list){
+      profiles=list;
+      if(!openedLink && ACCOUNT.publicId && list.some(p=>p.id===ACCOUNT.publicId)){openedLink=true;selectProfile(ACCOUNT.publicId);}
+      else if(!list.some(p=>p.id===current)) selectProfile(user?user.uid:null);
+      else {renderProfiles();G.stats();W.stats();}
+    },
+    onDenied(id){if(current===id){selectProfile(user?user.uid:null);document.getElementById('viewFlag').textContent='Доступ к этому профилю закрыт.';document.getElementById('viewFlag').hidden=false;}},
+    onRole(){SETTINGS.render();},
+    openSettings(){setMode('s');},closeSettings(){setMode('g');},select:selectProfile
   });
-}
-
-let migChecked=false;
-function offerImport(qs){
-  if(migChecked || !ME || !db) return;
-  const box=document.getElementById('migBox');
-  const docs=qs.docs.map(d=>({id:d.id, v:d.data()||{}}));
-  const mine=docs.find(d=>d.id===ME);
-  if(mine && (mine.v.migratedFrom || mine.v.migrateSkip)){ box.hidden=true; migChecked=true; return; }
-  const claimed=new Set(docs.map(d=>d.v.migratedFrom).filter(Boolean));
-  const free=Object.entries((typeof OLD_DATA==='undefined'?{profiles:{}}:OLD_DATA).profiles).filter(([pid])=>!claimed.has(pid));
-  migChecked=true;
-  if(!free.length) return;
-  db.collection('profiles/'+ME+'/cards').limit(1).get().then(c=>db.collection('profiles/'+ME+'/progress').limit(1).get().then(p=>{
-    if(!c.empty || !p.empty) return;
-    const bt=document.getElementById('migBtns'); bt.innerHTML='';
-    free.forEach(([pid,pr])=>{
-      const b=el('button','chip',pr.name); b.type='button';
-      b.addEventListener('click',()=>{ if(confirm('Перенести прогресс «'+pr.name+'» в твой аккаунт?')) doImport(pid,pr); });
-      bt.appendChild(b);
-    });
-    box.hidden=false;
-  })).catch(()=>{});
-}
-document.getElementById('migNo').addEventListener('click',()=>{
-  document.getElementById('migBox').hidden=true;
-  if(db && ME) db.doc('profiles/'+ME).set({migrateSkip:true},{merge:true}).catch(()=>{});
-});
-async function doImport(pid,pr){
-  const box=document.getElementById('migBox'); const txt=document.getElementById('migText');
-  document.getElementById('migBtns').innerHTML=''; txt.textContent='Переношу…';
-  try{
-    const ops=[];
-    ['cards','progress','tests'].forEach(col=>Object.entries(pr[col]||{}).forEach(([id,data])=>ops.push(['profiles/'+ME+'/'+col, id, data])));
-    for(let i=0;i<ops.length;i+=400){
-      const b=db.batch();
-      ops.slice(i,i+400).forEach(([c,id,data])=>b.set(db.collection(c).doc(id), data));
-      await b.commit();
-    }
-    await db.doc('profiles/'+ME).set({migratedFrom:pid, migratedAt:Date.now()},{merge:true});
-    txt.textContent='Готово! Прогресс «'+pr.name+'» перенесён.';
-    document.getElementById('migNo').hidden=true;
-    setTimeout(()=>{ box.hidden=true; },4000);
-  }catch(e){ txt.textContent='Не получилось перенести ('+(e.code||'ошибка')+'). Обнови страницу и попробуй ещё раз.'; }
+  document.documentElement.classList.toggle('readonly',!canWrite());
 }
 
 (function init(){
   if(typeof firebase==='undefined'){ startLocal(); return; }
   try{
-    firebase.initializeApp(FB_CONFIG);
-    fbAuth=firebase.auth();
+    fbAuth=SkillFirebase.init().auth;
   }catch(e){ startLocal(); return; }
   let first=true;
   fbAuth.onAuthStateChanged(user=>{
     if(user){
       showAuth(false);
-      if(localStarted){ location.reload(); return; }
+      if(localStarted || cloudStarted){ location.reload(); return; }
       startCloud(user);
     } else if(first){
-      if(lsGet(SKIP_KEY)==='1') startLocal(); else showAuth(true);
+      if(ACCOUNT.publicId){showAuth(false);startCloud(null);}
+      else if(lsGet(SKIP_KEY)==='1' && !ACCOUNT.hasInvite) startLocal(); else showAuth(true);
     }
     first=false;
   });
