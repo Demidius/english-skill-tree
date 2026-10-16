@@ -243,7 +243,11 @@
 .rvb-mix .rvb-n { color: var(--st-mastered); font-size: 2rem; white-space: nowrap; flex: none; }
 .rvb-n { white-space: nowrap; }
 .rvb-mix .rvb-l { font-size: 1.05rem; font-weight: 700; color: var(--ink); }
-.rvb-mix:not(:disabled)::after { top: 50%; transform: translateY(-50%); right: 14px; }
+.rvb-mix:not(:disabled)::after {
+  top: 0; bottom: 0; right: 14px; transform: none;
+  display: flex; align-items: center; justify-content: center;
+  line-height: 1;
+}
 
 /* Подсказка вместо кнопки, если ни одно правило не отмечено «изучено» */
 .rvb-hint {
