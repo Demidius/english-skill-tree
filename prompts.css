@@ -106,6 +106,10 @@ html[data-skin="rpg"] .pt-ai-actions .m-btn { font-family: 'Handjet', 'Manrope',
 .pt-topic-action:hover { border-color: var(--ink); background: var(--surface); }
 .pt-topic-action:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .tree.filtered .pt-topic-card:has(.node[data-match="0"]) > .pt-topic-action { opacity: .16; }
+#tip.topic-help { max-height: calc(100dvh - 32px - env(safe-area-inset-bottom, 0px)); overflow-y: auto; box-sizing: border-box; }
+#tip.topic-help[data-pinned="1"] { pointer-events: auto; }
+#tip .tip-actions { margin-top: 10px; padding-top: 4px; border-top: 1px solid var(--line); }
+#tip .tip-actions p { margin: 6px 0 0; }
 .modal-back:has(.pt-topic-dialog) { align-items: center; }
 .modal.pt-topic-dialog { width: calc(100% - 24px); max-width: 460px; max-height: calc(100dvh - 48px); padding: 16px; box-sizing: border-box; }
 .modal.pt-topic-dialog .m-top { top: -16px; margin: -16px -16px 0; padding: 14px 16px; }

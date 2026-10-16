@@ -82,6 +82,9 @@ let pinned=null;
 function showTip(icon){
   const d = TIPS[icon.dataset.tip]; if(!d) return;
   tip.innerHTML = '<b>'+esc(d.t)+'</b>'+esc(d.x);
+  tip.classList.toggle('topic-help', !!d.actions);
+  tip.dataset.pinned = pinned===icon ? '1' : '0';
+  if(d.actions) tip.innerHTML += '<div class="tip-actions">'+d.actions.map(([label,text])=>'<p><strong>'+esc(label)+'</strong> — '+esc(text)+'</p>').join('')+'</div>';
   tip.hidden=false;
   const r = icon.getBoundingClientRect();
   const tw = tip.offsetWidth, th = tip.offsetHeight;
@@ -366,10 +369,15 @@ const G = (function(){
   function sumOf(ids){ return ids.reduce((s,id)=>s+glv[id],0); }
   function avgOf(ids){ if(!ids.length) return '0'; const v=sumOf(ids)/ids.length; return (Math.round(v*10)/10).toString().replace('.',','); }
   function setG(id,l){ glv[id]=Math.max(0,Math.min(GMAX,l|0)); state[id]=gstatus(glv[id]); }
+  const actionHelp = [
+    ['Тест', 'проверка этой темы: 10 вопросов.'],
+    ['YouTube', 'поиск видео по названию темы в новой вкладке.'],
+    ['GPT', 'объяснение темы в GPT, Claude, DeepSeek или Qwen. Выбери сервис, затем вставь скопированный промт в чат.'],
+  ];
   G_BRANCHES.forEach(b=>LEVELS.forEach(l=>(b.cells[l.key]||[]).forEach(c=>{
     CARDS[c[0]]={branch:b.key, level:l.key, title:c[1], tags:c[5]};
     state[c[0]]='not_started'; glv[c[0]]=0;
-    if(G_INFO[c[0]]) TIPS['g:c:'+c[0]]={t:c[1], x:G_INFO[c[0]]};
+    if(G_INFO[c[0]]) TIPS['g:c:'+c[0]]={t:c[1], x:G_INFO[c[0]], actions:actionHelp.filter(([label])=>label!=='Тест'||TESTS[c[0]])};
   })));
   const ALL=Object.keys(CARDS);
 
