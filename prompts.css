@@ -90,7 +90,8 @@ html[data-skin="rpg"] .pt-ai-actions .m-btn { font-family: 'Handjet', 'Manrope',
 
 /* A real sibling button keeps the topic's main button and AI action independent. */
 .pt-topic-card { --topic-action-h: 20px; --topic-action-top: 7px; --topic-action-font: .66rem; --topic-action-right: 7px; --topic-action-gap: 8px; --topic-test-width: 52px; position: relative; min-width: 0; }
-.pt-topic-card > .node { width: 100%; box-sizing: border-box; padding-top: calc(var(--topic-action-top) + 2 * var(--topic-action-h) + var(--topic-action-gap) + 12px) !important; }
+.pt-topic-card > .node { width: 100%; box-sizing: border-box; }
+.pt-topic-heading { display: flex; flex-direction: column; gap: 2px; box-sizing: border-box; min-height: calc(2 * var(--topic-action-h) + var(--topic-action-gap)); padding-right: calc(var(--topic-action-h) + var(--topic-test-width) + 2 * var(--topic-action-gap)); overflow-wrap: anywhere; }
 #mode-g .pt-topic-card > .node .t, #mode-g .pt-topic-card > .node .g { padding-right: 0; }
 .pt-topic-action { position: absolute; display: flex; align-items: center; justify-content: center; padding: 0 9px; border: 1px solid var(--accent); border-radius: var(--ui-r, 8px); background: var(--surface-2); color: var(--ink); font: 700 var(--topic-action-font)/1 'Manrope', sans-serif; cursor: pointer; text-decoration: none; }
 .pt-topic-ai { right: calc(var(--topic-action-right) + 1px); width: var(--topic-test-width); }

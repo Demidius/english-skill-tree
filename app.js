@@ -394,8 +394,8 @@ const G = (function(){
     btn.innerHTML=
       (G_INFO[id]?'<span class="info" data-tip="g:c:'+id+'">i</span>':'')+
       (TESTS[id]?'<span class="wbtn wtest rtest rbtn" data-rid="'+id+'" role="button" tabindex="0" title="Пройти тест из 10 вопросов">Тест</span>':'')+
-      '<span class="t">'+esc(t)+'</span>'+
-      (g?'<span class="g">'+esc(g)+'</span>':'')+
+      '<span class="pt-topic-heading"><span class="t">'+esc(t)+'</span>'+
+      (g?'<span class="g">'+esc(g)+'</span>':'')+'</span>'+
       (ex?'<span class="ex">'+esc(ex)+'</span>':'')+
       gbarHTML(0)+
       '<span class="foot"><span class="status-chip split">'+
