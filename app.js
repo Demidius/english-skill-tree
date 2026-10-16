@@ -1468,14 +1468,14 @@ const SETTINGS = (function(){
           '<button type="button" class="lvb" data-step="1" data-for="c-'+g.key+'-'+k+'" aria-label="больше">+</button></span></label>').join('')+
         '</fieldset>').join('')+
       '<div class="set-actions"><span class="set-msg" id="coefMsg" role="status">'+esc(msg)+'</span>'+
-      '<button type="button" class="m-btn ghost" id="coefReset">Вернуть по умолчанию</button>'+
-      '<button type="submit" class="m-btn">Сохранить</button></div></form></div>';
+      '</div></form></div>';
     if(db && !ACCOUNT.isAdmin){ root.querySelectorAll('#coefForm button,#coefForm input').forEach(e=>e.disabled=true); }
     ACCOUNT.mount(root);
   }
-  function read(){ const o={}; root.querySelectorAll('input[data-g]').forEach(i=>{ (o[i.dataset.g]=o[i.dataset.g]||{})[i.dataset.k]=Math.round(+i.value||0); }); return o; }
+  function read(){ const o={}; root.querySelectorAll('input[data-g]').forEach(i=>{ (o[i.dataset.g]=o[i.dataset.g]||{})[i.dataset.k]=i.value!=='' && i.validity.valid ? Math.round(+i.value) : COEF[i.dataset.g][i.dataset.k]; }); return o; }
   function save(o){
     if(db && !ACCOUNT.isAdmin) return;
+    msg='Сохраняется…'; setMsg();
     applyCoef(o);
     if(db) db.doc('settings/coef').set(Object.assign(JSON.parse(JSON.stringify(COEF)),{scale:10, updatedAt:Date.now()}))
       .then(()=>{ msg='Сохранено'; setMsg(); }).catch(e=>{ msg='Не удалось сохранить'; setMsg(); onWriteError(e); });
@@ -1485,14 +1485,16 @@ const SETTINGS = (function(){
   function setMsg(){ const m=document.getElementById('coefMsg'); if(m) m.textContent=msg; }
   root.addEventListener('click',ev=>{
     if(!ev.target.closest('#coefForm') || (db && !ACCOUNT.isAdmin)) return;
-    const b=ev.target.closest('[data-step]');
-    if(b){ const i=document.getElementById(b.dataset.for); i.value=Math.max(+i.min,Math.min(+i.max,(+i.value||0)+(+b.dataset.step)*(+i.dataset.step||1))); msg='Есть несохранённые изменения'; setMsg(); return; }
-    if(ev.target.id==='coefReset'){ msg=''; save(JSON.parse(JSON.stringify(COEF_DEFAULT))); render(); }
+    const b=ev.target.closest('button[data-step]');
+    if(b){ const i=document.getElementById(b.dataset.for); i.value=Math.max(+i.min,Math.min(+i.max,(+i.value||0)+(+b.dataset.step)*(+i.dataset.step||1))); save(read()); return; }
   });
-  root.addEventListener('input',ev=>{ if(ev.target.closest('#coefForm')){msg='Есть несохранённые изменения';setMsg();} });
-  root.addEventListener('submit',ev=>{ ev.preventDefault(); save(read()); render(); });
+  root.addEventListener('input',ev=>{
+    const i=ev.target;
+    if(i.matches('#coefForm input[data-g]') && i.value!=='' && i.validity.valid) save(read());
+  });
+  root.addEventListener('submit',ev=>{ ev.preventDefault(); save(read()); });
   function load(){
-    if(db){ db.doc('settings/coef').onSnapshot(s=>{ const v=s&&s.exists?s.data():null; applyCoef(v); if(!root.hidden && !msg.startsWith('Есть')) render(); },()=>{}); }
+    if(db){ db.doc('settings/coef').onSnapshot(s=>{ const v=s&&s.exists?s.data():null; applyCoef(v); if(!root.hidden && !root.contains(document.activeElement)) render(); },()=>{}); }
     else { try{ applyCoef(JSON.parse(lsGet(SKEY)||'null')); }catch(e){} }
     render();
   }
