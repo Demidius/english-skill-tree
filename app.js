@@ -394,8 +394,8 @@ const G = (function(){
     btn.innerHTML=
       (G_INFO[id]?'<span class="info" data-tip="g:c:'+id+'">i</span>':'')+
       (TESTS[id]?'<span class="wbtn wtest rtest rbtn" data-rid="'+id+'" role="button" tabindex="0" title="Пройти тест из 10 вопросов">Тест</span>':'')+
-      '<span class="t">'+esc(t)+'</span>'+
-      (g?'<span class="g">'+esc(g)+'</span>':'')+
+      '<span class="pt-topic-heading"><span class="t">'+esc(t)+'</span>'+
+      (g?'<span class="g">'+esc(g)+'</span>':'')+'</span>'+
       (ex?'<span class="ex">'+esc(ex)+'</span>':'')+
       gbarHTML(0)+
       '<span class="foot"><span class="status-chip split">'+
@@ -416,11 +416,16 @@ const G = (function(){
       s.addEventListener('keydown',ev=>{ if(ev.key==='Enter'||ev.key===' ') go(ev); });
     });
     const topic = el('div', 'pt-topic-card');
-    const ai = el('button', 'pt-topic-ai', 'GPT'); ai.type = 'button'; ai.dataset.topicGpt = id;
+    const ai = el('button', 'pt-topic-action pt-topic-ai', 'GPT'); ai.type = 'button'; ai.dataset.topicGpt = id;
     ai.setAttribute('aria-haspopup', 'dialog'); ai.setAttribute('aria-label', 'GPT: объяснение темы ' + t);
     ai.title = 'Объяснить тему в GPT, Claude, DeepSeek или Qwen';
     ai.addEventListener('click', ev => { ev.stopPropagation(); if (window.PROMPTS) window.PROMPTS.openTopic(id); });
-    topic.append(btn, ai);
+    const youtube = el('a', 'pt-topic-action pt-topic-youtube'); youtube.dataset.topicYoutube = id;
+    youtube.href = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(t);
+    youtube.target = '_blank'; youtube.rel = 'noopener noreferrer';
+    youtube.title = 'Найти на YouTube: ' + t; youtube.setAttribute('aria-label', youtube.title);
+    youtube.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="1" y="4" width="22" height="16" rx="4" fill="#ff0033"/><path d="m10 8 6 4-6 4z" fill="#fff"/></svg>';
+    topic.append(btn, youtube, ai);
     return topic;
   }
 
