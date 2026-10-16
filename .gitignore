@@ -1,0 +1,8 @@
+node_modules/
+*-debug.log
+*-debug.*.log
+.firebase/
+.emulators/
+coverage/
+service-account*.json
+*.local.json

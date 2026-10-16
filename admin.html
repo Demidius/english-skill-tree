@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ru" data-skin="rpg">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="same-origin">
+<title>Управление данными · Skill Tree</title>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Handjet:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=20261016-14"><link rel="stylesheet" href="themes.css?v=20261016-1"><link rel="stylesheet" href="account-access.css?v=20261016-20">
+</head>
+<body>
+<main class="admin-shell">
+  <div class="admin-head"><h1>Управление данными</h1><button type="button" class="m-btn ghost" id="adminLogout" hidden>Выйти</button></div>
+  <p id="adminStatus" role="status">Проверяю доступ…</p>
+  <form id="adminLogin" class="access-card" hidden>
+    <h2>Вход администратора</h2><p>Доступ разрешён только аккаунту Demid с назначенными правами администратора.</p>
+    <label class="access-field">Ник<input id="adminNick" autocomplete="username" required maxlength="15"></label>
+    <label class="access-field">Пароль<input id="adminPass" type="password" autocomplete="current-password" required></label>
+    <button type="submit" class="m-btn">Войти</button>
+  </form>
+  <section id="adminData" hidden>
+    <p>Данные приложения: ученики, грамматика, слова, результаты тестов, дружба и общие настройки. Пароли здесь не хранятся.</p>
+    <div class="admin-toolbar"><label for="adminCollection">Раздел</label><select id="adminCollection"><option value="profiles">Ученики</option><option value="friendInvites">Приглашения</option><option value="settings">Общие настройки</option><option value="system">Состояние доступа</option><option value="accessAdmins">Администраторы · просмотр</option></select><button class="m-btn ghost" type="button" id="adminReload">Обновить</button></div>
+    <div class="admin-layout">
+      <div><h2 class="admin-path" id="adminListTitle">Ученики</h2><div class="admin-list" id="adminList"></div><button class="m-btn ghost" type="button" id="adminMore" hidden>Ещё 50</button></div>
+      <div class="admin-editor access-card" id="adminEditor" hidden>
+        <h2 class="admin-path" id="adminDocTitle"></h2><div class="admin-toolbar" id="adminSubcollections"></div>
+        <label for="adminJson">Данные документа · JSON</label><textarea id="adminJson" spellcheck="false"></textarea>
+        <p class="access-note">Временные метки сохраняются как {"__type":"timestamp","seconds":…,"nanoseconds":…}. Изменения сначала можно просмотреть.</p>
+        <div class="admin-toolbar"><button class="m-btn ghost" type="button" id="adminPreview">Проверить изменения</button><button class="m-btn" type="button" id="adminSave">Сохранить…</button><button class="m-btn ghost" type="button" id="adminCancel">Сбросить правки</button></div>
+        <pre class="admin-diff" id="adminDiff" hidden></pre><p id="adminEditStatus" role="status"></p>
+      </div>
+    </div>
+  </section>
+</main>
+<script src="firebase-config.js?v=20261016-20"></script><script src="admin.js?v=20261016-20"></script>
+</body>
+</html>

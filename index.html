@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <script>document.documentElement.classList.add('booting','auth-wait');setTimeout(function(){document.documentElement.classList.remove('auth-wait')},9000);try{var __s=localStorage.getItem('ef_skin')==='classic'?'classic':'rpg';if(__s!=='classic')document.documentElement.setAttribute('data-skin',__s);if(localStorage.getItem('ef_wview')!=='topics')document.documentElement.setAttribute('data-wview','levels')}catch(e){document.documentElement.setAttribute('data-skin','rpg');document.documentElement.setAttribute('data-wview','levels')}</script>
+<meta name="referrer" content="same-origin">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>English File · Skill Tree</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -27,6 +28,7 @@
 <link rel="stylesheet" href="ui-shell.css?v=20261015-2">
 <link rel="stylesheet" href="classic-theme.css?v=20261015-2">
 <link rel="stylesheet" href="prompts.css?v=20261016-18">
+<link rel="stylesheet" href="account-access.css?v=20261016-20">
 <link rel="stylesheet" href="help-icons.css?v=20261015-1">
 <style>
 /* Шторка на время загрузки и перестройки страницы */
@@ -60,22 +62,10 @@ html.switching .acc-btn::after{content:'…';margin-left:4px;opacity:.8}
     <span class="ctl-label">Аккаунт</span>
     <div class="ctl-group" id="profList"><span class="hint">загрузка…</span></div>
     <button type="button" class="chip" id="logoutBtn" hidden>Выйти</button>
-    <form class="add-form" id="addForm" autocomplete="off" hidden>
-      <input id="newName" maxlength="30" placeholder="Новое имя" aria-label="Имя нового ученика">
-      <button type="submit" class="chip">+ добавить</button>
-    </form>
-    <div class="confirm" id="confirmBox" hidden>
-      <span id="confirmText"></span>
-      <button type="button" class="chip danger" id="confirmYes">Удалить</button>
-      <button type="button" class="chip" id="confirmNo">Отмена</button>
-    </div>
+
   </div>
   <div class="ro-flag" id="viewFlag" hidden></div>
-  <div class="mig-box" id="migBox" hidden>
-    <span id="migText">Перенести прогресс со старого сайта (Claude)? Выбери, чей это прогресс:</span>
-    <span id="migBtns"></span>
-    <button type="button" class="chip" id="migNo">Не нужно</button>
-  </div>
+
   <div class="ro-flag" id="roFlag" hidden>Не получилось сохранить изменения. Проверь интернет и попробуй ещё раз; если не поможет — выйди и войди снова.</div>
   <div class="offline-flag" id="offlineFlag">Прогресс сохраняется только в этом браузере. Чтобы он был общим на всех устройствах, <a href="#" id="goLogin">войди или зарегистрируйся</a>.</div>
 </header>
@@ -108,9 +98,10 @@ html.switching .acc-btn::after{content:'…';margin-left:4px;opacity:.8}
 <script src="data-patch.js"></script>
 <script src="fixes.js?v=20261013-1"></script>
 <script src="verb-forms.js"></script>
-<script src="migration.js"></script>
-<script src="app.js?v=20261016-12"></script>
-<script src="extras.js?v=20261016-18"></script>
+<script src="firebase-config.js?v=20261016-20"></script>
+<script src="account-access.js?v=20261016-20"></script>
+<script src="app.js?v=20261016-20"></script>
+<script src="extras.js?v=20261016-20"></script>
 <script src="themes.js?v=20261015-1"></script>
 <script src="prompts.js?v=20261016-18"></script>
 <script src="help-icons.js?v=20261015-1"></script>
