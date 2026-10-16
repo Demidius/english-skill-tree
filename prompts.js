@@ -21,11 +21,11 @@
     explain:   { name: 'Объяснение', sub: 'разбор темы, без кода', code: false, def: 4, topicOnly: true },
   };
   const TEXT_LENGTHS = [
-    { name: 'Очень короткий', sentences: '2–3 предложения' },
-    { name: 'Короткий', sentences: '4–6 предложений' },
-    { name: 'Средний', sentences: '8–12 предложений' },
-    { name: 'Длинный', sentences: '16–20 предложений' },
-    { name: 'Очень длинный', sentences: '30–40 предложений' },
+    { name: 'Очень короткий', sentences: '2–3 предложения', en: 'very short, 2–3 sentences' },
+    { name: 'Короткий', sentences: '4–6 предложений', en: 'short, 4–6 sentences' },
+    { name: 'Средний', sentences: '8–12 предложений', en: 'medium, 8–12 sentences' },
+    { name: 'Длинный', sentences: '16–20 предложений', en: 'long, 16–20 sentences' },
+    { name: 'Очень длинный', sentences: '30–40 предложений', en: 'very long, 30–40 sentences' },
   ];
   const LV_ORDER = { A1: 0, A2: 1, B1: 2, B2: 3 };
   const AI_CHATS = {
@@ -43,12 +43,15 @@
     return IS_TOUCH ? 'удержи палец в поле сообщения → «Вставить»' : (IS_MAC ? '⌘V' : 'Ctrl+V');
   }
 
-  // allowPrefill: только короткие промты объяснения темы. Задания для отработки всегда длинные
-  // (кириллица в адресе раздувается в 6 раз), поэтому там чат открывается пустым, а промт — в буфере.
-  function chatDestination(ai, text, allowPrefill) {
+  // Промт передаётся в чат прямо в ссылке (?q=…), поэтому инструкции для нейросети написаны
+  // по-английски: кириллица в адресе раздувается в 6 раз и не влезала в лимит. Если промт всё же
+  // длиннее лимита (очень много правил) или чат не принимает текст из ссылки (DeepSeek),
+  // чат открывается пустым, а промт лежит в буфере.
+  const URL_LIMIT = 12000;
+  function chatDestination(ai, text) {
     const url = new URL(ai.url);
-    if (allowPrefill && ai.query) url.searchParams.set(ai.query, text);
-    const prefilled = !!allowPrefill && !!ai.query && url.href.length <= 12000;
+    if (ai.query && text) url.searchParams.set(ai.query, text);
+    const prefilled = !!ai.query && !!text && url.href.length <= URL_LIMIT;
     const web = prefilled ? url.href : ai.url;
     const href = IS_ANDROID && preferApp
       ? 'intent://' + web.slice('https://'.length) + '#Intent;scheme=https;package=' + ai.android + ';S.browser_fallback_url=' + encodeURIComponent(web) + ';end'
@@ -105,98 +108,99 @@
     return ids.map((id, i) => {
       const f = INFO[id], r = byId[id];
       return (i + 1) + '. ' + id + ' — ' + f.title + ' (' + f.level + ', ' + f.branch + '): ' + f.gloss +
-        (f.ex ? '. Пример: ' + f.ex : '') + ' — мой уровень ' + (r ? r.lv : 0) + '/10';
+        (f.ex ? '. Example: ' + f.ex : '') + ' — my level ' + (r ? r.lv : 0) + '/10';
     }).join('\n');
   }
   function orderedSel() {
     return rules().filter(r => S.sel.has(r.id)).map(r => r.id);
   }
+  // Инструкции — по-английски (так промт помещается в ссылку), но общаться нейросеть должна по-русски.
   function sentencePrompt(direction) {
     const toEnglish = direction === 'ru-en';
-    return 'Задание — перевод по одному полному предложению ' + (toEnglish ? 'с русского на английский (RU → EN)' : 'с английского на русский (EN → RU)') + '.\n' +
-      '1. Дай ровно одно новое полное предложение ' + (toEnglish ? 'на русском' : 'на английском') + ' на бытовую тему. ' +
-      'Оно должно отрабатывать одно или несколько правил из выбранного списка. Чередуй темы, постепенно охвати весь список, слабые темы давай чаще. ' +
-      'Не выдавай набор предложений, готовый перевод или подсказку о нужном правиле.\n' +
-      '2. Остановись и жди мой перевод ' + (toEnglish ? 'на английский' : 'на русский') + '. Не отвечай за ученика и не разбирай предложение заранее.\n' +
-      '3. После каждого моего перевода сразу дай короткий разбор по-русски. Если перевод верный — явно подтверди это. ' +
-      'Если есть ошибка — покажи мой вариант → исправленный вариант, объясни причину и укажи id правила из выбранного списка. ' +
-      'Принимай корректные варианты перевода: не требуй буквального совпадения с образцом. Более естественную формулировку предлагай отдельно, не считая правильный вариант ошибкой. ' +
-      (toEnglish ? 'Проверяй смысл и английскую грамматику.' : 'Проверяй сохранение смысла английской конструкции в русском переводе: времени, отрицания, условия, модальности и других значимых оттенков. Не требуй воспроизведения английского порядка слов в русском.') +
-      ' Ошибки вне выбранных правил отмечай отдельно: они не влияют на код этих правил.\n' +
-      '4. В том же ответе после разбора сразу дай следующее одно предложение и снова жди мой перевод. Не спрашивай каждый раз, продолжать ли. ' +
-      'В каждый момент должно быть только одно предложение, ожидающее перевода.\n' +
-      '5. Повторяй этот цикл без заранее заданного числа предложений, пока я явно не завершу занятие: «хватит», «стоп», «закончим», «итог» или аналогичная просьба. ' +
-      'Это команда завершения, а не перевод. Если я прислал перевод вместе с просьбой закончить, сначала оцени этот перевод. ' +
-      'Неотвеченное предложение не считай ошибкой. После команды завершения новых заданий не давай.\n' +
-      '6. Только после завершения подведи общие итоги всей сессии: сколько переводов выполнено, что получилось, какие ошибки повторялись и что повторить. ' +
-      'Для каждого выбранного правила укажи число верных и ошибочных применений. Оценивай ответы ученика, а не свои исправления. ' +
-      'Итог правила: «верно» (+), если оно проверялось и все ответы по нему верны; «ошибка» (-), если была хотя бы одна ошибка именно в этом правиле; ' +
-      '«не встретилось» (0), если правило не проверялось, в том числе если занятие закончилось до первого перевода. ' +
-      'Не добавляй в итог правила вне выбранного списка. Затем выведи один итоговый код для сайта по формату ниже. До завершения занятия код не выдавай.\n';
+    return 'Task: translation one full sentence at a time, ' + (toEnglish ? 'from Russian into English (RU → EN)' : 'from English into Russian (EN → RU)') + '.\n' +
+      '1. Give exactly one new full sentence ' + (toEnglish ? 'in Russian' : 'in English') + ' on an everyday topic. ' +
+      'It must practise one or more rules from the list. Rotate the rules, gradually cover the whole list, and give weak rules more often. ' +
+      'Do not give a set of sentences, a ready translation, or a hint about which rule is needed.\n' +
+      '2. Stop and wait for my translation ' + (toEnglish ? 'into English' : 'into Russian') + '. Do not answer for me and do not analyse the sentence in advance.\n' +
+      '3. After each of my translations, immediately give a short analysis in Russian. If the translation is correct, say so explicitly. ' +
+      'If there is a mistake, show my version → corrected version, explain why, and give the id of the rule from the list. ' +
+      'Accept any correct translation: do not require a literal match with your model answer. Suggest a more natural wording separately, without counting a correct version as a mistake. ' +
+      (toEnglish ? 'Check the meaning and the English grammar.' : 'Check that the Russian translation keeps the meaning of the English structure: tense, negation, condition, modality and other important nuances. Do not require English word order in Russian.') +
+      ' Mark mistakes outside the selected rules separately: they do not affect the code for these rules.\n' +
+      '4. In the same reply, right after the analysis, give the next single sentence and wait for my translation again. Do not ask each time whether to continue. ' +
+      'Only one sentence may be waiting for translation at any moment.\n' +
+      '5. Repeat this cycle with no fixed number of sentences until I explicitly end the session: «хватит», «стоп», «закончим», «итог» or a similar request. ' +
+      'That is an end command, not a translation. If I send a translation together with a request to stop, first assess that translation. ' +
+      'An unanswered sentence is not a mistake. After the end command, give no new tasks.\n' +
+      '6. Only after the end, summarise the whole session in Russian: how many translations were done, what went well, which mistakes repeated and what to review. ' +
+      'For each selected rule, give the number of correct and incorrect uses. Assess my answers, not your own corrections. ' +
+      'Rule result: "correct" (+) if it was tested and all my answers on it were correct; "mistake" (-) if there was at least one mistake in exactly this rule; ' +
+      '"not tested" (0) if the rule was not tested, including when the session ended before the first translation. ' +
+      'Do not add rules outside the selected list to the result. Then output one final code for the site in the format below. Do not give the code before the session ends.\n';
   }
   function buildPrompt() {
     const ids = orderedSel();
     if (!ids.length) return '';
     const lvls = [...new Set(ids.map(id => INFO[id].level))].sort((a, b) => LV_ORDER[a] - LV_ORDER[b]);
     const head =
-      'Ты — опытный преподаватель английского для русскоязычных учеников. Я занимаюсь по учебникам English File ' +
-      '(в этом занятии — уровни ' + lvls.join(', ') + ') и отрабатываю конкретные грамматические правила. ' +
-      'Общайся со мной по-русски; английский — только в заданиях, примерах и исправлениях.\n\n' +
-      'Правила для отработки (id — название, уровень учебника, суть, пример; в конце — мой текущий уровень владения правилом по шкале 0–10):\n' +
+      'You are an experienced English teacher for Russian-speaking learners. I study with the English File textbooks ' +
+      '(levels in this session: ' + lvls.join(', ') + ') and practise specific grammar rules. ' +
+      'Talk to me in Russian: all explanations, feedback and summaries must be in Russian; use English only in tasks, examples and corrections.\n\n' +
+      'Rules to practise (id — name (textbook level, topic): gist in Russian. Example — my current level for this rule on a 0–10 scale):\n' +
       ruleLines(ids) + '\n\n' +
-      'Правила с уровнем 0–4 я знаю слабо — давай их проще и чаще; с уровнем 8–9 — в более сложных контекстах.\n\n';
+      'Rules at level 0–4 are weak for me — use them in simpler contexts and more often; rules at level 8–9 — in more complex contexts.\n\n';
     const body = TYPES[S.type].direction ? sentencePrompt(TYPES[S.type].direction) : {
       translate:
-        'Задание — перевод с русского на английский.\n' +
-        '1. Напиши один связный текст на русском. Выбранная длина: ' + TEXT_LENGTHS[S.textLength].name.toLowerCase() + ' текст, ' + TEXT_LENGTHS[S.textLength].sentences + '. ' +
-        'Тема — бытовая (работа, путешествия, друзья, планы, выходные и т. п.). Соблюдай выбранный диапазон длины. ' +
-        'Постарайся естественно охватить выбранные правила, начиная со слабых. Если в короткий текст все темы не помещаются, не увеличивай длину и не перегружай предложения: используй часть тем. ' +
-        'Правила, которых не было в тексте или переводе ученика, отметь в итоге как «не встретилось» (0); их уровни не меняются. Лексика — не сложнее уровня B1. ' +
-        'Не подсказывай, где какое правило, и не давай перевод.\n' +
-        '2. Остановись и жди мой перевод. Ничего не разбирай заранее.\n' +
-        '3. Когда я пришлю перевод, разбери его по предложениям:\n' +
-        '   — мой вариант → правильный вариант, если есть ошибка;\n' +
-        '   — коротко по-русски: в чём ошибка и к какому правилу (id) она относится;\n' +
-        '   — если вариант верный, но звучит неестественно, предложи более естественный и отметь, что это не ошибка;\n' +
-        '   — ошибки не по правилам из списка (слова, предлоги, артикли, порядок слов) отмечай отдельно — на оценку правил они не влияют.\n' +
-        '4. Итог по каждому правилу из списка: «верно» — все употребления правильные; «ошибка» — хотя бы одна ошибка именно в этом правиле; ' +
-        '«не встретилось» — если правило не встречалось в тексте или моём переводе. Потом коротко: какие правила можно повышать, какие стоит повторить и что именно повторить.\n',
+        'Task: translation from Russian into English.\n' +
+        '1. Write one coherent text in Russian. Length: ' + TEXT_LENGTHS[S.textLength].en + '. ' +
+        'Topic: everyday life (work, travel, friends, plans, weekends, etc.). Stay within the chosen length. ' +
+        'Try to cover the selected rules naturally, starting with the weak ones. If not all rules fit into a short text, do not make it longer and do not overload the sentences: use only some of the rules. ' +
+        'Rules that did not appear in the text or in my translation are "not tested" (0) in the result; their levels do not change. Vocabulary — no harder than B1. ' +
+        'Do not hint which rule is where, and do not give the translation.\n' +
+        '2. Stop and wait for my translation. Do not analyse anything in advance.\n' +
+        '3. When I send my translation, go through it sentence by sentence, in Russian:\n' +
+        '   — my version → correct version, if there is a mistake;\n' +
+        '   — briefly: what the mistake is and which rule (id) it belongs to;\n' +
+        '   — if my version is correct but sounds unnatural, suggest a more natural one and say that it is not a mistake;\n' +
+        '   — mark mistakes outside the listed rules (words, prepositions, articles, word order) separately — they do not affect the rule results.\n' +
+        '4. Result for each rule in the list: "correct" — all uses are right; "mistake" — at least one mistake in exactly this rule; ' +
+        '"not tested" — the rule did not appear in the text or in my translation. Then briefly: which rules can go up, which to review and what exactly to review.\n',
       fix:
-        'Задание — найди и исправь ошибки.\n' +
-        '1. Напиши 12 пронумерованных предложений на английском. Примерно в половине из них должна быть ошибка именно в правилах из списка ' +
-        '(каждое правило — минимум в 2 предложениях: с ошибкой и без), остальные предложения — правильные. ' +
-        'Ошибки делай типичными для русскоязычных учеников. Не помечай, где ошибки и какие правила проверяются.\n' +
-        '2. Остановись и жди мой ответ: я напишу номера предложений с ошибками и исправленные варианты.\n' +
-        '3. Разбери мой ответ: какие ошибки я нашёл и исправил верно, какие пропустил, где «исправил» правильное предложение. ' +
-        'Для каждой ошибки — правильный вариант и короткое объяснение по-русски со ссылкой на правило (id).\n' +
-        '4. Итог по каждому правилу: «верно» — я нашёл и правильно исправил все ошибки этого правила и не испортил правильные предложения; ' +
-        '«ошибка» — пропустил или неверно исправил хотя бы одну; «не встретилось» — если правила в предложениях не было. ' +
-        'Потом коротко: какие правила можно повышать, какие повторить.\n',
+        'Task: find and correct mistakes.\n' +
+        '1. Write 12 numbered sentences in English. About half of them must contain a mistake in exactly the listed rules ' +
+        '(each rule in at least 2 sentences: one with a mistake and one without); the other sentences are correct. ' +
+        'Make the mistakes typical for Russian speakers. Do not mark where the mistakes are or which rules are tested.\n' +
+        '2. Stop and wait for my answer: I will write the numbers of the wrong sentences and my corrections.\n' +
+        '3. Analyse my answer in Russian: which mistakes I found and fixed correctly, which I missed, and where I "fixed" a correct sentence. ' +
+        'For each mistake — the correct version and a short explanation with the rule id.\n' +
+        '4. Result for each rule: "correct" — I found and correctly fixed all mistakes of this rule and did not spoil correct sentences; ' +
+        '"mistake" — I missed or wrongly fixed at least one; "not tested" — the rule was not in the sentences. ' +
+        'Then briefly: which rules can go up, which to review.\n',
       dialog:
-        'Задание — разговорная практика.\n' +
-        '1. Предложи на выбор 3 бытовые ситуации для диалога, дождись моего выбора и начни разговор на английском. ' +
-        'Задавай вопросы так, чтобы мне приходилось отвечать с помощью правил из списка (по очереди охвати все). ' +
-        'В одном сообщении — один-два вопроса, говори просто.\n' +
-        '2. Во время диалога ошибки не исправляй, просто продолжай разговор. Сделай 10–12 реплик или закончи раньше, если я напишу «итог».\n' +
-        '3. После диалога разбери мои реплики: мой вариант → правильный, коротко по-русски, со ссылкой на правило (id). ' +
-        'Ошибки не по правилам из списка отмечай отдельно — на оценку правил они не влияют.\n' +
-        '4. Итог по каждому правилу: «верно» — все употребления правильные; «ошибка» — хотя бы одна ошибка в этом правиле; ' +
-        '«не встретилось» — если я его не использовал. Потом коротко: какие правила можно повышать, какие повторить.\n',
+        'Task: speaking practice.\n' +
+        '1. Offer 3 everyday situations for a dialogue, wait for my choice and start the conversation in English. ' +
+        'Ask questions so that I have to answer using the listed rules (cover all of them in turn). ' +
+        'One or two questions per message, keep it simple.\n' +
+        '2. During the dialogue, do not correct mistakes, just keep talking. Make 10–12 turns, or finish earlier if I write «итог».\n' +
+        '3. After the dialogue, go through my lines in Russian: my version → correct one, briefly, with the rule id. ' +
+        'Mark mistakes outside the listed rules separately — they do not affect the rule results.\n' +
+        '4. Result for each rule: "correct" — all uses are right; "mistake" — at least one mistake in this rule; ' +
+        '"not tested" — I did not use it. Then briefly: which rules can go up, which to review.\n',
       explain:
-        'Задание — объясни эти правила, начиная с того, где у меня самый низкий уровень. Для каждого правила:\n' +
-        '1. Простое объяснение по-русски: когда употребляется и как строится (утверждение, отрицание, вопрос).\n' +
-        '2. Чем отличается от похожих конструкций, которые путают русскоязычные, — с примерами «так — не так».\n' +
-        '3. 4–5 примеров из жизни с переводом.\n' +
-        '4. Мини-тест из 5 заданий (вставить пропуск или перевести фразу). Ответы дай в самом конце под заголовком «Ответы».\n',
+        'Task: explain these rules, starting with the one where my level is lowest. For each rule:\n' +
+        '1. A simple explanation in Russian: when it is used and how it is formed (positive, negative, question).\n' +
+        '2. How it differs from similar structures that Russian speakers confuse — with "right / wrong" examples.\n' +
+        '3. 4–5 real-life examples with Russian translation.\n' +
+        '4. A mini-test of 5 tasks (fill the gap or translate a phrase). Put the answers at the very end under the heading «Ответы».\n',
     }[S.type];
     const code = !TYPES[S.type].code ? '' :
-      'Код для моего сайта в конце итогового разбора — одной строкой в блоке кода, строго в формате:\n' +
-      PREFIX + '|' + S.tag + '|id:уровень:оценка|id:уровень:оценка|…\n' +
-      '— перечисли все правила из списка;\n' +
-      '— id и уровень бери ровно из списка (уровень — мой текущий, не меняй его);\n' +
-      '— оценка: + верно, - ошибка, 0 не встретилось.\n' +
-      'Пример формата: ' + PREFIX + '|' + S.tag + '|id1:7:+|id2:3:-|id3:5:0\n' +
-      'Сам уровни не повышай и не понижай — сайт пересчитает их по этим оценкам.\n';
+      'Code for my site at the end of the final analysis — one line in a code block, strictly in this format:\n' +
+      PREFIX + '|' + S.tag + '|id:level:mark|id:level:mark|…\n' +
+      '— list all rules from the list;\n' +
+      '— take id and level exactly from the list (level = my current level, do not change it);\n' +
+      '— mark: + correct, - mistake, 0 not tested.\n' +
+      'Format example: ' + PREFIX + '|' + S.tag + '|id1:7:+|id2:3:-|id3:5:0\n' +
+      'Do not raise or lower the levels yourself — the site will recalculate them from these marks.\n';
     return head + body + code;
   }
 
@@ -248,20 +252,26 @@
   function chatLinks(txt, explanation) {
     return (IS_ANDROID ? '<label class="pt-app-preference"><input type="checkbox" data-pt-app' + (preferApp ? ' checked' : '') + '> Открывать в приложении, если установлено</label>' : '') +
       '<div class="pt-ai-actions" role="group" aria-label="' + (explanation ? 'Объяснение темы в нейросети' : 'Открыть чат с промтом') + '">' + Object.entries(AI_CHATS).map(([id, ai]) => {
-        const dest = chatDestination(ai, txt, explanation);
-        return '<a class="m-btn ghost" data-pt-open="' + id + '"' + (txt ? ' href="' + esc(dest.href) + '"' + (!dest.app ? ' target="_blank"' : '') + ' rel="noopener noreferrer"' : ' role="link" aria-disabled="true" tabindex="-1"') + '><span>' + (explanation ? 'Объяснение в ' : 'Открыть в ') + '<b>' + ai.name + '</b><small>' + (dest.prefilled ? 'С готовым запросом' : 'Скопирует и откроет') + '</small></span></a>';
+        const dest = chatDestination(ai, txt);
+        return '<a class="m-btn ghost" data-pt-open="' + id + '"' + (txt ? ' href="' + esc(dest.href) + '"' + (!dest.app ? ' target="_blank"' : '') + ' rel="noopener noreferrer"' : ' role="link" aria-disabled="true" tabindex="-1"') + '><span>' + (explanation ? 'Объяснение в ' : 'Открыть в ') + '<b>' + ai.name + '</b><small>' + (dest.prefilled ? 'Задание вставится само' : 'Скопирует и откроет') + '</small></span></a>';
       }).join('') + '</div>' +
       launchStatus() +
       // «Поделиться» нужно только на телефоне: на компьютере это системное меню Windows/macOS, а не чат.
       (typeof navigator.share === 'function' && IS_TOUCH ? '<button type="button" class="m-btn ghost pt-share" data-pt-share' + (!txt ? ' disabled' : '') + '>Передать промт в приложение…</button>' : '');
   }
   function launchStatus() { return '<p class="pt-launch-status" role="status" aria-live="polite" hidden></p>'; }
+  function launchNote(txt) {
+    if (!txt) return 'Сначала отметь хотя бы одну тему.';
+    if (chatDestination(AI_CHATS.gpt, txt).prefilled)
+      return 'Нажми на чат — он откроется уже с заданием. DeepSeek не принимает текст из ссылки: для него промт скопируется, вставь его сам (' + pasteHint() + ').';
+    return 'Выбрано так много правил, что промт не помещается в ссылку. Нажми на чат — промт скопируется, а чат откроется; вставь его (' + pasteHint() + ') и отправь.';
+  }
   function renderTopic() {
     const topic = INFO[S.topicId], txt = buildPrompt();
     return mHead('Объяснение темы · ' + topic.level, topic.title) +
       '<p class="pt-topic-summary">' + esc(topic.gloss || topic.branch) + '</p>' +
       chatLinks(txt, true) +
-      '<p class="pt-note">При нажатии промт копируется, а чат открывается. Если поле сообщения пустое — вставь промт (' + pasteHint() + ') и отправь.</p>' +
+      '<p class="pt-note">' + launchNote(txt) + '</p>' +
       '<details class="pt-topic-prompt"><summary>Посмотреть промт</summary>' +
         '<textarea class="pt-text" readonly rows="5" aria-label="Промт объяснения темы">' + esc(txt) + '</textarea>' +
         '<button type="button" class="m-btn ghost" data-pt-copy>Скопировать промт</button>' +
@@ -318,7 +328,7 @@
         '<p class="pt-note">Нет правил с отметкой «изучено». Переключись на «Все правила» или отметь галочкой «изучено» правила в дереве.</p>') +
       '<section class="pt-actions pt-launch" aria-labelledby="ptLaunchTitle">' +
         '<h3 id="ptLaunchTitle" class="m-count pt-h">3. Начни занятие</h3>' +
-        '<p class="pt-note">' + (txt ? 'Нажми на чат — промт скопируется, а чат откроется' + (IS_TOUCH ? '' : ' в новой вкладке') + '. Останется вставить промт (' + pasteHint() + ') и отправить.' : 'Сначала отметь хотя бы одну тему.') + '</p>' +
+        '<p class="pt-note pt-launch-note">' + launchNote(txt) + '</p>' +
         chatLinks(txt, false) +
       '</section>' +
       (txt ? '<details class="pt-manual"' + (S.manualOpen ? ' open' : '') + '><summary>Посмотреть или скопировать промт вручную</summary>' +
@@ -352,6 +362,8 @@
     if (textarea) textarea.value = text;
     const group = modal.querySelector('.pt-ai-actions');
     if (group) group.replaceWith(el('div', '', chatLinks(text, false)).querySelector('.pt-ai-actions'));
+    const note = modal.querySelector('.pt-launch-note');
+    if (note) note.textContent = launchNote(text);
     const copyButton = modal.querySelector('[data-pt-copy]');
     if (copyButton) copyButton.textContent = 'Скопировать промт';
     const status = modal.querySelector('.pt-launch-status');
@@ -510,13 +522,13 @@
         const ai = AI_CHATS[chat.dataset.ptOpen];
         const text = modal.querySelector('.pt-text')?.value;
         if (!ai || chat.getAttribute('aria-disabled') === 'true' || !text) { ev.preventDefault(); return; }
-        const dest = chatDestination(ai, text, !!S.topicId);
+        const dest = chatDestination(ai, text);
         const copied = copyNow(text);
         if (copied || dest.prefilled) {
           // Одно нажатие: браузер сам перейдёт по ссылке сразу после этого обработчика.
           if (copied) markCopied(true);
           launchMessage(dest.prefilled
-            ? ai.name + ' открывается с готовым запросом.' + (copied ? ' Если поле сообщения окажется пустым, вставь промт (' + pasteHint() + ').' : '')
+            ? ai.name + ' открывается с заданием.' + (copied ? ' Если поле сообщения окажется пустым (бывает в приложении или после входа), вставь промт — он скопирован (' + pasteHint() + ').' : '')
             : 'Промт скопирован. В чате ' + ai.name + ' вставь его в поле сообщения (' + pasteHint() + ') и отправь.');
           return;
         }
