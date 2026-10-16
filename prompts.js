@@ -13,13 +13,20 @@
   const GMAX = 10;
   const USED_KEY = 'ef_prompt_used';
   const TYPES = {
-    translate: { name: 'Перевод RU → EN', sub: 'текст на русском → разбор → код', code: true, def: 8 },
+    translate: { name: 'Перевод текста · RU → EN', sub: 'текст на русском → разбор → код', code: true, def: 8 },
     sentence_ru_en: { name: 'По предложению · RU → EN', sub: 'перевод → разбор → следующее; до «хватит»', code: true, def: 8, direction: 'ru-en' },
     sentence_en_ru: { name: 'По предложению · EN → RU', sub: 'перевод → разбор → следующее; до «хватит»', code: true, def: 8, direction: 'en-ru' },
     fix:       { name: 'Найди ошибки',    sub: 'предложения с ошибками → разбор → код', code: true, def: 8 },
     dialog:    { name: 'Диалог',          sub: 'разговор на эти правила → разбор → код', code: true, def: 6 },
     explain:   { name: 'Объяснение', sub: 'разбор темы, без кода', code: false, def: 4, topicOnly: true },
   };
+  const TEXT_LENGTHS = [
+    { name: 'Очень короткий', sentences: '2–3 предложения' },
+    { name: 'Короткий', sentences: '4–6 предложений' },
+    { name: 'Средний', sentences: '8–12 предложений' },
+    { name: 'Длинный', sentences: '16–20 предложений' },
+    { name: 'Очень длинный', sentences: '30–40 предложений' },
+  ];
   const LV_ORDER = { A1: 0, A2: 1, B1: 2, B2: 3 };
   const AI_CHATS = {
     gpt: { name: 'GPT', url: 'https://chatgpt.com/', query: 'q', android: 'com.openai.chatgpt' },
@@ -131,8 +138,10 @@
     const body = TYPES[S.type].direction ? sentencePrompt(TYPES[S.type].direction) : {
       translate:
         'Задание — перевод с русского на английский.\n' +
-        '1. Напиши один связный текст на русском, 8–12 предложений, на бытовую тему (работа, путешествия, друзья, планы, выходные и т. п.). ' +
-        'Каждое правило из списка должно понадобиться при переводе хотя бы один раз. Лексика — не сложнее уровня B1. ' +
+        '1. Напиши один связный текст на русском. Выбранная длина: ' + TEXT_LENGTHS[S.textLength].name.toLowerCase() + ' текст, ' + TEXT_LENGTHS[S.textLength].sentences + '. ' +
+        'Тема — бытовая (работа, путешествия, друзья, планы, выходные и т. п.). Соблюдай выбранный диапазон длины. ' +
+        'Постарайся естественно охватить выбранные правила, начиная со слабых. Если в короткий текст все темы не помещаются, не увеличивай длину и не перегружай предложения: используй часть тем. ' +
+        'Правила, которых не было в тексте или переводе ученика, отметь в итоге как «не встретилось» (0); их уровни не меняются. Лексика — не сложнее уровня B1. ' +
         'Не подсказывай, где какое правило, и не давай перевод.\n' +
         '2. Остановись и жди мой перевод. Ничего не разбирай заранее.\n' +
         '3. Когда я пришлю перевод, разбери его по предложениям:\n' +
@@ -141,7 +150,7 @@
         '   — если вариант верный, но звучит неестественно, предложи более естественный и отметь, что это не ошибка;\n' +
         '   — ошибки не по правилам из списка (слова, предлоги, артикли, порядок слов) отмечай отдельно — на оценку правил они не влияют.\n' +
         '4. Итог по каждому правилу из списка: «верно» — все употребления правильные; «ошибка» — хотя бы одна ошибка именно в этом правиле; ' +
-        '«не встретилось» — если я обошёл конструкцию. Потом коротко: какие правила можно повышать, какие стоит повторить и что именно повторить.\n',
+        '«не встретилось» — если правило не встречалось в тексте или моём переводе. Потом коротко: какие правила можно повышать, какие стоит повторить и что именно повторить.\n',
       fix:
         'Задание — найди и исправь ошибки.\n' +
         '1. Напиши 12 пронумерованных предложений на английском. Примерно в половине из них должна быть ошибка именно в правилах из списка ' +
@@ -216,7 +225,7 @@
     if (topicId && !INFO[topicId]) return;
     if (typeof needProfile === 'function' && needProfile()) return;
     S = { tab: tab || 'prompt', topicId: topicId || null, type: topicId ? 'explain' : 'translate', scope: topicId ? 'all' : 'read', tag: newTag(), touched: !!topicId,
-          sel: topicId ? new Set([topicId]) : defaultSel('translate'), codeText: '', parsed: null, rows: null, msg: '', returnFocus: document.activeElement };
+          sel: topicId ? new Set([topicId]) : defaultSel('translate'), textLength: 2, codeText: '', parsed: null, rows: null, msg: '', returnFocus: document.activeElement };
     if (!rules().some(r => r.read)) S.scope = 'all';
     modal.classList.remove('rulepage', 'testm');
     openModal(owner);
@@ -267,9 +276,11 @@
     const txt = buildPrompt();
     const nSel = S.sel.size;
     return '<div class="m-count pt-h">1. Что делаем</div>' +
-      '<div class="pt-types">' + Object.keys(TYPES).filter(k => !TYPES[k].topicOnly).map(k =>
-        '<button type="button" class="m-opt pt-type" data-pt-type="' + k + '" aria-pressed="' + (S.type === k) + '">' +
-        '<b>' + esc(TYPES[k].name) + '</b><span>' + esc(TYPES[k].sub) + '</span></button>').join('') + '</div>' +
+      '<div class="pt-types">' + Object.keys(TYPES).filter(k => !TYPES[k].topicOnly).map(k => {
+        const button = '<button type="button" class="m-opt pt-type" data-pt-type="' + k + '" aria-pressed="' + (S.type === k) + '">' +
+          '<b>' + esc(TYPES[k].name) + '</b><span>' + esc(TYPES[k].sub) + '</span></button>';
+        return k === 'translate' ? '<div class="pt-translation">' + button + (S.type === k ? renderTextLength() : '') + '</div>' : button;
+      }).join('') + '</div>' +
       (TYPES[S.type].direction ? '<p class="pt-note">Одно предложение → твой перевод → разбор → следующее. Напиши «хватит», чтобы получить общие итоги и код для сайта.</p>' : '') +
       '<div class="m-count pt-h">2. Правила · выбрано ' + nSel + '</div>' +
       '<div class="pt-tools">' +
@@ -291,7 +302,7 @@
       (txt ?
         '<textarea class="pt-text" readonly rows="9" aria-label="Текст промта">' + esc(txt) + '</textarea>' +
         '<p class="pt-note">Кнопки передают запрос в чат и копируют его про запас. Для DeepSeek и слишком длинных промтов: сначала скопируй, затем открой чат и вставь текст. ' +
-          (TYPES[S.type].code ? 'В конце разбора нейросеть выдаст код <code>' + PREFIX + '|' + S.tag + '|…</code> — вставь его на вкладке «Ввести код».' : 'Это задание без кода: уровни не меняются.') +
+          (TYPES[S.type].code ? 'В конце разбора нейросеть выдаст код <code data-pt-code-example>' + PREFIX + '|' + S.tag + '|…</code> — вставь его на вкладке «Ввести код».' : 'Это задание без кода: уровни не меняются.') +
         '</p>' :
         '<p class="pt-note">Отметь хотя бы одно правило.</p>') +
       '<div class="m-actions pt-actions">' +
@@ -299,6 +310,36 @@
         '<button type="button" class="m-btn" data-pt-copy' + (txt ? '' : ' disabled') + '>' + (S.copied ? 'Скопировано ✓' : 'Скопировать промт') + '</button>' +
         chatLinks(txt, false) + launchStatus() +
       '</div>';
+  }
+  function lengthLabel() {
+    const length = TEXT_LENGTHS[S.textLength];
+    return length.name + ' · ' + length.sentences;
+  }
+  function renderTextLength() {
+    return '<div class="pt-length"><label for="ptTextLength">Длина текста</label>' +
+      '<output id="ptTextLengthValue" for="ptTextLength">' + lengthLabel() + '</output>' +
+      '<input id="ptTextLength" type="range" min="0" max="4" step="1" value="' + S.textLength + '" data-pt-length aria-valuetext="' + lengthLabel() + '" aria-describedby="ptTextLengthHint">' +
+      '<div class="pt-length-ends"><span>Очень короткий</span><span>Очень длинный</span></div>' +
+      '<p id="ptTextLengthHint" class="pt-note">Короткий текст может охватить только часть выбранных тем.</p></div>';
+  }
+  function updateTextLength(input) {
+    if (!S || S.type !== 'translate') return;
+    const value = Number(input.value);
+    if (!Number.isInteger(value) || !TEXT_LENGTHS[value] || value === S.textLength) return;
+    S.textLength = value; S.tag = newTag(); S.copied = false;
+    // Keep the native range element mounted so dragging and keyboard focus are uninterrupted.
+    modal.querySelector('#ptTextLengthValue').textContent = lengthLabel();
+    input.setAttribute('aria-valuetext', lengthLabel());
+    const text = buildPrompt(), textarea = modal.querySelector('.pt-text');
+    if (textarea) textarea.value = text;
+    const group = modal.querySelector('.pt-ai-actions');
+    if (group) group.replaceWith(el('div', '', chatLinks(text, false)).querySelector('.pt-ai-actions'));
+    const example = modal.querySelector('[data-pt-code-example]');
+    if (example) example.textContent = PREFIX + '|' + S.tag + '|…';
+    const copyButton = modal.querySelector('[data-pt-copy]');
+    if (copyButton) copyButton.textContent = 'Скопировать промт';
+    const status = modal.querySelector('.pt-launch-status');
+    if (status) { status.hidden = true; status.textContent = ''; }
   }
   function verdictTxt(x) {
     if (x.kind === 'unknown') return 'нет такого правила';
@@ -440,6 +481,7 @@
     },
     onChange(ev) {
       const t = ev.target;
+      if (t.matches('[data-pt-length]')) { updateTextLength(t); return; }
       if (t.matches('[data-pt-app]')) { preferApp = t.checked; render(); return; }
       if (t.matches('[data-pt-id]')) {
         S.touched = true; S.copied = false;
@@ -456,7 +498,11 @@
     },
     onClose() { const focused = S?.returnFocus; S = null; modal.classList.remove('pt-modal', 'pt-topic-dialog'); if (focused?.isConnected) focused.focus({ preventScroll: true }); },
   };
-  modal.addEventListener('input', ev => { if (S && ev.target.matches('.pt-in')) S.codeText = ev.target.value; });
+  modal.addEventListener('input', ev => {
+    if (!S) return;
+    if (ev.target.matches('.pt-in')) S.codeText = ev.target.value;
+    if (ev.target.matches('[data-pt-length]')) updateTextLength(ev.target);
+  });
 
   window.PROMPTS = { open, openTopic: id => open('prompt', id) };
 })();
