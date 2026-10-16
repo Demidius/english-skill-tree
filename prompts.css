@@ -29,7 +29,10 @@ html:not([data-skin]) .rvb-prompt .rvb-l { color: var(--accent); }
 .pt-type b { font-size: .95rem; }
 .pt-type span { font-size: .78rem; color: var(--muted); }
 .pt-translation { grid-column: 1 / -1; min-width: 0; }
-.pt-translation > .pt-type { width: 100%; box-sizing: border-box; }
+.pt-translation-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: stretch; }
+.pt-translation-row > .pt-type { width: 100%; min-width: 0; box-sizing: border-box; }
+.pt-length-toggle { min-width: 82px; padding: 8px 10px; justify-content: center; text-align: center; font-size: .8rem; font-weight: 700; line-height: 1.25; }
+.pt-length-toggle[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
 .pt-length { margin-top: 12px; padding: 12px; border: 1px solid var(--line); border-radius: var(--ui-r, 10px); background: var(--surface-2); }
 .pt-length label { display: block; font-size: .85rem; font-weight: 700; }
 .pt-length output { display: block; margin-top: 4px; font-size: .85rem; color: var(--accent); }

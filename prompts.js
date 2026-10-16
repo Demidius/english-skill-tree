@@ -225,7 +225,7 @@
     if (topicId && !INFO[topicId]) return;
     if (typeof needProfile === 'function' && needProfile()) return;
     S = { tab: tab || 'prompt', topicId: topicId || null, type: topicId ? 'explain' : 'translate', scope: topicId ? 'all' : 'read', tag: newTag(), touched: !!topicId,
-          sel: topicId ? new Set([topicId]) : defaultSel('translate'), textLength: 2, codeText: '', parsed: null, rows: null, msg: '', returnFocus: document.activeElement };
+          sel: topicId ? new Set([topicId]) : defaultSel('translate'), textLength: 2, lengthOpen: false, codeText: '', parsed: null, rows: null, msg: '', returnFocus: document.activeElement };
     if (!rules().some(r => r.read)) S.scope = 'all';
     modal.classList.remove('rulepage', 'testm');
     openModal(owner);
@@ -279,7 +279,11 @@
       '<div class="pt-types">' + Object.keys(TYPES).filter(k => !TYPES[k].topicOnly).map(k => {
         const button = '<button type="button" class="m-opt pt-type" data-pt-type="' + k + '" aria-pressed="' + (S.type === k) + '">' +
           '<b>' + esc(TYPES[k].name) + '</b><span>' + esc(TYPES[k].sub) + '</span></button>';
-        return k === 'translate' ? '<div class="pt-translation">' + button + (S.type === k ? renderTextLength() : '') + '</div>' : button;
+        if (k !== 'translate') return button;
+        const expanded = S.type === k && S.lengthOpen;
+        return '<div class="pt-translation"><div class="pt-translation-row">' + button +
+          '<button type="button" class="m-opt pt-length-toggle" data-pt-length-toggle aria-controls="ptTextLengthPanel" aria-expanded="' + expanded + '" aria-label="Настроить длину текста: ' + lengthLabel() + '">Настроить<br>длину</button></div>' +
+          (expanded ? renderTextLength() : '') + '</div>';
       }).join('') + '</div>' +
       (TYPES[S.type].direction ? '<p class="pt-note">Одно предложение → твой перевод → разбор → следующее. Напиши «хватит», чтобы получить общие итоги и код для сайта.</p>' : '') +
       '<div class="m-count pt-h">2. Правила · выбрано ' + nSel + '</div>' +
@@ -316,7 +320,7 @@
     return length.name + ' · ' + length.sentences;
   }
   function renderTextLength() {
-    return '<div class="pt-length"><label for="ptTextLength">Длина текста</label>' +
+    return '<div id="ptTextLengthPanel" class="pt-length"><label for="ptTextLength">Длина текста</label>' +
       '<output id="ptTextLengthValue" for="ptTextLength">' + lengthLabel() + '</output>' +
       '<input id="ptTextLength" type="range" min="0" max="4" step="1" value="' + S.textLength + '" data-pt-length aria-valuetext="' + lengthLabel() + '" aria-describedby="ptTextLengthHint">' +
       '<div class="pt-length-ends"><span>Очень короткий</span><span>Очень длинный</span></div>' +
@@ -330,6 +334,7 @@
     // Keep the native range element mounted so dragging and keyboard focus are uninterrupted.
     modal.querySelector('#ptTextLengthValue').textContent = lengthLabel();
     input.setAttribute('aria-valuetext', lengthLabel());
+    modal.querySelector('[data-pt-length-toggle]').setAttribute('aria-label', 'Настроить длину текста: ' + lengthLabel());
     const text = buildPrompt(), textarea = modal.querySelector('.pt-text');
     if (textarea) textarea.value = text;
     const group = modal.querySelector('.pt-ai-actions');
@@ -446,10 +451,19 @@
     onClick(ev) {
       const t = ev.target;
       const tab = t.closest('[data-pt-tab]'); if (tab) { S.tab = tab.dataset.ptTab; S.msg = ''; render(); return; }
+      if (t.closest('[data-pt-length-toggle]')) {
+        if (S.type !== 'translate') {
+          S.type = 'translate'; S.copied = false; S.tag = newTag();
+          if (!S.touched) S.sel = defaultSel(S.type);
+          S.lengthOpen = true;
+        } else S.lengthOpen = !S.lengthOpen;
+        render(); modal.querySelector('[data-pt-length-toggle]').focus({ preventScroll: true }); return;
+      }
       const ty = t.closest('[data-pt-type]');
       if (ty) {
         const type = ty.dataset.ptType;
         if (!TYPES[type] || TYPES[type].topicOnly) return;
+        if (S.type !== type) S.lengthOpen = false;
         S.type = type; S.copied = false; if (!S.touched) S.sel = defaultSel(S.type); S.tag = newTag(); render(); return;
       }
       const sc = t.closest('[data-pt-scope]'); if (sc) { S.scope = sc.dataset.ptScope; render(); return; }
