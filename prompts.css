@@ -139,7 +139,11 @@ html[data-skin="rpg"] .pt-ai-actions .m-btn { font-family: 'Handjet', 'Manrope',
   .pt-types { grid-template-columns: 1fr; }
   .pt-rule { grid-template-columns: auto minmax(0, 1fr) auto; }
   .pt-rm { display: none; }
-  .rvb-prompt { min-width: 76px; padding: 8px 10px; }
+  #mode-g .practice-panel .rv-big-one.has-prompt { grid-template-columns: minmax(0, 1fr) 140px; gap: 8px; }
+  html[data-skin="rpg"] #mode-g .practice-panel .pr-row { row-gap: 6px; }
+  html[data-skin="rpg"] #mode-g .practice-panel .rv-big-one { margin-top: 0; }
+  html[data-skin="rpg"] #mode-g .practice-panel .rv-title { font-size: .74rem; line-height: 1.55; }
+  .rvb-prompt { min-width: 0; width: 140px; padding: 8px 10px; }
   /* пока нет правил «изучено», слева длинная подсказка — кнопку ставим под ней во всю ширину */
   #mode-g .practice-panel .rv-big-one.has-prompt:has(.rvb-hint) { grid-template-columns: minmax(0, 1fr); }
   .rv-big-one.has-prompt:has(.rvb-hint) .rvb-prompt { flex-direction: row; gap: 10px; }
