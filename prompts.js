@@ -21,8 +21,9 @@
   const LV_ORDER = { A1: 0, A2: 1, B1: 2, B2: 3 };
   const AI_CHATS = {
     gpt: { name: 'GPT', url: 'https://chatgpt.com/' },
-    qwen: { name: 'Qwen', url: 'https://chat.qwen.ai/' },
+    claude: { name: 'Claude', url: 'https://claude.ai/new' },
     deepseek: { name: 'DeepSeek', url: 'https://chat.deepseek.com/' },
+    qwen: { name: 'Qwen', url: 'https://chat.qwen.ai/' },
   };
 
   // справочник правил: суть и пример из data-grammar.js
@@ -190,15 +191,36 @@
   }
 
   // ---------- окно ----------
-  function open(tab) {
+  function open(tab, topicId) {
+    if (topicId && !INFO[topicId]) return;
     if (typeof needProfile === 'function' && needProfile()) return;
-    S = { tab: tab || 'prompt', type: 'translate', scope: 'read', tag: newTag(), touched: false,
-          sel: defaultSel('translate'), codeText: '', parsed: null, rows: null, msg: '' };
+    S = { tab: tab || 'prompt', topicId: topicId || null, type: topicId ? 'explain' : 'translate', scope: topicId ? 'all' : 'read', tag: newTag(), touched: !!topicId,
+          sel: topicId ? new Set([topicId]) : defaultSel('translate'), codeText: '', parsed: null, rows: null, msg: '', returnFocus: document.activeElement };
     if (!rules().some(r => r.read)) S.scope = 'all';
     modal.classList.remove('rulepage', 'testm');
     openModal(owner);
     modal.classList.add('pt-modal');
+    modal.classList.toggle('pt-topic-dialog', !!topicId);
     render();
+    modal.scrollTop = 0;
+    if (topicId) modal.querySelector('.m-close').focus({ preventScroll: true });
+  }
+  function chatLinks(txt, explanation) {
+    return '<div class="pt-ai-actions" role="group" aria-label="' + (explanation ? 'Объяснение темы в нейросети' : 'Открыть чат с промтом') + '">' + Object.entries(AI_CHATS).map(([id, ai]) =>
+      '<a class="m-btn ghost" data-pt-open="' + id + '"' + (txt ? ' href="' + ai.url + '" target="_blank" rel="noopener noreferrer"' : ' role="link" aria-disabled="true" tabindex="-1"') + '><span>' + (explanation ? 'Объяснение в ' : 'Открыть в ') + '<b>' + ai.name + '</b></span></a>'
+    ).join('') + '</div>';
+  }
+  function launchStatus() { return '<p class="pt-launch-status" role="status" aria-live="polite" hidden></p>'; }
+  function renderTopic() {
+    const topic = INFO[S.topicId], txt = buildPrompt();
+    return mHead('Объяснение темы · ' + topic.level, topic.title) +
+      '<p class="pt-topic-summary">' + esc(topic.gloss || topic.branch) + '</p>' +
+      chatLinks(txt, true) +
+      '<p class="pt-note">Промт об этой теме скопируется, а чат откроется в новой вкладке. Вставь текст в поле сообщения.</p>' +
+      '<details class="pt-topic-prompt"><summary>Посмотреть промт</summary>' +
+        '<textarea class="pt-text" readonly rows="5" aria-label="Промт объяснения темы">' + esc(txt) + '</textarea>' +
+        '<button type="button" class="m-btn ghost" data-pt-copy>Скопировать промт</button>' +
+      '</details>' + launchStatus();
   }
   function tabs() {
     return '<div class="pt-tabs" role="tablist">' +
@@ -207,6 +229,7 @@
       ).join('') + '</div>';
   }
   function render() {
+    if (S.topicId) { modal.innerHTML = renderTopic(); return; }
     // сохраняем прокрутку окна и списка правил: перерисовка идёт после каждой галочки
     const keep = modal.scrollTop;
     const list = modal.querySelector('.pt-rules'), keepList = list ? list.scrollTop : 0;
@@ -249,10 +272,7 @@
       '<div class="m-actions pt-actions">' +
         (TYPES[S.type].code ? '<button type="button" class="m-btn ghost" data-pt-tab="code">Ввести код</button>' : '') +
         '<button type="button" class="m-btn" data-pt-copy' + (txt ? '' : ' disabled') + '>' + (S.copied ? 'Скопировано ✓' : 'Скопировать промт') + '</button>' +
-        '<div class="pt-ai-actions" role="group" aria-label="Открыть чат с промтом">' + Object.entries(AI_CHATS).map(([id, ai]) =>
-          '<a class="m-btn ghost" data-pt-open="' + id + '"' + (txt ? ' href="' + ai.url + '" target="_blank" rel="noopener noreferrer"' : ' role="link" aria-disabled="true" tabindex="-1"') + '><span>Открыть в <b>' + ai.name + '</b></span></a>'
-        ).join('') + '</div>' +
-        '<p class="pt-launch-status" role="status" aria-live="polite" hidden></p>' +
+        chatLinks(txt, false) + launchStatus() +
       '</div>';
   }
   function verdictTxt(x) {
@@ -319,9 +339,12 @@
     const fallback = () => {
       if (S !== state || S.tag !== tag || !ta.isConnected) return false;
       const focused = document.activeElement;
+      const details = ta.closest('details'), wasOpen = details?.open;
+      if (details) details.open = true;
       ta.focus(); ta.select();
       try {
         const ok = document.execCommand('copy');
+        if (ok && details && !wasOpen) details.open = false;
         if (ok && focused && focused.isConnected) focused.focus({ preventScroll: true });
         return ok;
       } catch (e) { return false; }
@@ -379,9 +402,9 @@
     onKey(ev) {
       if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey) && S && S.tab === 'code') { check(); ev.preventDefault(); }
     },
-    onClose() { S = null; modal.classList.remove('pt-modal'); },
+    onClose() { const focused = S?.returnFocus; S = null; modal.classList.remove('pt-modal', 'pt-topic-dialog'); if (focused?.isConnected) focused.focus({ preventScroll: true }); },
   };
   modal.addEventListener('input', ev => { if (S && ev.target.matches('.pt-in')) S.codeText = ev.target.value; });
 
-  window.PROMPTS = { open };
+  window.PROMPTS = { open, openTopic: id => open('prompt', id) };
 })();
