@@ -89,18 +89,21 @@ html[data-skin="rpg"] .pt-ai-actions .m-btn { font-family: 'Handjet', 'Manrope',
 .pt-launch-status { flex-basis: 100%; margin: 0; font-size: .78rem; line-height: 1.3; color: var(--muted); }
 
 /* A real sibling button keeps the topic's main button and AI action independent. */
-.pt-topic-card { --topic-action-h: 20px; --topic-action-top: 7px; --topic-action-font: .66rem; position: relative; min-width: 0; }
+.pt-topic-card { --topic-action-h: 20px; --topic-action-top: 7px; --topic-action-font: .66rem; --topic-ai-right: 88px; --topic-help-right: 60px; position: relative; min-width: 0; }
 .pt-topic-card > .node { width: 100%; box-sizing: border-box; padding-top: calc(var(--topic-action-top) + var(--topic-action-h) + 12px) !important; }
 #mode-g .pt-topic-card > .node .t, #mode-g .pt-topic-card > .node .g { padding-right: 0; }
-.pt-topic-ai { position: absolute; right: 78px; display: flex; align-items: center; justify-content: center; min-width: 52px; padding: 0 9px; border: 1px solid var(--accent); border-radius: var(--ui-r, 8px); background: var(--surface-2); color: var(--ink); font: 700 var(--topic-action-font)/1 'Manrope', sans-serif; cursor: pointer; }
-.pt-topic-card > .pt-topic-ai, #mode-g .pt-topic-card > .node :is(.info, .rtest) { top: var(--topic-action-top); height: var(--topic-action-h); min-height: var(--topic-action-h); box-sizing: border-box; }
+.pt-topic-action { position: absolute; display: flex; align-items: center; justify-content: center; padding: 0 9px; border: 1px solid var(--accent); border-radius: var(--ui-r, 8px); background: var(--surface-2); color: var(--ink); font: 700 var(--topic-action-font)/1 'Manrope', sans-serif; cursor: pointer; text-decoration: none; }
+.pt-topic-ai { right: var(--topic-ai-right); min-width: 52px; }
+.pt-topic-youtube { right: calc(var(--topic-ai-right) + 52px + 8px); width: var(--topic-action-h); padding: 0; }
+.pt-topic-youtube svg { display: block; width: 80%; height: 80%; }
+.pt-topic-card > .pt-topic-action, #mode-g .pt-topic-card > .node :is(.info, .rtest) { top: var(--topic-action-top); height: var(--topic-action-h); min-height: var(--topic-action-h); box-sizing: border-box; }
 /* The sibling action includes the card's 1px border in its offset. */
-.pt-topic-card > .pt-topic-ai { top: calc(var(--topic-action-top) + 1px); }
+.pt-topic-card > .pt-topic-action { top: calc(var(--topic-action-top) + 1px); }
 .pt-topic-card > .node:hover { transform: none; }
-#mode-g .pt-topic-card > .node .info { width: var(--topic-action-h); }
-.pt-topic-ai:hover { border-color: var(--ink); background: var(--surface); }
-.pt-topic-ai:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.tree.filtered .pt-topic-card:has(.node[data-match="0"]) > .pt-topic-ai { opacity: .16; }
+#mode-g .pt-topic-card > .node .info { right: var(--topic-help-right); width: var(--topic-action-h); }
+.pt-topic-action:hover { border-color: var(--ink); background: var(--surface); }
+.pt-topic-action:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tree.filtered .pt-topic-card:has(.node[data-match="0"]) > .pt-topic-action { opacity: .16; }
 .modal-back:has(.pt-topic-dialog) { align-items: center; }
 .modal.pt-topic-dialog { width: calc(100% - 24px); max-width: 460px; max-height: calc(100dvh - 48px); padding: 16px; box-sizing: border-box; }
 .modal.pt-topic-dialog .m-top { top: -16px; margin: -16px -16px 0; padding: 14px 16px; }
@@ -121,8 +124,7 @@ html[data-skin="rpg"] .pt-ai-actions .m-btn { font-family: 'Handjet', 'Manrope',
 .pt-row[data-kind="done"], .pt-row[data-kind="skip"], .pt-row[data-kind="unknown"] { opacity: .6; }
 
 @media (max-width: 720px) {
-  .pt-topic-card { --topic-action-h: 30px; --topic-action-top: 9px; --topic-action-font: .8rem; }
-  .pt-topic-ai { right: 112px; }
+  .pt-topic-card { --topic-action-h: 30px; --topic-action-top: 9px; --topic-action-font: .8rem; --topic-ai-right: 112px; --topic-help-right: 78px; }
   .pt-types { grid-template-columns: 1fr; }
   .pt-rule { grid-template-columns: auto minmax(0, 1fr) auto; }
   .pt-rm { display: none; }
