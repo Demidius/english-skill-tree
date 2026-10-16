@@ -486,7 +486,7 @@ const G = (function(){
   function practicePool(){ return ALL.filter(id=>readM[id] && glv[id]<GMAX && TESTS[id]); }
   function renderPractice(){
     const pool=practicePool();
-    pr.innerHTML='<div class="pr-row"><div class="rv-head"><h2 class="rv-title">Тем для отработки <span class="pr-count">'+pool.length+'</span></h2></div>'+
+    pr.innerHTML='<div class="pr-row"><div class="rv-head"><h2 class="rv-title">Тем для отработки — <span class="pr-count">'+pool.length+'</span></h2></div>'+
       '<div class="rv-big rv-big-one has-prompt">'+
         '<button type="button" class="rvb rvb-mix" data-mix'+(pool.length?'':' disabled')+'><span class="rvb-l">Быстрый<br>тест</span></button>'+
         '<button type="button" class="rvb rvb-prompt" data-practice-ai><span class="rvb-l">Изучать<br>с AI</span></button>'+
