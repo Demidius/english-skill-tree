@@ -233,6 +233,7 @@
 @media (max-width: 999px) {
   #mode-w .stats-row .num, #mode-g .stats-row .num { display: none; }
   #mode-w .stats-row .bar, #mode-g .stats-row .bar { margin-top: 4px; }
+  .bar-ticks .tl { font-size: .72rem; }
 }
 
 /* «Отрабатывать изученное» — такая же кнопка-плитка, как в «Лексике» */
