@@ -237,7 +237,7 @@
 }
 
 /* «Отрабатывать изученное» — такая же кнопка-плитка, как в «Лексике» */
-.practice-panel [data-mix], .practice-panel .rv-sub { display: none !important; }
+.practice-panel .rv-sub { display: none !important; }
 .rv-big-one { grid-template-columns: 1fr; margin-top: 10px; }
 .rvb-mix { --c: var(--st-mastered); flex-direction: row; align-items: center; justify-content: flex-start; gap: 14px; padding: 16px 40px 16px 18px; }
 .rvb-mix .rvb-n { color: var(--st-mastered); font-size: 2rem; white-space: nowrap; flex: none; }

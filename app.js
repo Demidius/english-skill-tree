@@ -449,7 +449,7 @@ const G = (function(){
       '<li>Клик по карточке открывает правило целиком: форма с переводом, когда используем, примеры, исключения и ловушки.</li>'+
       '<li>Кнопка «Тест» справа вверху открывает тест из 10 вопросов. Последний результат виден на карточке. Кнопкой «← Назад» можно пересмотреть прошлые вопросы.</li>'+
       '<li>Кнопка «i» показывает короткую подсказку по теме.</li>'+
-      '<li>Галочка «читано» внизу карточки — отметка для себя, что правило уже изучалось. На уровень она не влияет. Кнопка «Отрабатывать читанное» над деревом даёт вопросы вперемешку из всех читанных правил, у которых уровень ещё не 10.</li>'+
+      '<li>Галочка «читано» внизу карточки — отметка для себя, что правило уже изучалось. На уровень она не влияет. Кнопка «Быстрый тест» над деревом даёт вопросы вперемешку из всех читанных правил, у которых уровень ещё не 10.</li>'+
       '<li>Метка справа внизу — урок в Student\'s Book своего уровня: 7B = File 7, lesson B; PE = Practical English.</li>'+
       '</ul></section>'+
       '<section><h3>Уровень правила</h3><ul>'+
@@ -482,17 +482,21 @@ const G = (function(){
   // ---- practice of read rules ----
   const MIXN=20;
   const pr=el('section','review-panel practice-panel');
-  pr.setAttribute('aria-label','Отработка читанного');
+  pr.setAttribute('aria-label','Отработка изученных тем');
   function practicePool(){ return ALL.filter(id=>readM[id] && glv[id]<GMAX && TESTS[id]); }
   function renderPractice(){
-    const read=ALL.filter(id=>readM[id]).length, pool=practicePool();
-    pr.innerHTML='<div class="pr-row"><div class="rv-head"><h2 class="rv-title">Отработка читанного</h2>'+
-      '<p class="rv-sub">'+(read?'Читано правил: <b>'+read+'</b>, из них не на 10: <b>'+pool.length+'</b>. Вопросы вперемешку из этих правил; верный ответ '+fmtD(COEF.rulesPractice.ok)+', ошибка '+fmtD(COEF.rulesPractice.wrong)+' к уровню правила.':
-        'Отметь на карточках правил галочку «читано» — здесь появятся вопросы по всем читанным правилам, которые ещё не дошли до 10.')+'</p></div>'+
-      '<button type="button" class="m-btn" data-mix'+(pool.length?'':' disabled')+'>Отрабатывать читанное</button></div>';
+    const pool=practicePool();
+    pr.innerHTML='<div class="pr-row"><div class="rv-head"><h2 class="rv-title">Тем для отработки — <span class="pr-count">'+pool.length+'</span></h2></div>'+
+      '<div class="rv-big rv-big-one has-prompt">'+
+        '<button type="button" class="rvb rvb-mix" data-mix'+(pool.length?'':' disabled')+'><span class="rvb-l">Быстрый<br>тест</span></button>'+
+        '<button type="button" class="rvb rvb-prompt" data-practice-ai><span class="rvb-l">Изучать<br>с AI</span></button>'+
+      '</div></div>'+
+      (pool.length?'':'<p class="pr-empty">Отметь «изучено» на карточках тем с уровнем ниже 10, чтобы запустить быстрый тест. Изучать с AI можно и другие темы.</p>');
   }
-  function fmtD(v){ return (v>0?'+':'')+v; }
-  pr.addEventListener('click',ev=>{ const b=ev.target.closest('[data-mix]'); if(b&&!b.disabled) openMix(); });
+  pr.addEventListener('click',ev=>{
+    const b=ev.target.closest('[data-mix]'); if(b&&!b.disabled) openMix();
+    if(ev.target.closest('[data-practice-ai]') && window.PROMPTS) window.PROMPTS.open('prompt');
+  });
   board.root.querySelector('.stats-row').after(pr);
   function openMix(){
     if(needProfile()) return;
@@ -1443,7 +1447,7 @@ const SETTINGS = (function(){
   const root=document.getElementById('mode-s');
   const SKEY='ef_coef';
   const GROUPS=[
-    {key:'rulesPractice', h:'Правила · практические работы', note:'Как меняется уровень правила: по коду из кнопки «Промт» (оценка нейросети после перевода, поиска ошибок или диалога) и при ответах в «Отрабатывать изученное».',
+    {key:'rulesPractice', h:'Правила · практические работы', note:'Как меняется уровень правила: по коду из «Изучать с AI» (оценка нейросети после перевода, поиска ошибок или диалога) и при ответах в «Быстром тесте».',
      f:[['ok','Правило применено верно'],['wrong','С правилом ошибка']]},
     {key:'review', h:'Лексика · интервальное повторение', note:'Как в Anki: «Хорошо» умножает интервал на лёгкость слова (≈2,5), «Трудно» и «Легко» — на свои множители. Переводы: верно = «Хорошо», с ошибкой = «Трудно», неверно = «Снова».',
      f:[['hardPct','«Трудно»: интервал ×, %'],['easyPct','«Легко»: бонус к «Хорошо», %'],['maxIvl','Максимальный интервал, дней']]},
@@ -1451,7 +1455,7 @@ const SETTINGS = (function(){
   let msg='';
   function render(){
     root.innerHTML='<div class="set-wrap"><p class="set-intro">Настройки повторения слов и коэффициенты для уровней правил. Они общие для всех учеников. '+
-      'По ним же применяется код из кнопки «Промт».</p>'+
+      'По ним же применяется код из «Изучать с AI».</p>'+
       '<form id="coefForm" class="set-grid" autocomplete="off">'+GROUPS.map(g=>'<fieldset class="set-card"><legend>'+esc(g.h)+'</legend><p class="set-note">'+esc(g.note)+'</p>'+
         g.f.map(([k,l])=>'<label class="set-row" for="c-'+g.key+'-'+k+'"><span>'+esc(l)+'</span>'+
           '<span class="set-step"><button type="button" class="lvb" data-step="-1" data-for="c-'+g.key+'-'+k+'" aria-label="меньше">−</button>'+
