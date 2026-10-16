@@ -1532,11 +1532,13 @@ var ME=null;
 function canWrite(){ return db ? !!ME && current===ME : local; }
 const PKEY='ef_skilltree_profile';
 const profList=document.getElementById('profList');
+let profileNotice='';
 function selectProfile(id){
   if(!db) return;
   W.flushAll();
   if(owner) closeModal();
   current=id;
+  if(id) profileNotice='';
   document.documentElement.classList.toggle('readonly',!canWrite()); if(id) lsSet(PKEY, id);
   G.select(id); W.select(id);
   renderProfiles();
@@ -1544,7 +1546,8 @@ function selectProfile(id){
 function renderProfiles(){
   const vf=document.getElementById('viewFlag');
   const cp=profiles.find(p=>p.id===current);
-  if(current && current!==ME && cp){ vf.textContent='Прогресс «'+cp.name+'» · только просмотр. Менять данные и проходить задания здесь нельзя.'; vf.hidden=false; }
+  if(profileNotice){vf.textContent=profileNotice;vf.hidden=false;}
+  else if(current && current!==ME && cp){ vf.textContent='Прогресс «'+cp.name+'» · только просмотр. Менять данные и проходить задания здесь нельзя.'; vf.hidden=false; }
   else vf.hidden=true;
   profList.innerHTML='';
   if(!profiles.length){ profList.appendChild(el('span','hint',ME?'Загрузка профиля…':'Профиль закрыт или недоступен')); return; }
@@ -1649,7 +1652,10 @@ async function startCloud(user){
       else if(!list.some(p=>p.id===current)) selectProfile(user?user.uid:null);
       else {renderProfiles();G.stats();W.stats();}
     },
-    onDenied(id){if(current===id){selectProfile(user?user.uid:null);document.getElementById('viewFlag').textContent='Доступ к этому профилю закрыт.';document.getElementById('viewFlag').hidden=false;}},
+    onDenied(id){
+      if(current===id){selectProfile(user?user.uid:null);profileNotice='Доступ к этому профилю закрыт.';renderProfiles();}
+      else if(!user && ACCOUNT.publicId===id){profileNotice='Профиль закрыт, не найден или недоступен. Для просмотра приватного профиля войди в аккаунт друга.';renderProfiles();}
+    },
     onRole(){SETTINGS.render();},
     openSettings(){setMode('s');},closeSettings(){setMode('g');},select:selectProfile
   });

@@ -54,6 +54,7 @@ window.ACCOUNT = (() => {
       }, () => {}));
     }
     if (publicId && /^[\w-]{1,128}$/.test(publicId)) watchPeer(publicId);
+    else if(publicId){hooks.onDenied(publicId);emit();}
     if (incoming && user) setTimeout(() => hooks.openSettings(), 0);
   }
   function mount(root) {
