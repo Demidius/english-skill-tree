@@ -415,7 +415,13 @@ const G = (function(){
       s.addEventListener('click',go);
       s.addEventListener('keydown',ev=>{ if(ev.key==='Enter'||ev.key===' ') go(ev); });
     });
-    return btn;
+    const topic = el('div', 'pt-topic-card');
+    const ai = el('button', 'pt-topic-ai', 'GPT'); ai.type = 'button'; ai.dataset.topicGpt = id;
+    ai.setAttribute('aria-haspopup', 'dialog'); ai.setAttribute('aria-label', 'GPT: объяснение темы ' + t);
+    ai.title = 'Объяснить тему в GPT, Claude, DeepSeek или Qwen';
+    ai.addEventListener('click', ev => { ev.stopPropagation(); if (window.PROMPTS) window.PROMPTS.openTopic(id); });
+    topic.append(btn, ai);
+    return topic;
   }
 
   const board = Board({

@@ -19,6 +19,12 @@
     explain:   { name: 'Объяснение',      sub: 'разбор слабых тем, без кода', code: false, def: 4 },
   };
   const LV_ORDER = { A1: 0, A2: 1, B1: 2, B2: 3 };
+  const AI_CHATS = {
+    gpt: { name: 'GPT', url: 'https://chatgpt.com/' },
+    claude: { name: 'Claude', url: 'https://claude.ai/new' },
+    deepseek: { name: 'DeepSeek', url: 'https://chat.deepseek.com/' },
+    qwen: { name: 'Qwen', url: 'https://chat.qwen.ai/' },
+  };
 
   // справочник правил: суть и пример из data-grammar.js
   const INFO = {};
@@ -185,15 +191,36 @@
   }
 
   // ---------- окно ----------
-  function open(tab) {
+  function open(tab, topicId) {
+    if (topicId && !INFO[topicId]) return;
     if (typeof needProfile === 'function' && needProfile()) return;
-    S = { tab: tab || 'prompt', type: 'translate', scope: 'read', tag: newTag(), touched: false,
-          sel: defaultSel('translate'), codeText: '', parsed: null, rows: null, msg: '' };
+    S = { tab: tab || 'prompt', topicId: topicId || null, type: topicId ? 'explain' : 'translate', scope: topicId ? 'all' : 'read', tag: newTag(), touched: !!topicId,
+          sel: topicId ? new Set([topicId]) : defaultSel('translate'), codeText: '', parsed: null, rows: null, msg: '', returnFocus: document.activeElement };
     if (!rules().some(r => r.read)) S.scope = 'all';
     modal.classList.remove('rulepage', 'testm');
     openModal(owner);
     modal.classList.add('pt-modal');
+    modal.classList.toggle('pt-topic-dialog', !!topicId);
     render();
+    modal.scrollTop = 0;
+    if (topicId) modal.querySelector('.m-close').focus({ preventScroll: true });
+  }
+  function chatLinks(txt, explanation) {
+    return '<div class="pt-ai-actions" role="group" aria-label="' + (explanation ? 'Объяснение темы в нейросети' : 'Открыть чат с промтом') + '">' + Object.entries(AI_CHATS).map(([id, ai]) =>
+      '<a class="m-btn ghost" data-pt-open="' + id + '"' + (txt ? ' href="' + ai.url + '" target="_blank" rel="noopener noreferrer"' : ' role="link" aria-disabled="true" tabindex="-1"') + '><span>' + (explanation ? 'Объяснение в ' : 'Открыть в ') + '<b>' + ai.name + '</b></span></a>'
+    ).join('') + '</div>';
+  }
+  function launchStatus() { return '<p class="pt-launch-status" role="status" aria-live="polite" hidden></p>'; }
+  function renderTopic() {
+    const topic = INFO[S.topicId], txt = buildPrompt();
+    return mHead('Объяснение темы · ' + topic.level, topic.title) +
+      '<p class="pt-topic-summary">' + esc(topic.gloss || topic.branch) + '</p>' +
+      chatLinks(txt, true) +
+      '<p class="pt-note">Промт об этой теме скопируется, а чат откроется в новой вкладке. Вставь текст в поле сообщения.</p>' +
+      '<details class="pt-topic-prompt"><summary>Посмотреть промт</summary>' +
+        '<textarea class="pt-text" readonly rows="5" aria-label="Промт объяснения темы">' + esc(txt) + '</textarea>' +
+        '<button type="button" class="m-btn ghost" data-pt-copy>Скопировать промт</button>' +
+      '</details>' + launchStatus();
   }
   function tabs() {
     return '<div class="pt-tabs" role="tablist">' +
@@ -202,6 +229,7 @@
       ).join('') + '</div>';
   }
   function render() {
+    if (S.topicId) { modal.innerHTML = renderTopic(); return; }
     // сохраняем прокрутку окна и списка правил: перерисовка идёт после каждой галочки
     const keep = modal.scrollTop;
     const list = modal.querySelector('.pt-rules'), keepList = list ? list.scrollTop : 0;
@@ -237,13 +265,14 @@
       '<div class="m-count pt-h">3. Скопируй и вставь в любую нейросеть</div>' +
       (txt ?
         '<textarea class="pt-text" readonly rows="9" aria-label="Текст промта">' + esc(txt) + '</textarea>' +
-        '<p class="pt-note">ChatGPT, Claude, Gemini, DeepSeek — подойдёт любая. ' +
+        '<p class="pt-note">Кнопки ниже копируют промт и открывают чат в новой вкладке. Вставь текст в поле сообщения. ' +
           (TYPES[S.type].code ? 'В конце разбора нейросеть выдаст код <code>' + PREFIX + '|' + S.tag + '|…</code> — вставь его на вкладке «Ввести код».' : 'Это задание без кода: уровни не меняются.') +
         '</p>' :
         '<p class="pt-note">Отметь хотя бы одно правило.</p>') +
-      '<div class="m-actions">' +
+      '<div class="m-actions pt-actions">' +
         (TYPES[S.type].code ? '<button type="button" class="m-btn ghost" data-pt-tab="code">Ввести код</button>' : '') +
         '<button type="button" class="m-btn" data-pt-copy' + (txt ? '' : ' disabled') + '>' + (S.copied ? 'Скопировано ✓' : 'Скопировать промт') + '</button>' +
+        chatLinks(txt, false) + launchStatus() +
       '</div>';
   }
   function verdictTxt(x) {
@@ -304,12 +333,38 @@
     S.rows = null; S.codeText = '';
     render();
   }
-  function copy() {
-    const ta = modal.querySelector('.pt-text'); if (!ta) return;
-    const done = () => { S.copied = true; const b = modal.querySelector('[data-pt-copy]'); if (b) b.textContent = 'Скопировано ✓'; };
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(ta.value).then(done, () => { ta.select(); try { document.execCommand('copy'); done(); } catch (e) {} });
-    } else { ta.select(); try { document.execCommand('copy'); done(); } catch (e) {} }
+  function copy(chatName) {
+    const ta = modal.querySelector('.pt-text'); if (!S || !ta || !ta.value) return;
+    const state = S, tag = S.tag, text = ta.value;
+    const fallback = () => {
+      if (S !== state || S.tag !== tag || !ta.isConnected) return false;
+      const focused = document.activeElement;
+      const details = ta.closest('details'), wasOpen = details?.open;
+      if (details) details.open = true;
+      ta.focus(); ta.select();
+      try {
+        const ok = document.execCommand('copy');
+        if (ok && details && !wasOpen) details.open = false;
+        if (ok && focused && focused.isConnected) focused.focus({ preventScroll: true });
+        return ok;
+      } catch (e) { return false; }
+    };
+    const done = ok => {
+      // A delayed clipboard response must not update a closed or newly changed prompt.
+      if (S !== state || S.tag !== tag || modal.querySelector('.pt-text') !== ta) return;
+      S.copied = !!ok;
+      const b = modal.querySelector('[data-pt-copy]'); if (b) b.textContent = ok ? 'Скопировано ✓' : 'Скопировать промт';
+      const msg = modal.querySelector('.pt-launch-status');
+      if (msg) {
+        msg.textContent = ok ? (chatName ? 'Промт скопирован. Вставь его в ' + chatName + '.' : 'Промт скопирован.') : 'Не удалось скопировать промт. Выдели и скопируй текст вручную.';
+        msg.hidden = false;
+      }
+    };
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => done(true), () => done(fallback()));
+      } else done(fallback());
+    } catch (e) { done(fallback()); }
   }
 
   const owner = {
@@ -321,6 +376,13 @@
       const sc = t.closest('[data-pt-scope]'); if (sc) { S.scope = sc.dataset.ptScope; render(); return; }
       const pk = t.closest('[data-pt-pick]');
       if (pk) { S.touched = true; S.copied = false; S.sel = pk.dataset.ptPick === 'weak' ? defaultSel(S.type) : new Set(); S.tag = newTag(); render(); return; }
+      const chat = t.closest('[data-pt-open]');
+      if (chat) {
+        const ai = AI_CHATS[chat.dataset.ptOpen];
+        if (!ai || chat.getAttribute('aria-disabled') === 'true' || !modal.querySelector('.pt-text')?.value) { ev.preventDefault(); return; }
+        // Start copying during the click; the native link opens without awaiting clipboard permission.
+        copy(ai.name); return;
+      }
       if (t.closest('[data-pt-copy]')) { copy(); return; }
       if (t.closest('[data-pt-check]')) { check(); return; }
       if (t.closest('[data-pt-apply]')) { apply(); return; }
@@ -340,9 +402,9 @@
     onKey(ev) {
       if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey) && S && S.tab === 'code') { check(); ev.preventDefault(); }
     },
-    onClose() { S = null; modal.classList.remove('pt-modal'); },
+    onClose() { const focused = S?.returnFocus; S = null; modal.classList.remove('pt-modal', 'pt-topic-dialog'); if (focused?.isConnected) focused.focus({ preventScroll: true }); },
   };
   modal.addEventListener('input', ev => { if (S && ev.target.matches('.pt-in')) S.codeText = ev.target.value; });
 
-  window.PROMPTS = { open };
+  window.PROMPTS = { open, openTopic: id => open('prompt', id) };
 })();
