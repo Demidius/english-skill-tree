@@ -1,0 +1,8 @@
+/* Масштаб таблицы-дерева (table-zoom.js): полоса кнопок над таблицей */
+.tree-zoom { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 6px; margin-top: 10px; }
+.tree-zoom .ctl-label { margin-right: 2px; }
+.tree-zoom .chip { min-width: 36px; justify-content: center; text-align: center; font-variant-numeric: tabular-nums; }
+.tree-zoom .tz-val { min-width: 64px; }
+.tree-zoom .chip:disabled { opacity: .4; cursor: default; }
+.tree-zoom .tz-hint { margin-left: 8px; font-size: .72rem; color: var(--muted); }
+@media (max-width: 999px) { .tree-zoom .tz-hint { display: none; } }
