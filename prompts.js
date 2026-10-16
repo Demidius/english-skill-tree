@@ -20,11 +20,25 @@
   };
   const LV_ORDER = { A1: 0, A2: 1, B1: 2, B2: 3 };
   const AI_CHATS = {
-    gpt: { name: 'GPT', url: 'https://chatgpt.com/' },
-    claude: { name: 'Claude', url: 'https://claude.ai/new' },
-    deepseek: { name: 'DeepSeek', url: 'https://chat.deepseek.com/' },
-    qwen: { name: 'Qwen', url: 'https://chat.qwen.ai/' },
+    gpt: { name: 'GPT', url: 'https://chatgpt.com/', query: 'q', android: 'com.openai.chatgpt' },
+    claude: { name: 'Claude', url: 'https://claude.ai/new', query: 'q', android: 'com.anthropic.claude' },
+    deepseek: { name: 'DeepSeek', url: 'https://chat.deepseek.com/', android: 'com.deepseek.chat' },
+    qwen: { name: 'Qwen', url: 'https://chat.qwen.ai/', query: 'text', android: 'ai.qwenlm.chat.android' },
   };
+  const IS_ANDROID = /Android/i.test(navigator.userAgent);
+  let preferApp = true;
+
+  function chatDestination(ai, text) {
+    const url = new URL(ai.url);
+    if (ai.query) url.searchParams.set(ai.query, text);
+    // Keep long practice prompts intact in the clipboard instead of risking a rejected URL.
+    const prefilled = !!ai.query && url.href.length <= 12000;
+    const web = prefilled ? url.href : ai.url;
+    const href = IS_ANDROID && preferApp
+      ? 'intent://' + web.slice('https://'.length) + '#Intent;scheme=https;package=' + ai.android + ';S.browser_fallback_url=' + encodeURIComponent(web) + ';end'
+      : web;
+    return { href, prefilled, app: IS_ANDROID && preferApp };
+  }
 
   // справочник правил: суть и пример из data-grammar.js
   const INFO = {};
@@ -206,9 +220,12 @@
     if (topicId) modal.querySelector('.m-close').focus({ preventScroll: true });
   }
   function chatLinks(txt, explanation) {
-    return '<div class="pt-ai-actions" role="group" aria-label="' + (explanation ? 'Объяснение темы в нейросети' : 'Открыть чат с промтом') + '">' + Object.entries(AI_CHATS).map(([id, ai]) =>
-      '<a class="m-btn ghost" data-pt-open="' + id + '"' + (txt ? ' href="' + ai.url + '" target="_blank" rel="noopener noreferrer"' : ' role="link" aria-disabled="true" tabindex="-1"') + '><span>' + (explanation ? 'Объяснение в ' : 'Открыть в ') + '<b>' + ai.name + '</b></span></a>'
-    ).join('') + '</div>';
+    return (IS_ANDROID ? '<label class="pt-app-preference"><input type="checkbox" data-pt-app' + (preferApp ? ' checked' : '') + '> Открывать в приложении, если установлено</label>' : '') +
+      '<div class="pt-ai-actions" role="group" aria-label="' + (explanation ? 'Объяснение темы в нейросети' : 'Открыть чат с промтом') + '">' + Object.entries(AI_CHATS).map(([id, ai]) => {
+        const dest = chatDestination(ai, txt);
+        return '<a class="m-btn ghost" data-pt-open="' + id + '"' + (txt ? ' href="' + esc(dest.href) + '"' + (!dest.app ? ' target="_blank"' : '') + ' rel="noopener noreferrer"' : ' role="link" aria-disabled="true" tabindex="-1"') + '><span>' + (explanation ? 'Объяснение в ' : 'Открыть в ') + '<b>' + ai.name + '</b><small>' + (dest.prefilled ? 'С готовым запросом' : 'Копировать → вставить') + '</small></span></a>';
+      }).join('') + '</div>' +
+      (typeof navigator.share === 'function' ? '<button type="button" class="m-btn ghost pt-share" data-pt-share' + (!txt ? ' disabled' : '') + '>Передать промт в приложение…</button>' : '');
   }
   function launchStatus() { return '<p class="pt-launch-status" role="status" aria-live="polite" hidden></p>'; }
   function renderTopic() {
@@ -216,7 +233,7 @@
     return mHead('Объяснение темы · ' + topic.level, topic.title) +
       '<p class="pt-topic-summary">' + esc(topic.gloss || topic.branch) + '</p>' +
       chatLinks(txt, true) +
-      '<p class="pt-note">Промт об этой теме скопируется, а чат откроется в новой вкладке. Вставь текст в поле сообщения.</p>' +
+      '<p class="pt-note">GPT, Claude и Qwen откроются с запросом об этой теме. Если поле пустое после входа или в приложении — вставь промт из буфера. Для DeepSeek нужна вставка вручную.</p>' +
       '<details class="pt-topic-prompt"><summary>Посмотреть промт</summary>' +
         '<textarea class="pt-text" readonly rows="5" aria-label="Промт объяснения темы">' + esc(txt) + '</textarea>' +
         '<button type="button" class="m-btn ghost" data-pt-copy>Скопировать промт</button>' +
@@ -265,7 +282,7 @@
       '<div class="m-count pt-h">3. Скопируй и вставь в любую нейросеть</div>' +
       (txt ?
         '<textarea class="pt-text" readonly rows="9" aria-label="Текст промта">' + esc(txt) + '</textarea>' +
-        '<p class="pt-note">Кнопки ниже копируют промт и открывают чат в новой вкладке. Вставь текст в поле сообщения. ' +
+        '<p class="pt-note">Кнопки передают запрос в чат и копируют его про запас. Для DeepSeek и слишком длинных промтов: сначала скопируй, затем открой чат и вставь текст. ' +
           (TYPES[S.type].code ? 'В конце разбора нейросеть выдаст код <code>' + PREFIX + '|' + S.tag + '|…</code> — вставь его на вкладке «Ввести код».' : 'Это задание без кода: уровни не меняются.') +
         '</p>' :
         '<p class="pt-note">Отметь хотя бы одно правило.</p>') +
@@ -333,7 +350,7 @@
     S.rows = null; S.codeText = '';
     render();
   }
-  function copy(chatName) {
+  function copy(chatName, destination) {
     const ta = modal.querySelector('.pt-text'); if (!S || !ta || !ta.value) return;
     const state = S, tag = S.tag, text = ta.value;
     const fallback = () => {
@@ -356,8 +373,17 @@
       const b = modal.querySelector('[data-pt-copy]'); if (b) b.textContent = ok ? 'Скопировано ✓' : 'Скопировать промт';
       const msg = modal.querySelector('.pt-launch-status');
       if (msg) {
-        msg.textContent = ok ? (chatName ? 'Промт скопирован. Вставь его в ' + chatName + '.' : 'Промт скопирован.') : 'Не удалось скопировать промт. Выдели и скопируй текст вручную.';
+        msg.textContent = ok ? (chatName ? 'Промт скопирован. Если поле пустое в ' + chatName + ', вставь текст из буфера.' : 'Промт скопирован.') : 'Не удалось скопировать промт. Выдели и скопируй текст вручную.';
+        if (destination) {
+          // A second explicit tap keeps app launching in a user gesture after copying has finished.
+          const link = el('a', 'm-btn pt-continue');
+          link.href = destination.href; link.rel = 'noopener noreferrer';
+          if (!destination.app) link.target = '_blank';
+          link.textContent = 'Открыть ' + chatName + ' и вставить промт';
+          msg.append(document.createElement('br'), link);
+        }
         msg.hidden = false;
+        if (destination) msg.scrollIntoView({ block: 'nearest' });
       }
     };
     try {
@@ -380,8 +406,21 @@
       if (chat) {
         const ai = AI_CHATS[chat.dataset.ptOpen];
         if (!ai || chat.getAttribute('aria-disabled') === 'true' || !modal.querySelector('.pt-text')?.value) { ev.preventDefault(); return; }
-        // Start copying during the click; the native link opens without awaiting clipboard permission.
-        copy(ai.name); return;
+        const dest = chatDestination(ai, modal.querySelector('.pt-text').value);
+        if (!dest.prefilled) ev.preventDefault();
+        // Prefilled links work independently of clipboard permissions; manual flows copy before opening.
+        copy(ai.name, dest.prefilled ? null : dest); return;
+      }
+      if (t.closest('[data-pt-share]')) {
+        const state = S, tag = S.tag, text = modal.querySelector('.pt-text')?.value;
+        if (!text || typeof navigator.share !== 'function') return;
+        const failed = e => {
+          if (S !== state || S.tag !== tag || e?.name === 'AbortError') return;
+          const msg = modal.querySelector('.pt-launch-status');
+          if (msg) { msg.textContent = 'Не удалось открыть меню приложений. Используй кнопку чата или скопируй промт.'; msg.hidden = false; }
+        };
+        try { Promise.resolve(navigator.share({ text })).catch(failed); } catch(e) { failed(e); }
+        return;
       }
       if (t.closest('[data-pt-copy]')) { copy(); return; }
       if (t.closest('[data-pt-check]')) { check(); return; }
@@ -389,6 +428,7 @@
     },
     onChange(ev) {
       const t = ev.target;
+      if (t.matches('[data-pt-app]')) { preferApp = t.checked; render(); return; }
       if (t.matches('[data-pt-id]')) {
         S.touched = true; S.copied = false;
         if (t.checked) S.sel.add(t.dataset.ptId); else S.sel.delete(t.dataset.ptId);

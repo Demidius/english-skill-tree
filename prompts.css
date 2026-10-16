@@ -84,6 +84,11 @@ html[data-skin="rpg"] .modal.pt-modal textarea.pt-text { font-family: 'IBM Plex 
 .pt-ai-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; flex-basis: 100%; }
 .pt-ai-actions .m-btn { display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 44px; padding: 8px 6px; font-size: .85rem; line-height: 1.2; text-align: center; text-decoration: none; white-space: normal; }
 .pt-ai-actions .m-btn b { font: inherit; white-space: nowrap; }
+.pt-ai-actions .m-btn small { display: block; margin-top: 4px; font-size: .72em; font-weight: 400; line-height: 1.2; color: var(--muted); }
+.pt-app-preference { display: flex; flex-basis: 100%; align-items: center; gap: 8px; margin: 10px 0; font-size: .8rem; line-height: 1.3; }
+.pt-app-preference input { flex: 0 0 auto; width: 18px; height: 18px; accent-color: var(--accent); }
+.pt-share { width: 100%; margin-top: 8px; }
+.pt-continue { display: inline-flex; margin-top: 8px; text-decoration: none; text-align: center; }
 html[data-skin="rpg"] .pt-ai-actions .m-btn { font-family: 'Handjet', 'Manrope', sans-serif; font-size: 1rem; }
 .pt-ai-actions [aria-disabled="true"] { opacity: .4; cursor: default; }
 .pt-launch-status { flex-basis: 100%; margin: 0; font-size: .78rem; line-height: 1.3; color: var(--muted); }
