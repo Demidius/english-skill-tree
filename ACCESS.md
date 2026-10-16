@@ -18,7 +18,8 @@ GitHub Pages публикует только сайт. Правила Firestore 
 Эта запись служит маркером развёртывания, а не заменяет правила безопасности.
 
 1. Сохранить текущую базу/правила в непубличном месте через средства администратора проекта.
-2. Установить Node 24, pnpm и Java 21 для локальных проверок; `pnpm install --frozen-lockfile`, затем `pnpm test`.
+2. Установить Node 24, pnpm и Java 21 для локальных проверок; `pnpm install --frozen-lockfile --ignore-scripts`, затем `pnpm test`.
+   Установочные скрипты зависимостей для этих проверок не нужны и не запускаются.
 3. Войти в Firebase CLI под владельцем проекта: `pnpm exec firebase login`.
 4. После согласования PR развернуть правила:
    `pnpm exec firebase deploy --only firestore:rules --project english-skill-tree-01`.
