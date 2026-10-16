@@ -35,13 +35,20 @@
     qwen: { name: 'Qwen', url: 'https://chat.qwen.ai/', query: 'text', android: 'ai.qwenlm.chat.android' },
   };
   const IS_ANDROID = /Android/i.test(navigator.userAgent);
+  const IS_TOUCH = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+  const IS_MAC = /Mac/i.test(navigator.platform || navigator.userAgent);
   let preferApp = true;
 
-  function chatDestination(ai, text) {
+  function pasteHint() {
+    return IS_TOUCH ? 'удержи палец в поле сообщения → «Вставить»' : (IS_MAC ? '⌘V' : 'Ctrl+V');
+  }
+
+  // allowPrefill: только короткие промты объяснения темы. Задания для отработки всегда длинные
+  // (кириллица в адресе раздувается в 6 раз), поэтому там чат открывается пустым, а промт — в буфере.
+  function chatDestination(ai, text, allowPrefill) {
     const url = new URL(ai.url);
-    if (ai.query) url.searchParams.set(ai.query, text);
-    // Keep long practice prompts intact in the clipboard instead of risking a rejected URL.
-    const prefilled = !!ai.query && url.href.length <= 12000;
+    if (allowPrefill && ai.query) url.searchParams.set(ai.query, text);
+    const prefilled = !!allowPrefill && !!ai.query && url.href.length <= 12000;
     const web = prefilled ? url.href : ai.url;
     const href = IS_ANDROID && preferApp
       ? 'intent://' + web.slice('https://'.length) + '#Intent;scheme=https;package=' + ai.android + ';S.browser_fallback_url=' + encodeURIComponent(web) + ';end'
@@ -71,6 +78,9 @@
     const pool = rules().filter(r => r.read && r.lv < GMAX);
     return new Set(pool.slice(0, n).map(r => r.id));
   }
+  // «Самые слабые N» — из того списка, который сейчас показан («Изучено» или «Все правила»).
+  function weakPool() { return visibleRules().filter(r => r.lv < GMAX); }
+  function weakSel() { return new Set(weakPool().slice(0, TYPES[S.type].def).map(r => r.id)); }
   function newTag() {
     const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let t = ''; for (let i = 0; i < 4; i++) t += A[Math.floor(Math.random() * A.length)];
@@ -238,10 +248,12 @@
   function chatLinks(txt, explanation) {
     return (IS_ANDROID ? '<label class="pt-app-preference"><input type="checkbox" data-pt-app' + (preferApp ? ' checked' : '') + '> Открывать в приложении, если установлено</label>' : '') +
       '<div class="pt-ai-actions" role="group" aria-label="' + (explanation ? 'Объяснение темы в нейросети' : 'Открыть чат с промтом') + '">' + Object.entries(AI_CHATS).map(([id, ai]) => {
-        const dest = chatDestination(ai, txt);
-        return '<a class="m-btn ghost" data-pt-open="' + id + '"' + (txt ? ' href="' + esc(dest.href) + '"' + (!dest.app ? ' target="_blank"' : '') + ' rel="noopener noreferrer"' : ' role="link" aria-disabled="true" tabindex="-1"') + '><span>' + (explanation ? 'Объяснение в ' : 'Открыть в ') + '<b>' + ai.name + '</b><small>' + (dest.prefilled ? 'С готовым запросом' : 'Копировать → вставить') + '</small></span></a>';
+        const dest = chatDestination(ai, txt, explanation);
+        return '<a class="m-btn ghost" data-pt-open="' + id + '"' + (txt ? ' href="' + esc(dest.href) + '"' + (!dest.app ? ' target="_blank"' : '') + ' rel="noopener noreferrer"' : ' role="link" aria-disabled="true" tabindex="-1"') + '><span>' + (explanation ? 'Объяснение в ' : 'Открыть в ') + '<b>' + ai.name + '</b><small>' + (dest.prefilled ? 'С готовым запросом' : 'Скопирует и откроет') + '</small></span></a>';
       }).join('') + '</div>' +
-      (typeof navigator.share === 'function' ? '<button type="button" class="m-btn ghost pt-share" data-pt-share' + (!txt ? ' disabled' : '') + '>Передать промт в приложение…</button>' : '');
+      launchStatus() +
+      // «Поделиться» нужно только на телефоне: на компьютере это системное меню Windows/macOS, а не чат.
+      (typeof navigator.share === 'function' && IS_TOUCH ? '<button type="button" class="m-btn ghost pt-share" data-pt-share' + (!txt ? ' disabled' : '') + '>Передать промт в приложение…</button>' : '');
   }
   function launchStatus() { return '<p class="pt-launch-status" role="status" aria-live="polite" hidden></p>'; }
   function renderTopic() {
@@ -249,11 +261,11 @@
     return mHead('Объяснение темы · ' + topic.level, topic.title) +
       '<p class="pt-topic-summary">' + esc(topic.gloss || topic.branch) + '</p>' +
       chatLinks(txt, true) +
-      '<p class="pt-note">GPT, Claude и Qwen откроются с запросом об этой теме. Если поле пустое после входа или в приложении — вставь промт из буфера. Для DeepSeek нужна вставка вручную.</p>' +
+      '<p class="pt-note">При нажатии промт копируется, а чат открывается. Если поле сообщения пустое — вставь промт (' + pasteHint() + ') и отправь.</p>' +
       '<details class="pt-topic-prompt"><summary>Посмотреть промт</summary>' +
         '<textarea class="pt-text" readonly rows="5" aria-label="Промт объяснения темы">' + esc(txt) + '</textarea>' +
         '<button type="button" class="m-btn ghost" data-pt-copy>Скопировать промт</button>' +
-      '</details>' + launchStatus();
+      '</details>';
   }
   function tabs() {
     return '<div class="pt-tabs" role="tablist">' +
@@ -275,6 +287,7 @@
     const list = visibleRules();
     const txt = buildPrompt();
     const nSel = S.sel.size;
+    const nWeak = Math.min(TYPES[S.type].def, weakPool().length);
     return '<div class="m-count pt-h">1. Что делаем</div>' +
       '<div class="pt-types">' + Object.keys(TYPES).filter(k => !TYPES[k].topicOnly).map(k => {
         const button = '<button type="button" class="m-opt pt-type" data-pt-type="' + k + '" aria-pressed="' + (S.type === k) + '">' +
@@ -291,7 +304,8 @@
         '<button type="button" class="chip" data-pt-scope="read" data-active="' + (S.scope === 'read' ? 1 : 0) + '">«Изучено»</button>' +
         '<button type="button" class="chip" data-pt-scope="all" data-active="' + (S.scope === 'all' ? 1 : 0) + '">Все правила</button>' +
         '<span class="pt-sp"></span>' +
-        '<button type="button" class="chip" data-pt-pick="weak">Самые слабые ' + TYPES[S.type].def + '</button>' +
+        (nWeak ? '<button type="button" class="chip" data-pt-pick="weak">Самые слабые ' + nWeak + '</button>' :
+          '<button type="button" class="chip" data-pt-pick="weak" disabled>Самые слабые</button>') +
         '<button type="button" class="chip" data-pt-pick="none">Снять</button>' +
       '</div>' +
       (list.length ?
@@ -304,8 +318,8 @@
         '<p class="pt-note">Нет правил с отметкой «изучено». Переключись на «Все правила» или отметь галочкой «изучено» правила в дереве.</p>') +
       '<section class="pt-actions pt-launch" aria-labelledby="ptLaunchTitle">' +
         '<h3 id="ptLaunchTitle" class="m-count pt-h">3. Начни занятие</h3>' +
-        '<p class="pt-note">' + (txt ? 'Выбери чат — задание по выбранным темам уже подготовлено.' : 'Сначала отметь хотя бы одну тему.') + '</p>' +
-        chatLinks(txt, false) + launchStatus() +
+        '<p class="pt-note">' + (txt ? 'Нажми на чат — промт скопируется, а чат откроется' + (IS_TOUCH ? '' : ' в новой вкладке') + '. Останется вставить промт (' + pasteHint() + ') и отправить.' : 'Сначала отметь хотя бы одну тему.') + '</p>' +
+        chatLinks(txt, false) +
       '</section>' +
       (txt ? '<details class="pt-manual"' + (S.manualOpen ? ' open' : '') + '><summary>Посмотреть или скопировать промт вручную</summary>' +
         '<p class="pt-note">Запасной способ, если чат не принял задание: скопируй текст и вставь его в поле сообщения.</p>' +
@@ -422,26 +436,51 @@
       if (S !== state || S.tag !== tag || modal.querySelector('.pt-text') !== ta) return;
       S.copied = !!ok;
       const b = modal.querySelector('[data-pt-copy]'); if (b) b.textContent = ok ? 'Скопировано ✓' : 'Скопировать промт';
-      const msg = modal.querySelector('.pt-launch-status');
-      if (msg) {
-        msg.textContent = ok ? (chatName ? 'Промт скопирован. Если поле пустое в ' + chatName + ', вставь текст из буфера.' : 'Промт скопирован.') : 'Не удалось скопировать промт. Выдели и скопируй текст вручную.';
-        if (destination) {
-          // A second explicit tap keeps app launching in a user gesture after copying has finished.
-          const link = el('a', 'm-btn pt-continue');
-          link.href = destination.href; link.rel = 'noopener noreferrer';
-          if (!destination.app) link.target = '_blank';
-          link.textContent = 'Открыть ' + chatName + ' и вставить промт';
-          msg.append(document.createElement('br'), link);
-        }
-        msg.hidden = false;
-        if (destination) msg.scrollIntoView({ block: 'nearest' });
-      }
+      launchMessage(ok
+        ? (chatName ? 'Промт скопирован. Открой ' + chatName + ' и вставь его в поле сообщения (' + pasteHint() + ').' : 'Промт скопирован.')
+        : 'Не удалось скопировать промт автоматически. Выдели текст промта в поле ниже и скопируй его вручную.',
+        destination, chatName);
     };
     try {
       if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(text).then(() => done(true), () => done(fallback()));
       } else done(fallback());
     } catch (e) { done(fallback()); }
+  }
+  // Синхронное копирование прямо в обработчике нажатия: тогда ссылка на чат открывается тем же
+  // нажатием, а промт уже лежит в буфере. Асинхронный Clipboard API не успевает до ухода со страницы.
+  function copyNow(text) {
+    const focused = document.activeElement;
+    const tmp = document.createElement('textarea');
+    tmp.value = text; tmp.readOnly = true; tmp.tabIndex = -1; tmp.setAttribute('aria-hidden', 'true');
+    tmp.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;padding:0;border:0;opacity:0;pointer-events:none;font-size:16px';
+    modal.appendChild(tmp);
+    let ok = false;
+    try {
+      tmp.focus({ preventScroll: true }); tmp.select(); tmp.setSelectionRange(0, text.length);
+      ok = document.execCommand('copy');
+    } catch (e) { ok = false; }
+    tmp.remove();
+    if (focused && focused.isConnected) focused.focus({ preventScroll: true });
+    return !!ok;
+  }
+  function markCopied(ok) {
+    S.copied = !!ok;
+    const b = modal.querySelector('[data-pt-copy]'); if (b) b.textContent = ok ? 'Скопировано ✓' : 'Скопировать промт';
+  }
+  // destination — запасной второй шаг, если промт не удалось скопировать в момент нажатия.
+  function launchMessage(text, destination, chatName) {
+    const msg = modal.querySelector('.pt-launch-status'); if (!msg) return;
+    msg.textContent = text;
+    if (destination) {
+      const link = el('a', 'm-btn pt-continue');
+      link.href = destination.href; link.rel = 'noopener noreferrer';
+      if (!destination.app) link.target = '_blank';
+      link.textContent = 'Открыть ' + chatName;
+      msg.append(link);
+    }
+    msg.hidden = false;
+    msg.scrollIntoView({ block: 'nearest' });
   }
 
   const owner = {
@@ -465,15 +504,25 @@
       }
       const sc = t.closest('[data-pt-scope]'); if (sc) { S.scope = sc.dataset.ptScope; render(); return; }
       const pk = t.closest('[data-pt-pick]');
-      if (pk) { S.touched = true; S.copied = false; S.sel = pk.dataset.ptPick === 'weak' ? defaultSel(S.type) : new Set(); S.tag = newTag(); render(); return; }
+      if (pk) { S.touched = true; S.copied = false; S.sel = pk.dataset.ptPick === 'weak' ? weakSel() : new Set(); S.tag = newTag(); render(); return; }
       const chat = t.closest('[data-pt-open]');
       if (chat) {
         const ai = AI_CHATS[chat.dataset.ptOpen];
-        if (!ai || chat.getAttribute('aria-disabled') === 'true' || !modal.querySelector('.pt-text')?.value) { ev.preventDefault(); return; }
-        const dest = chatDestination(ai, modal.querySelector('.pt-text').value);
-        if (!dest.prefilled) ev.preventDefault();
-        // Prefilled links work independently of clipboard permissions; manual flows copy before opening.
-        copy(ai.name, dest.prefilled ? null : dest); return;
+        const text = modal.querySelector('.pt-text')?.value;
+        if (!ai || chat.getAttribute('aria-disabled') === 'true' || !text) { ev.preventDefault(); return; }
+        const dest = chatDestination(ai, text, !!S.topicId);
+        const copied = copyNow(text);
+        if (copied || dest.prefilled) {
+          // Одно нажатие: браузер сам перейдёт по ссылке сразу после этого обработчика.
+          if (copied) markCopied(true);
+          launchMessage(dest.prefilled
+            ? ai.name + ' открывается с готовым запросом.' + (copied ? ' Если поле сообщения окажется пустым, вставь промт (' + pasteHint() + ').' : '')
+            : 'Промт скопирован. В чате ' + ai.name + ' вставь его в поле сообщения (' + pasteHint() + ') и отправь.');
+          return;
+        }
+        // Браузер не дал скопировать сразу: копируем асинхронно, чат откроется вторым нажатием.
+        ev.preventDefault();
+        copy(ai.name, dest); return;
       }
       if (t.closest('[data-pt-share]')) {
         const state = S, tag = S.tag, text = modal.querySelector('.pt-text')?.value;
