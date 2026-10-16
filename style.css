@@ -647,12 +647,12 @@ footer.note{color:var(--muted); font-size:.76rem; margin:6px 0 40px; max-width:6
 }
 
 /* word list etc.: keep main actions reachable while scrolling */
-.modal-back:not(.exitask) .modal:not(.fixed):not(.rulepage) > .m-actions:last-child{
+.modal-back:not(.exitask) .modal:not(.fixed):not(.rulepage):not(.pt-modal) > .m-actions:last-child{
   position:sticky; bottom:-18px; z-index:3; margin:16px -22px -18px; padding:12px 22px 18px;
   background:var(--surface); border-top:1px solid var(--line);
 }
 @media (max-width: 720px){
-  .modal-back:not(.exitask) .modal:not(.fixed):not(.rulepage) > .m-actions:last-child{
+  .modal-back:not(.exitask) .modal:not(.fixed):not(.rulepage):not(.pt-modal) > .m-actions:last-child{
     bottom:calc(-16px - env(safe-area-inset-bottom, 0px)); margin:16px -16px calc(-16px - env(safe-area-inset-bottom, 0px));
     padding:12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
   }
