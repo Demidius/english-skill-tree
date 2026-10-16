@@ -372,7 +372,7 @@ const G = (function(){
   const actionHelp = [
     ['Тест', 'проверка этой темы: 10 вопросов.'],
     ['YouTube', 'поиск видео по названию темы в новой вкладке.'],
-    ['GPT', 'объяснение темы в GPT, Claude, DeepSeek или Qwen. Выбери сервис, затем вставь скопированный промт в чат.'],
+    ['GPT', 'объяснение темы в GPT, Claude, DeepSeek или Qwen. GPT, Claude и Qwen открываются с запросом. Если поле пустое, вставь промт из буфера; в DeepSeek вставка нужна вручную.'],
   ];
   G_BRANCHES.forEach(b=>LEVELS.forEach(l=>(b.cells[l.key]||[]).forEach(c=>{
     CARDS[c[0]]={branch:b.key, level:l.key, title:c[1], tags:c[5]};
