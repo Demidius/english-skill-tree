@@ -2,6 +2,7 @@
 // и Ctrl + колёсико (или щипок на тачпаде). Работает, пока таблица показана сеткой
 // (компьютер, планшет); на телефоне видна одна ветка — там масштаб не нужен.
 // Масштаб хранится в браузере отдельно для каждой таблицы (ef_zoom_mode-g / ef_zoom_mode-w).
+// Меньше «Вся таблица» не уменьшается: самый мелкий масштаб — когда ширина таблицы равна экрану.
 //
 // Плавность: во время жеста таблица масштабируется через transform (видеокарта, без перестройки
 // страницы), а настоящий CSS zoom применяется один раз, когда жест закончился. Положение после
@@ -38,9 +39,12 @@
     const val = bar.querySelector('.tz-val');
 
     const isGrid = () => !mode.hidden && getComputedStyle(tree).display === 'grid';
+    // ширина таблицы при 100% и самый мелкий масштаб, при котором она ровно во всю ширину экрана
+    function natWidth() { return pv ? pv.natW : tree.getBoundingClientRect().width / (parseFloat(tree.style.zoom) || 1); }
+    function minK() { return Math.min(1, Math.max(MIN, Math.floor(scroller.clientWidth / natWidth() * 1000) / 1000)); }
     function show(v) {
       val.textContent = Math.round(v * 100) + '%';
-      bar.querySelector('[data-z="out"]').disabled = v <= MIN;
+      bar.querySelector('[data-z="out"]').disabled = !on || v <= minK() + 0.001;
       bar.querySelector('[data-z="in"]').disabled = v >= MAX;
     }
     function paint() { tree.style.zoom = on && k !== 1 ? String(k) : ''; show(k); }
@@ -63,7 +67,7 @@
       if (!on) return;
       opt = opt || {};
       const p = begin();
-      nk = clampZ(nk);
+      nk = clamp(clampZ(nk), minK(), MAX);
       // где таблица была бы сейчас, если бы текущий предпросмотр уже применили
       const L = p.left0 + p.sl0 - p.sl, T = p.top0 + p.wy0 - p.wy;
       const s = scroller.getBoundingClientRect();
@@ -105,22 +109,28 @@
       if (k !== p.k0) save();
     }
 
+    // сохранённый или текущий масштаб не может быть мельче «вся таблица по ширине экрана»
+    // (например, после того как окно стало шире)
+    function enforceMin() {
+      if (!on || pv) return;
+      const m = minK();
+      if (k < m - 0.001) { k = m; paint(); save(); } else show(k);
+    }
     function sync() {
       const was = on, now = isGrid();
       if (!now && pv) commit();
       on = now; bar.hidden = !on;
       if (on !== was) paint();
+      enforceMin();
     }
 
     bar.addEventListener('click', ev => {
       const b = ev.target.closest('[data-z]'); if (!b || b.disabled || !on) return;
       const z = b.dataset.z, cur = pv ? pv.k : k;
-      if (z === 'fit') {
-        const natW = pv ? pv.natW : tree.getBoundingClientRect().width / k;
-        return zoomTo(Math.min(1, Math.floor(scroller.clientWidth / natW * 100) / 100), null, null, { ms: BUTTON_MS, toLeft: true });
-      }
+      if (z === 'fit') return zoomTo(minK(), null, null, { ms: BUTTON_MS, toLeft: true });
       if (z === 'reset') return zoomTo(1, null, null, { ms: BUTTON_MS });
-      zoomTo(z === 'in' ? (STEPS.find(x => x > cur + 0.001) || MAX) : ([...STEPS].reverse().find(x => x < cur - 0.001) || MIN), null, null, { ms: BUTTON_MS });
+      const m = minK();
+      zoomTo(z === 'in' ? (STEPS.find(x => x > cur + 0.001) || MAX) : Math.max(m, [...STEPS].reverse().find(x => x < cur - 0.001) || m), null, null, { ms: BUTTON_MS });
     });
 
     // Полоса веток прокручивает таблицу по offsetLeft, а он не учитывает масштаб.
