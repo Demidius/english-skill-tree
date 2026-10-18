@@ -305,6 +305,21 @@ wo-class|pen|ручка (для письма)
 to-places|square|площадь (в городе)
 na-world|world|мир (весь свет, Земля)
 na-world|star|звезда (на небе)
+ho-things|bath|ванна (в которой моются)
+ho-rooms|bathroom|ванная (комната)
+sh4-ads|campaign|кампания (рекламная)
+de2-things|sharp|острый (о ноже)
+fo3-restaurant|spicy|острый (о еде)
+sh2-clothes|zip|молния (на одежде)
+na4-weather|lightning|молния (в грозу)
+ho3-house-2|tool|инструмент (рабочий)
+fr2-music|instrument|инструмент (музыкальный)
+ho-prep|opposite|напротив (о месте)
+ba4-contrast|on the contrary|напротив, наоборот
+da2-phrasal-2|write down|записать (на бумаге)
+fr4-music|record|записать (звук, музыку)
+fo4-idioms-2|walk on eggshells|ходить на цыпочках (перед кем-то, идиома)
+bo4-body-2|tiptoe|ходить на цыпочках (1 слово)
 `;
   if (typeof W_BRANCHES === 'undefined') return;
   const idx = {};

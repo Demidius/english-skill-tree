@@ -90,8 +90,12 @@ document.addEventListener('keydown', ev => {
   new MutationObserver(scan).observe(document.body, { childList: true, subtree: true });
 })();
 
-// Русское слово во множественном числе («фрукты», «выборы»), а в карточке английское в единственном:
-// форма множественного числа тоже правильный перевод — засчитываем её.
+// Мягкая проверка «Я знаю» — засчитываем ответы, которые тоже верны:
+// 1) рус. во мн. числе, англ. в ед.: «фрукты» — fruits тоже правильно;
+// 2) a/an/the: в этих выражениях подходит любой артикль (stay at a hotel = stay at the hotel);
+// 3) на карточке написано «также …» / «амер. …» (stay in a hotel, apartment);
+// 4) в русском есть подсказка в скобках («работать на (компанию)») — если дописал её перевод
+//    после правильного ответа (work for company), это не ошибка.
 (function () {
   const PLURAL_OK = {
     'fruit': 'fruits',
@@ -101,8 +105,95 @@ document.addEventListener('keydown', ev => {
     'jungle': 'jungles',
     'reed bed': 'reed beds',
   };
-  const norm = s => String(s).toLowerCase().replace(/[’`ʼ]/g, "'").replace(/[^a-z' ]+/g, ' ')
+  const ART_OK = new Set([
+    'stay at a hotel', 'catch the bus', 'take a bus', 'go to the gym', 'go to the park', 'go to the beach',
+    'see a doctor', 'see a dentist', 'ride a bike', 'ride a horse', 'play the guitar', 'cross the road',
+    'book a table', 'rent a car', 'borrow a book', 'take a photo', 'leave a message', 'sign a contract',
+    'take an exam', 'support a team', 'lose a match', 'score a goal', 'collect a parcel', 'iron a shirt',
+    'get a message', 'get a job', 'make a cake', 'hold a meeting', 'have a meeting', 'chair a meeting',
+    'track an order', 'take out a loan', 'meet a deadline', 'extend a deadline', 'drill a hole', 'share a flat',
+    'commit a crime', 'accept an invitation', 'turn down an invitation', 'register with a gp', 'run a business',
+    'miss a connection', 'set an alarm', 'work in a team', 'take to the vet', 'can i speak to the manager?',
+  ]);
+  // на карточке написано «также …» / «амер. …» — эти варианты тоже засчитываем
+  const ALSO = {
+    'pe-info|surname': ['last name'],
+    'pe-info|phone number': ['mobile number'],
+    'pe-info|email': ['email address'],
+    'pe-countries|the usa': ['the us', 'america', 'the states'],
+    'de-common|big': ['large'],
+    'de-common|small': ['little'],
+    'de-common|beautiful': ['pretty'],
+    'de-common|easy': ['simple'],
+    'de-common|difficult': ['hard'],
+    'de-colours|grey': ['gray'],
+    'de-colours|colour': ['color'],
+    'de-feel|happy': ['glad'],
+    'de-feel|sad': ['unhappy'],
+    'de-feel|fine': ['ok', 'okay', 'all right'],
+    'ti-numbers|a hundred': ['one hundred'],
+    'ti-numbers|a thousand': ['one thousand'],
+    'ti-months|autumn': ['fall'],
+    'ti-clock|what time is it?': ["what's the time", 'what is the time'],
+    'ti-clock|half past two': ['two thirty'],
+    'ti-prep|at the weekend': ['on the weekend'],
+    'da-routine|cook dinner': ['make dinner'],
+    'da-routine|start': ['begin'],
+    'da-routine|finish': ['end'],
+    'da-phrases|take a photo': ['take a picture'],
+    'ho-rooms|flat': ['apartment'],
+    'ho-rooms|living room': ['lounge', 'sitting room'],
+    'ho-rooms|garden': ['yard'],
+    'ho-things|sofa': ['couch'],
+    'ho-things|bath': ['bathtub'],
+    'ho-things|cooker': ['stove'],
+    'ho-things|wardrobe': ['closet'],
+    'ho-prep|opposite': ['across from'],
+    'ho-prep|near': ['close to'],
+    'ho-prep|above': ['over'],
+    'fo-drinks|dinner': ['supper'],
+    'fo-cafe|bill': ['check'],
+    'fo-cafe|take away': ['to go'],
+    'to-places|shop': ['store'],
+    "to-places|chemist's": ['pharmacy'],
+    'to-places|cinema': ['movie theater', 'movie theatre'],
+    'to-transport|taxi': ['cab'],
+    'to-transport|plane': ['aeroplane', 'airplane'],
+    'to-transport|underground': ['metro', 'subway', 'tube'],
+    'to-directions|go straight on': ['go straight ahead'],
+    'sh-clothes|trousers': ['pants'],
+    'sh-clothes|jumper': ['sweater', 'pullover'],
+    'sh-clothes|trainers': ['sneakers'],
+    'wo-jobs|cook': ['chef'],
+    'wo-jobs|lawyer': ['solicitor'],
+    'wo-jobs|shop assistant': ['salesperson', 'sales clerk'],
+    'wo-jobs|police officer': ['policeman', 'policewoman'],
+    'wo-jobs|programmer': ['developer', 'software engineer'],
+    'wo-work|company': ['firm'],
+    'wo-work|colleague': ['coworker', 'co-worker'],
+    'wo-work|lesson': ['class'],
+    'wo-class|notebook': ['exercise book'],
+    'fr-hobbies|play football': ['play soccer'],
+    'fr-hobbies|go running': ['run'],
+    'fr-hobbies|watch films': ['watch movies'],
+    'fr-hobbies|go for a walk': ['walk', 'take a walk'],
+    'fr-holiday|holiday': ['vacation'],
+    'fr-holiday|stay at a hotel': ['stay in a hotel'],
+    'fr-holiday|book': ['reserve'],
+    'bo-health|a temperature': ['a fever'],
+    'bo-health|see a doctor': ['go to the doctor'],
+    'ba-social|nice to meet you.': ['pleased to meet you'],
+    "ba-social|you're welcome.": ['no problem'],
+    'ba-social|see you later.': ['see you soon'],
+    'ba-linkers|a lot of': ['lots of'],
+  };
+  const norm = s => String(s).toLowerCase().replace(/[’`ʼ']/g, '').replace(/[^a-z0-9 ]+/g, ' ')
     .replace(/\s+/g, ' ').trim().replace(/^(to|a|an|the) /, '');
+  const art = s => s.replace(/\b(a|an|the)\b/g, 'the');
+  function alts(en) {
+    const base = en.replace(/\(.*?\)/g, ' ');
+    return [en, base].concat(base.split(/\s*[\/;,]\s*|\s+or\s+/)).map(norm).filter(Boolean);
+  }
   let map = null;
   function byRu() {
     if (map) return map;
@@ -112,10 +203,23 @@ document.addEventListener('keydown', ev => {
       if (!c || typeof c[3] !== 'string') return;
       c[3].split(';').forEach(x => {
         const f = x.split('|').map(y => y.trim());
-        if (f[0] && f[1] && PLURAL_OK[f[0]]) (map[f[1]] = map[f[1]] || []).push(f[0]);
+        if (f[0] && f[1]) (map[f[1]] = map[f[1]] || []).push({ id: c[0], en: f[0], p: f[2] });
       });
     }))));
     return map;
+  }
+  function ok(typed, w, ru) {
+    if (PLURAL_OK[w.en] && typed === PLURAL_OK[w.en]) return true;
+    const also = /\([a-z]…\)/i.test(ru) ? [] : (ALSO[w.id + '|' + w.en.toLowerCase()] || []);
+    const as = alts(w.en).concat(also.map(norm));
+    if (as.includes(typed)) return true;
+    if (ART_OK.has(w.en.toLowerCase()) && as.some(a => art(a) === art(typed))) return true;
+    // подсказка в скобках (не «(s…)», не «(2 слова)», не «букв.»): разрешаем дописать до 3 слов
+    const hint = (ru.match(/\(([^)]*)\)/) || [])[1];
+    if (hint && !/[0-9…]|слов|букв/.test(hint) && w.p !== 'n' && w.p !== 'a') {
+      for (const a of as) if (typed.startsWith(a + ' ') && typed.slice(a.length + 1).split(' ').length <= 3) return true;
+    }
+    return false;
   }
   document.addEventListener('submit', ev => {
     const form = ev.target;
@@ -123,7 +227,8 @@ document.addEventListener('keydown', ev => {
     const inp = form.querySelector('#knownIn');
     const front = document.querySelector('.fc .front');
     if (!inp || !front) return;
-    const typed = norm(inp.value);
-    (byRu()[front.textContent.trim()] || []).forEach(en => { if (typed === PLURAL_OK[en]) inp.value = en; });
+    const ru = front.textContent.trim(), typed = norm(inp.value);
+    if (!typed) return;
+    for (const w of byRu()[ru] || []) if (ok(typed, w, ru)) { inp.value = w.en; return; }
   }, true);
 })();
