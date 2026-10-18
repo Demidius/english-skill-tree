@@ -22,16 +22,19 @@ document.addEventListener('keydown', ev => {
 }, true);
 
 // «Я знаю», неверный ответ: показываем, какие буквы ошибочны.
-// Неверная буква — красная, над ней зелёная правильная; пропущенная — зелёная над красной «_»; лишняя — зачёркнута.
+// Опечатка — правильная буква над неверной; слово целиком другое — правильное слово над ним;
+// пропущенное — зелёное над красной чертой; лишнее — зачёркнуто.
 // Мало ошибок — сразу предлагаем оценку: 1 буква — «Легко», 2 — «Хорошо».
 (function () {
   const st = document.createElement('style');
   st.textContent =
-    '.kres b[data-diff]{color:inherit;white-space:pre;letter-spacing:.02em;display:inline-block;margin-top:1.15em;line-height:1.2}' +
-    '.kd-col{position:relative;display:inline-block}' +
-    '.kd-col>.kd-ins{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);margin-bottom:1px;line-height:1.1}' +
+    '.kres b[data-diff]{color:inherit;white-space:pre-wrap;letter-spacing:.02em;line-height:1.25;display:inline-block;max-width:100%;margin-top:1.2em}' +
+    // столбик: снизу то, что написал (красное), над ним правильное (зелёное); ширина — по самому широкому
+    '.kd-col{position:relative;display:inline-block;text-align:center;white-space:pre}' +
+    '.kd-col>.kd-w{display:block;height:0;overflow:hidden;visibility:hidden;padding:0 1px}' +
+    '.kd-col>.kd-ins{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);white-space:pre;line-height:1.15;margin-bottom:1px}' +
     '.kd-del{color:var(--accent-2,#ef4b72);text-decoration:line-through;text-decoration-thickness:2px}' +
-    '.kd-gap{color:var(--accent-2,#ef4b72)}' +
+    '.kd-gap{display:inline-block;width:100%;min-width:.6em;border-bottom:2px solid var(--accent-2,#ef4b72);box-sizing:border-box}' +
     '.kd-ins{color:var(--st-mastered,#22d39c);background:color-mix(in srgb,var(--st-mastered,#22d39c) 18%,transparent);border-radius:2px;padding:0 1px}' +
     '.grade.kd-suggest{outline:2px dashed var(--st-mastered,#22d39c);outline-offset:3px}';
   document.head.appendChild(st);
@@ -83,12 +86,36 @@ document.addEventListener('keydown', ev => {
     if (!best || best.dist === 0) return;
     // много ошибок — значит, это другое слово, буквы не размечаем
     if (best.dist > Math.max(2, Math.ceil(best.r.length * 0.6))) return;
-    // правильная буква — над неверной; пропущенная — над красной чертой; лишняя — просто зачёркнута
-    const col = (wrong, right) => '<span class="kd-col">' + wrong + right + '</span>';
-    b.innerHTML = ops(best.t, best.r).map(o =>
+    // сравнение по словам: слово целиком другое — показываем правильное слово над ним;
+    // в слове 1–2 опечатки — правим по буквам (правильная буква над неверной)
+    const col = (bottom, word) => '<span class="kd-col"><span class="kd-w">' + esc(word) + '</span>' + bottom + sp('kd-ins', word) + '</span>';
+    const gap = '<span class="kd-gap">​</span>';
+    const letters = (t, r) => ops(t, r).map(o =>
       o[0] === 'ok' ? esc(o[1]) :
-      o[0] === 'sub' ? col(sp('kd-del', o[1]), sp('kd-ins', o[2])) :
-      o[0] === 'del' ? sp('kd-del', o[1]) : col(sp('kd-gap', '_'), sp('kd-ins', o[1]))).join('');
+      o[0] === 'sub' ? col(sp('kd-del', o[1]), o[2]) :
+      o[0] === 'del' ? sp('kd-del', o[1]) : col(gap, o[1])).join('');
+    const tw = best.t.split(' '), rw = best.r.split(' ');
+    const wd = (x, y) => table(low(x), low(y))[x.length][y.length];
+    const subCost = (x, y) => { const d = wd(x, y); return d === 0 ? 0 : d / Math.max(x.length, y.length); };
+    const D = [];
+    for (let i = 0; i <= tw.length; i++) { D[i] = [i]; }
+    for (let j = 0; j <= rw.length; j++) D[0][j] = j;
+    for (let i = 1; i <= tw.length; i++) for (let j = 1; j <= rw.length; j++)
+      D[i][j] = Math.min(D[i - 1][j] + 1, D[i][j - 1] + 1, D[i - 1][j - 1] + subCost(tw[i - 1], rw[j - 1]));
+    const seq = []; let i = tw.length, j = rw.length;
+    while (i > 0 || j > 0) {
+      if (i > 0 && j > 0 && Math.abs(D[i][j] - (D[i - 1][j - 1] + subCost(tw[i - 1], rw[j - 1]))) < 1e-9) { seq.push(['w', tw[i - 1], rw[j - 1]]); i--; j--; }
+      else if (i > 0 && Math.abs(D[i][j] - (D[i - 1][j] + 1)) < 1e-9) { seq.push(['del', tw[i - 1]]); i--; }
+      else { seq.push(['ins', rw[j - 1]]); j--; }
+    }
+    b.innerHTML = seq.reverse().map(o => {
+      if (o[0] === 'del') return sp('kd-del', o[1]);
+      if (o[0] === 'ins') return col(gap, o[1]);
+      const d = wd(o[1], o[2]);
+      if (d === 0) return esc(o[1]);
+      if (d <= Math.max(1, Math.floor(Math.max(o[1].length, o[2].length) / 3))) return letters(o[1], o[2]);
+      return col(sp('kd-del', o[1]), o[2]);
+    }).join(' ');
     b.setAttribute('aria-label', 'ты написал ' + typed + ', правильно ' + best.r);
     // 1 неверная буква — предлагаем «Легко», 2 — «Хорошо» (кнопка в фокусе: Enter или пробел)
     const g = best.dist === 1 ? 'easy' : best.dist === 2 ? 'good' : '';
@@ -188,6 +215,7 @@ document.addEventListener('keydown', ev => {
     'fr-hobbies|go for a walk': ['walk', 'take a walk'],
     'fr-holiday|holiday': ['vacation'],
     'fr-holiday|stay at a hotel': ['stay in a hotel'],
+    'da-phrases|take a bus': ['go by bus'],
     'fr-holiday|book': ['reserve'],
     'bo-health|a temperature': ['a fever'],
     'bo-health|see a doctor': ['go to the doctor'],
