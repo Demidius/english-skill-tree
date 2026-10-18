@@ -29,6 +29,7 @@ sh3-money-2|lend money|дать денег взаймы
 sh4-ads|junk mail|рекламная рассылка, спам
 wo2-workphrases|go on business|поехать в командировку
 fr-hobbies|go for a walk|пойти на прогулку, гулять
+fr4-media|comment section|раздел комментариев
 fr3-tv|remote control|пульт (от телевизора)
 fr3-books|borrow a book|взять книгу (почитать)
 fr4-hobbies|take up|заняться (новым хобби)

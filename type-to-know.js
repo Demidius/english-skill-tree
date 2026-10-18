@@ -22,13 +22,15 @@ document.addEventListener('keydown', ev => {
 }, true);
 
 // «Я знаю», неверный ответ: показываем, какие буквы ошибочны.
-// Неверная или лишняя буква — красная зачёркнутая, правильная/пропущенная — зелёная.
+// Неверная буква — красная, под ней зелёная правильная; пропущенная — зелёная под красной «_»; лишняя — зачёркнута.
 (function () {
   const st = document.createElement('style');
   st.textContent =
     '.kres b[data-diff]{color:inherit;white-space:pre-wrap;letter-spacing:.02em}' +
+    '.kd-col{display:inline-flex;flex-direction:column;align-items:center;line-height:1.1;vertical-align:baseline}' +
     '.kd-del{color:var(--accent-2,#ef4b72);text-decoration:line-through;text-decoration-thickness:2px}' +
-    '.kd-ins{color:var(--st-mastered,#22d39c);background:color-mix(in srgb,var(--st-mastered,#22d39c) 18%,transparent);border-radius:2px;padding:0 1px}';
+    '.kd-gap{color:var(--accent-2,#ef4b72)}' +
+    '.kd-ins{color:var(--st-mastered,#22d39c);background:color-mix(in srgb,var(--st-mastered,#22d39c) 18%,transparent);border-radius:2px;padding:0 1px;margin-top:1px}';
   document.head.appendChild(st);
 
   const low = s => s.toLowerCase().replace(/[’`ʼ]/g, "'");
@@ -76,12 +78,52 @@ document.addEventListener('keydown', ev => {
     if (!best || best.dist === 0) return;
     // много ошибок — значит, это другое слово, буквы не размечаем
     if (best.dist > Math.max(2, Math.ceil(best.r.length * 0.6))) return;
+    // правильная буква — под неверной; пропущенная — под красной чертой; лишняя — просто зачёркнута
+    const col = (top, bot) => '<span class="kd-col">' + top + (bot || '') + '</span>';
     b.innerHTML = ops(best.t, best.r).map(o =>
       o[0] === 'ok' ? esc(o[1]) :
-      o[0] === 'sub' ? sp('kd-del', o[1]) + sp('kd-ins', o[2]) :
-      o[0] === 'del' ? sp('kd-del', o[1]) : sp('kd-ins', o[1])).join('');
+      o[0] === 'sub' ? col(sp('kd-del', o[1]), sp('kd-ins', o[2])) :
+      o[0] === 'del' ? sp('kd-del', o[1]) : col(sp('kd-gap', '_'), sp('kd-ins', o[1]))).join('');
     b.setAttribute('aria-label', 'ты написал ' + typed + ', правильно ' + best.r);
   }
   function scan() { document.querySelectorAll('.kres.no b:not([data-diff])').forEach(mark); }
   new MutationObserver(scan).observe(document.body, { childList: true, subtree: true });
+})();
+
+// Русское слово во множественном числе («фрукты», «выборы»), а в карточке английское в единственном:
+// форма множественного числа тоже правильный перевод — засчитываем её.
+(function () {
+  const PLURAL_OK = {
+    'fruit': 'fruits',
+    'election': 'elections',
+    'memoir': 'memoirs',
+    'frost': 'frosts',
+    'jungle': 'jungles',
+    'reed bed': 'reed beds',
+  };
+  const norm = s => String(s).toLowerCase().replace(/[’`ʼ]/g, "'").replace(/[^a-z' ]+/g, ' ')
+    .replace(/\s+/g, ' ').trim().replace(/^(to|a|an|the) /, '');
+  let map = null;
+  function byRu() {
+    if (map) return map;
+    map = {};
+    if (typeof W_BRANCHES === 'undefined') return map;
+    W_BRANCHES.forEach(b => ['cells', 'extra'].forEach(p => Object.values(b[p] || {}).forEach(cs => cs.forEach(c => {
+      if (!c || typeof c[3] !== 'string') return;
+      c[3].split(';').forEach(x => {
+        const f = x.split('|').map(y => y.trim());
+        if (f[0] && f[1] && PLURAL_OK[f[0]]) (map[f[1]] = map[f[1]] || []).push(f[0]);
+      });
+    }))));
+    return map;
+  }
+  document.addEventListener('submit', ev => {
+    const form = ev.target;
+    if (!form || !form.classList || !form.classList.contains('kbox')) return;
+    const inp = form.querySelector('#knownIn');
+    const front = document.querySelector('.fc .front');
+    if (!inp || !front) return;
+    const typed = norm(inp.value);
+    (byRu()[front.textContent.trim()] || []).forEach(en => { if (typed === PLURAL_OK[en]) inp.value = en; });
+  }, true);
 })();
