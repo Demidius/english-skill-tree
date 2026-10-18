@@ -131,7 +131,7 @@
     return 'Task: translation one full sentence at a time, ' + (toEnglish ? 'from Russian into English (RU → EN)' : 'from English into Russian (EN → RU)') + '.\n' +
       '1. Give exactly one new full sentence ' + (toEnglish ? 'in Russian' : 'in English') + ' on an everyday topic. ' +
       'It must practise one or more rules from the list. Rotate the rules, gradually cover the whole list, and give weak rules more often. ' +
-      'Do not give a set of sentences, a ready translation, or a hint about which rule is needed.\n' +
+      levelInstruction() + 'Do not give a set of sentences, a ready translation, or a hint about which rule is needed.\n' +
       '2. Stop and wait for my translation ' + (toEnglish ? 'into English' : 'into Russian') + '. Do not answer for me and do not analyse the sentence in advance.\n' +
       '3. After each of my translations, immediately give a short analysis in Russian. If the translation is correct, say so explicitly. ' +
       'If there is a mistake, show my version → corrected version, explain why, and give the id of the rule from the list. ' +
@@ -180,7 +180,7 @@
         'Task: find and correct mistakes.\n' +
         '1. Write 12 numbered sentences in English. About half of them must contain a mistake in exactly the listed rules ' +
         '(each rule in at least 2 sentences: one with a mistake and one without); the other sentences are correct. ' +
-        'Make the mistakes typical for Russian speakers. Do not mark where the mistakes are or which rules are tested.\n' +
+        'Make the mistakes typical for Russian speakers. ' + levelInstruction() + 'Do not mark where the mistakes are or which rules are tested.\n' +
         '2. Stop and wait for my answer: I will write the numbers of the wrong sentences and my corrections.\n' +
         '3. Analyse my answer in Russian: which mistakes I found and fixed correctly, which I missed, and where I "fixed" a correct sentence. ' +
         'For each mistake — the correct version and a short explanation with the rule id.\n' +
@@ -191,7 +191,7 @@
         'Task: speaking practice.\n' +
         '1. Offer 3 everyday situations for a dialogue, wait for my choice and start the conversation in English. ' +
         'Ask questions so that I have to answer using the listed rules (cover all of them in turn). ' +
-        'One or two questions per message, keep it simple.\n' +
+        'One or two questions per message' + (TEXT_LEVELS[S.textLevel] ? '. ' + levelInstruction() + 'Talk to me at this level throughout the dialogue.' : ', keep it simple.') + '\n' +
         '2. During the dialogue, do not correct mistakes, just keep talking. Make 10–12 turns, or finish earlier if I write «итог».\n' +
         '3. After the dialogue, go through my lines in Russian: my version → correct one, briefly, with the rule id. ' +
         'Mark mistakes outside the listed rules separately — they do not affect the rule results.\n' +
@@ -215,12 +215,23 @@
     return head + body + code;
   }
 
+  // Что именно подстраивается под уровень в каждом типе задания; true — материал на русском,
+  // тогда уровень задаёт его естественный перевод на английский.
+  const LEVEL_SUBJECT = {
+    translate: ['the Russian text', true],
+    sentence_ru_en: ['each Russian sentence', true],
+    sentence_en_ru: ['each English sentence', false],
+    fix: ['the English sentences', false],
+    dialog: ['your English lines and questions', false],
+  };
   function levelInstruction() {
-    const lv = S.textLevel;
-    if (!TEXT_LEVELS[lv]) return 'Vocabulary — no harder than B1. ';
-    return 'Language level of the text: CEFR ' + lv + '. Write the Russian text so that its natural English translation is exactly at ' + lv + ' level: ' +
-      TEXT_LEVELS[lv] + '. Do not use words, idioms or constructions whose English equivalents are clearly above ' + lv +
-      (lv === 'A1' || lv === 'A2' ? '' : ', and do not make the text simpler than ' + lv) + '. ' +
+    const lv = S.textLevel, subj = LEVEL_SUBJECT[S.type];
+    if (!subj) return '';
+    if (!TEXT_LEVELS[lv]) return S.type === 'translate' ? 'Vocabulary — no harder than B1. ' : '';
+    const [what, viaEnglish] = subj;
+    return 'Language level: CEFR ' + lv + '. Write ' + what + (viaEnglish ? ' so that its natural English translation is exactly at ' : ' exactly at ') + lv + ' level: ' +
+      TEXT_LEVELS[lv] + '. Do not use words, idioms or constructions ' + (viaEnglish ? 'whose English equivalents are' : 'that are') + ' clearly above ' + lv +
+      (lv === 'A1' || lv === 'A2' ? '' : ', and do not make it simpler than ' + lv) + '. ' +
       'The selected grammar rules must still be used even if they belong to another level; keep everything else at ' + lv + '. ';
   }
 
@@ -325,9 +336,10 @@
         if (k !== 'translate') return button;
         const expanded = S.type === k && S.lengthOpen;
         return '<div class="pt-translation"><div class="pt-translation-row">' + button +
-          '<button type="button" class="m-opt pt-length-toggle" data-pt-length-toggle aria-controls="ptTextLengthPanel" aria-expanded="' + expanded + '" aria-label="' + toggleLabel() + '">Длина<br>и уровень</button></div>' +
+          '<button type="button" class="m-opt pt-length-toggle" data-pt-length-toggle aria-controls="ptTextLengthPanel" aria-expanded="' + expanded + '" aria-label="' + toggleLabel() + '">Настроить<br>длину</button></div>' +
           (expanded ? renderTextLength() : '') + '</div>';
       }).join('') + '</div>' +
+      renderTextLevel() +
       (TYPES[S.type].direction ? '<p class="pt-note">Одно предложение → твой перевод → разбор → следующее. Напиши «хватит», чтобы получить общие итоги и код для сайта.</p>' : '') +
       '<div class="m-count pt-h">2. Правила · выбрано ' + nSel + '</div>' +
       '<div class="pt-tools">' +
@@ -362,22 +374,22 @@
     const length = TEXT_LENGTHS[S.textLength];
     return length.name + ' · ' + length.sentences;
   }
-  function levelLabel() { return TEXT_LEVELS[S.textLevel] ? S.textLevel : 'авто (не сложнее B1)'; }
-  function toggleLabel() { return 'Настроить текст: ' + lengthLabel() + ', уровень ' + levelLabel(); }
+  function levelLabel() { return TEXT_LEVELS[S.textLevel] ? S.textLevel : 'авто'; }
+  function toggleLabel() { return 'Настроить длину текста: ' + lengthLabel(); }
   function renderTextLevel() {
     return '<div class="pt-level"><div class="pt-level-h" id="ptTextLevelLabel">Уровень языка <output>' + esc(levelLabel()) + '</output></div>' +
       '<div class="pt-level-btns" role="group" aria-labelledby="ptTextLevelLabel">' +
       ['auto'].concat(Object.keys(TEXT_LEVELS)).map(k =>
         '<button type="button" class="chip" data-pt-level="' + k + '" aria-pressed="' + (S.textLevel === k) + '">' +
         (k === 'auto' ? 'Авто' : k) + '</button>').join('') + '</div>' +
-      '<p class="pt-note">Слова и сложность предложений — под этот уровень. Выбранные правила всё равно будут в тексте.</p></div>';
+      '<p class="pt-note">Для всех заданий: слова и сложность предложений — под этот уровень. Выбранные правила всё равно будут использоваться.</p></div>';
   }
   function renderTextLength() {
     return '<div id="ptTextLengthPanel" class="pt-length"><label for="ptTextLength">Длина текста</label>' +
       '<output id="ptTextLengthValue" for="ptTextLength">' + lengthLabel() + '</output>' +
       '<input id="ptTextLength" type="range" min="0" max="4" step="1" value="' + S.textLength + '" data-pt-length aria-valuetext="' + lengthLabel() + '" aria-describedby="ptTextLengthHint">' +
       '<div class="pt-length-ends"><span>Очень короткий</span><span>Очень длинный</span></div>' +
-      '<p id="ptTextLengthHint" class="pt-note">Короткий текст может охватить только часть выбранных тем.</p>' + renderTextLevel() + '</div>';
+      '<p id="ptTextLengthHint" class="pt-note">Короткий текст может охватить только часть выбранных тем.</p></div>';
   }
   function updateTextLength(input) {
     if (!S || S.type !== 'translate') return;
