@@ -320,6 +320,12 @@ da2-phrasal-2|write down|записать (на бумаге)
 fr4-music|record|записать (звук, музыку)
 fo4-idioms-2|walk on eggshells|ходить на цыпочках (перед кем-то, идиома)
 bo4-body-2|tiptoe|ходить на цыпочках (1 слово)
+to-directions|corner|угол (улицы, комнаты)
+pe-info-2|language|язык (английский, русский…)
+ho4-diy|paintbrush|кисть (для краски)
+to3-travel|traffic jam|пробка (на дороге)
+wo2-school-2|break|перемена (в школе)
+fr3-books|chapter|глава (книги)
 `;
   if (typeof W_BRANCHES === 'undefined') return;
   const idx = {};
