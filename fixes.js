@@ -330,6 +330,9 @@ ba-questions|how old|сколько лет (о возрасте)
 ba-questions|what time|во сколько (о времени)
 sh-shop-2|shopping|покупки (сам процесс, не вещи)
 da-routine-2|relax|расслабляться, отдыхать (не rest)
+na-world|stone|камень (материал, камешек — не rock)
+na3-landscape-2|rock|скала, валун (большой камень)
+na2-landscape|cliff|обрыв, отвесная скала (c…)
 `;
   if (typeof W_BRANCHES === 'undefined') return;
   const idx = {};
