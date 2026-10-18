@@ -134,6 +134,8 @@ document.addEventListener('keydown', ev => {
 //    после правильного ответа (work for company), это не ошибка.
 // 5) шаблон «What does ... mean?» — засчитываем корректно подставленное слово/фразу:
 //    What does it mean? / What does this mean? / What does "busy" mean?
+// 6) в карточках ёмкостей/количеств с конечным of можно ответить и без of:
+//    a box of -> box / a box; a bottle of -> bottle / a bottle.
 (function () {
   const PLURAL_OK = {
     'fruit': 'fruits',
@@ -264,6 +266,12 @@ document.addEventListener('keydown', ev => {
     // В карточке многоточие — это место для подстановки слова/фразы, а не буквальная часть ответа.
     // Нормализация уже убрала кавычки и знаки препинания, поэтому проверяем саму структуру вопроса.
     if (/^what does\s+(?:\.{3}|…)\s+mean\??$/i.test(w.en.trim()) && /^what does .+ mean$/.test(typed)) return true;
+    // Для ёмкостей и количеств конечное "of" нужно только перед содержимым:
+    // "a box of chocolates", но если спрашивается просто "коробка", принимаем "box" / "a box".
+    if ((w.id === 'fo-drinks' || w.id === 'fo2-containers')) {
+      const base = norm(w.en).replace(/\s+of$/, '');
+      if (base !== norm(w.en) && typed === base) return true;
+    }
     const also = /\([a-z]…\)/i.test(ru) ? [] : (ALSO[w.id + '|' + w.en.toLowerCase()] || []);
     const as = alts(w.en).concat(also.map(norm));
     if (as.includes(typed)) return true;
