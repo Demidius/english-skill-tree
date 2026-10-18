@@ -132,6 +132,8 @@ document.addEventListener('keydown', ev => {
 // 3) на карточке написано «также …» / «амер. …» (stay in a hotel, apartment);
 // 4) в русском есть подсказка в скобках («работать на (компанию)») — если дописал её перевод
 //    после правильного ответа (work for company), это не ошибка.
+// 5) шаблон «What does ... mean?» — засчитываем корректно подставленное слово/фразу:
+//    What does it mean? / What does this mean? / What does "busy" mean?
 (function () {
   const PLURAL_OK = {
     'fruit': 'fruits',
@@ -259,6 +261,9 @@ document.addEventListener('keydown', ev => {
   }
   function ok(typed, w, ru) {
     if (PLURAL_OK[w.en] && typed === PLURAL_OK[w.en]) return true;
+    // В карточке многоточие — это место для подстановки слова/фразы, а не буквальная часть ответа.
+    // Нормализация уже убрала кавычки и знаки препинания, поэтому проверяем саму структуру вопроса.
+    if (/^what does\s+(?:\.{3}|…)\s+mean\??$/i.test(w.en.trim()) && /^what does .+ mean$/.test(typed)) return true;
     const also = /\([a-z]…\)/i.test(ru) ? [] : (ALSO[w.id + '|' + w.en.toLowerCase()] || []);
     const as = alts(w.en).concat(also.map(norm));
     if (as.includes(typed)) return true;
