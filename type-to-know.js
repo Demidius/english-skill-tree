@@ -22,15 +22,18 @@ document.addEventListener('keydown', ev => {
 }, true);
 
 // «Я знаю», неверный ответ: показываем, какие буквы ошибочны.
-// Неверная буква — красная, под ней зелёная правильная; пропущенная — зелёная под красной «_»; лишняя — зачёркнута.
+// Неверная буква — красная, над ней зелёная правильная; пропущенная — зелёная над красной «_»; лишняя — зачёркнута.
+// Мало ошибок — сразу предлагаем оценку: 1 буква — «Легко», 2 — «Хорошо».
 (function () {
   const st = document.createElement('style');
   st.textContent =
-    '.kres b[data-diff]{color:inherit;white-space:pre-wrap;letter-spacing:.02em}' +
-    '.kd-col{display:inline-flex;flex-direction:column;align-items:center;line-height:1.1;vertical-align:baseline}' +
+    '.kres b[data-diff]{color:inherit;white-space:pre;letter-spacing:.02em;display:inline-block;margin-top:1.15em;line-height:1.2}' +
+    '.kd-col{position:relative;display:inline-block}' +
+    '.kd-col>.kd-ins{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);margin-bottom:1px;line-height:1.1}' +
     '.kd-del{color:var(--accent-2,#ef4b72);text-decoration:line-through;text-decoration-thickness:2px}' +
     '.kd-gap{color:var(--accent-2,#ef4b72)}' +
-    '.kd-ins{color:var(--st-mastered,#22d39c);background:color-mix(in srgb,var(--st-mastered,#22d39c) 18%,transparent);border-radius:2px;padding:0 1px;margin-top:1px}';
+    '.kd-ins{color:var(--st-mastered,#22d39c);background:color-mix(in srgb,var(--st-mastered,#22d39c) 18%,transparent);border-radius:2px;padding:0 1px}' +
+    '.grade.kd-suggest{outline:2px dashed var(--st-mastered,#22d39c);outline-offset:3px}';
   document.head.appendChild(st);
 
   const low = s => s.toLowerCase().replace(/[’`ʼ]/g, "'");
@@ -78,13 +81,17 @@ document.addEventListener('keydown', ev => {
     if (!best || best.dist === 0) return;
     // много ошибок — значит, это другое слово, буквы не размечаем
     if (best.dist > Math.max(2, Math.ceil(best.r.length * 0.6))) return;
-    // правильная буква — под неверной; пропущенная — под красной чертой; лишняя — просто зачёркнута
-    const col = (top, bot) => '<span class="kd-col">' + top + (bot || '') + '</span>';
+    // правильная буква — над неверной; пропущенная — над красной чертой; лишняя — просто зачёркнута
+    const col = (wrong, right) => '<span class="kd-col">' + wrong + right + '</span>';
     b.innerHTML = ops(best.t, best.r).map(o =>
       o[0] === 'ok' ? esc(o[1]) :
       o[0] === 'sub' ? col(sp('kd-del', o[1]), sp('kd-ins', o[2])) :
       o[0] === 'del' ? sp('kd-del', o[1]) : col(sp('kd-gap', '_'), sp('kd-ins', o[1]))).join('');
     b.setAttribute('aria-label', 'ты написал ' + typed + ', правильно ' + best.r);
+    // 1 неверная буква — предлагаем «Легко», 2 — «Хорошо» (кнопка в фокусе: Enter или пробел)
+    const g = best.dist === 1 ? 'easy' : best.dist === 2 ? 'good' : '';
+    const btn = g && fc.closest('.modal') && fc.closest('.modal').querySelector('.grade[data-g="' + g + '"]');
+    if (btn) { btn.classList.add('kd-suggest'); btn.focus({ preventScroll: true }); }
   }
   function scan() { document.querySelectorAll('.kres.no b:not([data-diff])').forEach(mark); }
   new MutationObserver(scan).observe(document.body, { childList: true, subtree: true });
