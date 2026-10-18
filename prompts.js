@@ -27,6 +27,17 @@
     { name: 'Длинный', sentences: '16–20 предложений', en: 'long, 16–20 sentences' },
     { name: 'Очень длинный', sentences: '30–40 предложений', en: 'very long, 30–40 sentences' },
   ];
+  // Уровень языка текста (CEFR). 'auto' — как раньше: лексика не сложнее B1.
+  const TEXT_LEVEL_KEY = 'ef_prompt_text_level';
+  const TEXT_LEVELS = {
+    A1: 'only the most common everyday words; very short, simple sentences; almost no subordinate clauses',
+    A2: 'common everyday vocabulary; short sentences joined with simple linking words (and, but, because, when, so)',
+    B1: 'everyday and general vocabulary; mostly simple and compound sentences with some subordinate clauses; a few common phrasal verbs',
+    B2: 'a wider vocabulary including some abstract words, collocations and common idioms; complex sentences with various clauses',
+    C1: 'rich and precise vocabulary, idioms and collocations; complex, varied sentence structures and a natural, fluent style',
+    C2: 'very rich, nuanced, near-native vocabulary and style: idioms, set phrases, subtle shades of meaning, sophisticated structures',
+  };
+  function savedTextLevel() { const v = lsGet(TEXT_LEVEL_KEY); return v && TEXT_LEVELS[v] ? v : 'auto'; }
   const LV_ORDER = { A1: 0, A2: 1, B1: 2, B2: 3 };
   const AI_CHATS = {
     gpt: { name: 'GPT', url: 'https://chatgpt.com/', query: 'q', android: 'com.openai.chatgpt' },
@@ -155,7 +166,7 @@
         '1. Write one coherent text in Russian. Length: ' + TEXT_LENGTHS[S.textLength].en + '. ' +
         'Topic: everyday life (work, travel, friends, plans, weekends, etc.). Stay within the chosen length. ' +
         'Try to cover the selected rules naturally, starting with the weak ones. If not all rules fit into a short text, do not make it longer and do not overload the sentences: use only some of the rules. ' +
-        'Rules that did not appear in the text or in my translation are "not tested" (0) in the result; their levels do not change. Vocabulary — no harder than B1. ' +
+        'Rules that did not appear in the text or in my translation are "not tested" (0) in the result; their levels do not change. ' + levelInstruction() +
         'Do not hint which rule is where, and do not give the translation.\n' +
         '2. Stop and wait for my translation. Do not analyse anything in advance.\n' +
         '3. When I send my translation, go through it sentence by sentence, in Russian:\n' +
@@ -204,6 +215,15 @@
     return head + body + code;
   }
 
+  function levelInstruction() {
+    const lv = S.textLevel;
+    if (!TEXT_LEVELS[lv]) return 'Vocabulary — no harder than B1. ';
+    return 'Language level of the text: CEFR ' + lv + '. Write the Russian text so that its natural English translation is exactly at ' + lv + ' level: ' +
+      TEXT_LEVELS[lv] + '. Do not use words, idioms or constructions whose English equivalents are clearly above ' + lv +
+      (lv === 'A1' || lv === 'A2' ? '' : ', and do not make the text simpler than ' + lv) + '. ' +
+      'The selected grammar rules must still be used even if they belong to another level; keep everything else at ' + lv + '. ';
+  }
+
   // ---------- разбор кода ----------
   const CODE_RE = new RegExp(PREFIX + '\\s*\\|\\s*([A-Za-z0-9]{3,8})((?:\\s*\\|\\s*[A-Za-z0-9-]+\\s*:\\s*\\d{1,2}\\s*:\\s*[+\\-−–—0=])+)', 'i');
   function parseCode(txt) {
@@ -239,7 +259,7 @@
     if (topicId && !INFO[topicId]) return;
     if (typeof needProfile === 'function' && needProfile()) return;
     S = { tab: tab || 'prompt', topicId: topicId || null, type: topicId ? 'explain' : 'translate', scope: topicId ? 'all' : 'read', tag: newTag(), touched: !!topicId,
-          sel: topicId ? new Set([topicId]) : defaultSel('translate'), textLength: 2, lengthOpen: false, manualOpen: false, codeText: '', parsed: null, rows: null, msg: '', returnFocus: document.activeElement };
+          sel: topicId ? new Set([topicId]) : defaultSel('translate'), textLength: 2, textLevel: savedTextLevel(), lengthOpen: false, manualOpen: false, codeText: '', parsed: null, rows: null, msg: '', returnFocus: document.activeElement };
     if (!rules().some(r => r.read)) S.scope = 'all';
     modal.classList.remove('rulepage', 'testm');
     openModal(owner);
@@ -305,7 +325,7 @@
         if (k !== 'translate') return button;
         const expanded = S.type === k && S.lengthOpen;
         return '<div class="pt-translation"><div class="pt-translation-row">' + button +
-          '<button type="button" class="m-opt pt-length-toggle" data-pt-length-toggle aria-controls="ptTextLengthPanel" aria-expanded="' + expanded + '" aria-label="Настроить длину текста: ' + lengthLabel() + '">Настроить<br>длину</button></div>' +
+          '<button type="button" class="m-opt pt-length-toggle" data-pt-length-toggle aria-controls="ptTextLengthPanel" aria-expanded="' + expanded + '" aria-label="' + toggleLabel() + '">Длина<br>и уровень</button></div>' +
           (expanded ? renderTextLength() : '') + '</div>';
       }).join('') + '</div>' +
       (TYPES[S.type].direction ? '<p class="pt-note">Одно предложение → твой перевод → разбор → следующее. Напиши «хватит», чтобы получить общие итоги и код для сайта.</p>' : '') +
@@ -342,12 +362,22 @@
     const length = TEXT_LENGTHS[S.textLength];
     return length.name + ' · ' + length.sentences;
   }
+  function levelLabel() { return TEXT_LEVELS[S.textLevel] ? S.textLevel : 'авто (не сложнее B1)'; }
+  function toggleLabel() { return 'Настроить текст: ' + lengthLabel() + ', уровень ' + levelLabel(); }
+  function renderTextLevel() {
+    return '<div class="pt-level"><div class="pt-level-h" id="ptTextLevelLabel">Уровень языка <output>' + esc(levelLabel()) + '</output></div>' +
+      '<div class="pt-level-btns" role="group" aria-labelledby="ptTextLevelLabel">' +
+      ['auto'].concat(Object.keys(TEXT_LEVELS)).map(k =>
+        '<button type="button" class="chip" data-pt-level="' + k + '" aria-pressed="' + (S.textLevel === k) + '">' +
+        (k === 'auto' ? 'Авто' : k) + '</button>').join('') + '</div>' +
+      '<p class="pt-note">Слова и сложность предложений — под этот уровень. Выбранные правила всё равно будут в тексте.</p></div>';
+  }
   function renderTextLength() {
     return '<div id="ptTextLengthPanel" class="pt-length"><label for="ptTextLength">Длина текста</label>' +
       '<output id="ptTextLengthValue" for="ptTextLength">' + lengthLabel() + '</output>' +
       '<input id="ptTextLength" type="range" min="0" max="4" step="1" value="' + S.textLength + '" data-pt-length aria-valuetext="' + lengthLabel() + '" aria-describedby="ptTextLengthHint">' +
       '<div class="pt-length-ends"><span>Очень короткий</span><span>Очень длинный</span></div>' +
-      '<p id="ptTextLengthHint" class="pt-note">Короткий текст может охватить только часть выбранных тем.</p></div>';
+      '<p id="ptTextLengthHint" class="pt-note">Короткий текст может охватить только часть выбранных тем.</p>' + renderTextLevel() + '</div>';
   }
   function updateTextLength(input) {
     if (!S || S.type !== 'translate') return;
@@ -357,7 +387,7 @@
     // Keep the native range element mounted so dragging and keyboard focus are uninterrupted.
     modal.querySelector('#ptTextLengthValue').textContent = lengthLabel();
     input.setAttribute('aria-valuetext', lengthLabel());
-    modal.querySelector('[data-pt-length-toggle]').setAttribute('aria-label', 'Настроить длину текста: ' + lengthLabel());
+    modal.querySelector('[data-pt-length-toggle]').setAttribute('aria-label', toggleLabel());
     const text = buildPrompt(), textarea = modal.querySelector('.pt-text');
     if (textarea) textarea.value = text;
     const group = modal.querySelector('.pt-ai-actions');
@@ -506,6 +536,13 @@
           S.lengthOpen = true;
         } else S.lengthOpen = !S.lengthOpen;
         render(); modal.querySelector('[data-pt-length-toggle]').focus({ preventScroll: true }); return;
+      }
+      const lvb = t.closest('[data-pt-level]');
+      if (lvb) {
+        const lv = lvb.dataset.ptLevel;
+        if (lv !== 'auto' && !TEXT_LEVELS[lv]) return;
+        if (lv !== S.textLevel) { S.textLevel = lv; S.tag = newTag(); S.copied = false; lsSet(TEXT_LEVEL_KEY, lv); }
+        render(); const f = modal.querySelector('[data-pt-level="' + lv + '"]'); if (f) f.focus({ preventScroll: true }); return;
       }
       const ty = t.closest('[data-pt-type]');
       if (ty) {
