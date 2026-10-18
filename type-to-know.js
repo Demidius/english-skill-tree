@@ -225,7 +225,7 @@ document.addEventListener('keydown', ev => {
     if (ART_OK.has(w.en.toLowerCase()) && as.some(a => art(a) === art(typed))) return true;
     // подсказка в скобках (не «(s…)», не «(2 слова)», не «букв.»): разрешаем дописать до 3 слов
     const hint = (ru.match(/\(([^)]*)\)/) || [])[1];
-    if (hint && !/[0-9…]|слов|букв/.test(hint) && w.p !== 'n' && w.p !== 'a') {
+    if (hint && !/[0-9…]|слов|букв|(^|\s)не\s/.test(hint) && w.p !== 'n' && w.p !== 'a') {
       for (const a of as) if (typed.startsWith(a + ' ') && typed.slice(a.length + 1).split(' ').length <= 3) return true;
     }
     return false;
