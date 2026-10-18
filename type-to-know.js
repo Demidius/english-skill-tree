@@ -220,8 +220,20 @@ document.addEventListener('keydown', ev => {
     'bo-health|a temperature': ['a fever'],
     'bo-health|see a doctor': ['go to the doctor'],
     'ba-social|nice to meet you.': ['pleased to meet you'],
-    "ba-social|you're welcome.": ['no problem'],
-    'ba-social|see you later.': ['see you soon'],
+    "ba-social|you're welcome.": ['no problem', 'not at all', "don't mention it"],
+    'ba-social|see you later.': ['see you soon', 'see you', 'see ya'],
+    // короткие и разговорные формы — тоже правильные
+    'ba-social|goodbye': ['bye', 'bye bye', 'good bye', 'bye-bye'],
+    'ba-social|thank you': ['thanks', 'thank you very much', 'thanks a lot'],
+    'ba-social|good morning': ['morning'],
+    "ba-social|i'm fine, thanks.": ["i'm fine, thank you", 'fine, thanks', 'fine, thank you', "i'm good, thanks"],
+    'ba-social|sorry': ["i'm sorry"],
+    'ba-phrases|wait a minute.': ['wait a moment', 'wait a second', 'just a minute'],
+    'ba-phrases|here you go.': ['here you are'],
+    'ba-phrases|have a nice day!': ['have a good day'],
+    'ba-phrases|well done!': ['good job'],
+    'ba-phrases|never mind.': ['nevermind'],
+    'da2-havetake|take care': ['take care of yourself'],
     'ba-linkers|a lot of': ['lots of'],
   };
   const norm = s => String(s).toLowerCase().replace(/[’`ʼ']/g, '').replace(/[^a-z0-9 ]+/g, ' ')
