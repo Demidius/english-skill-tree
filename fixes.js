@@ -326,6 +326,8 @@ ho4-diy|paintbrush|кисть (для краски)
 to3-travel|traffic jam|пробка (на дороге)
 wo2-school-2|break|перемена (в школе)
 fr3-books|chapter|глава (книги)
+ba-questions|how old|сколько лет (о возрасте)
+ba-questions|what time|во сколько (о времени)
 `;
   if (typeof W_BRANCHES === 'undefined') return;
   const idx = {};
