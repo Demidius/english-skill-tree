@@ -328,6 +328,7 @@ wo2-school-2|break|перемена (в школе)
 fr3-books|chapter|глава (книги)
 ba-questions|how old|сколько лет (о возрасте)
 ba-questions|what time|во сколько (о времени)
+sh-shop-2|shopping|покупки (сам процесс, не вещи)
 `;
   if (typeof W_BRANCHES === 'undefined') return;
   const idx = {};
