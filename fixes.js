@@ -257,7 +257,7 @@ fr2-holidays-2|postcard|открытка (почтовая)
 fr2-music|concert|концерт (c…)
 bo-health|well|здоровый, хорошо (w…)
 bo-health|headache|головная боль (h…)
-bo2-illness|rest|отдыхать (r…)
+bo2-illness|rest|отдыхать, лежать (при болезни, не relax)
 bo3-doctor|operation|операция (o…)
 bo4-fitness|out of shape|не в форме (физически)
 bo2-healthy|healthy|здоровый, полезный (h…)
@@ -329,6 +329,7 @@ fr3-books|chapter|глава (книги)
 ba-questions|how old|сколько лет (о возрасте)
 ba-questions|what time|во сколько (о времени)
 sh-shop-2|shopping|покупки (сам процесс, не вещи)
+da-routine-2|relax|расслабляться, отдыхать (не rest)
 `;
   if (typeof W_BRANCHES === 'undefined') return;
   const idx = {};

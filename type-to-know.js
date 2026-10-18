@@ -71,10 +71,12 @@ document.addEventListener('keydown', ev => {
     b.dataset.diff = '1';
     const fc = b.closest('.fc'), back = fc && fc.querySelector('.back');
     const en = back && back.firstChild && back.firstChild.nodeType === 3 ? back.firstChild.nodeValue.trim() : '';
-    const typed = b.textContent;
+    // знаки препинания (точка в конце, запятые, ?!) не проверяются — убираем их из сравнения
+    const clean = s => s.replace(/[.,!?;:…"«»]/g, '').replace(/\s+/g, ' ').trim();
+    const typed = clean(b.textContent);
     if (!en || !typed) return;
     let best = null;
-    alts(en).forEach(r => [typed, strip(typed)].forEach(t => {
+    alts(en).map(clean).filter(Boolean).forEach(r => [typed, strip(typed)].forEach(t => {
       const dist = table(low(t), low(r))[t.length][r.length];
       if (!best || dist < best.dist) best = { t, r, dist };
     }));
@@ -223,7 +225,7 @@ document.addEventListener('keydown', ev => {
     if (ART_OK.has(w.en.toLowerCase()) && as.some(a => art(a) === art(typed))) return true;
     // подсказка в скобках (не «(s…)», не «(2 слова)», не «букв.»): разрешаем дописать до 3 слов
     const hint = (ru.match(/\(([^)]*)\)/) || [])[1];
-    if (hint && !/[0-9…]|слов|букв/.test(hint) && w.p !== 'n' && w.p !== 'a') {
+    if (hint && !/[0-9…]|слов|букв|(^|\s)не\s/.test(hint) && w.p !== 'n' && w.p !== 'a') {
       for (const a of as) if (typed.startsWith(a + ' ') && typed.slice(a.length + 1).split(' ').length <= 3) return true;
     }
     return false;
