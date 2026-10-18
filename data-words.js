@@ -2380,7 +2380,7 @@ B2:[
     cross the road|перейти дорогу|v|Cross the road here.;
     the first on the left|первый поворот налево|o|Take the first on the left.;
     corner|угол|n|The café is on the corner.;
-    traffic lights|светофор|n|Stop at the traffic lights.;
+    traffic light|светофор|n|Stop at the traffic light.;
     far|далеко|o|The station isn't far.;
     Is it far?|Это далеко?|o|Is it far from here?`],
    ],
