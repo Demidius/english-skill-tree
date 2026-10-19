@@ -895,6 +895,8 @@ const W = (function(){
   }
   const isDue=(r,now)=>(r[3] ? r[3]<=now : (r[2]>0||r[0]>0));
   const isNew=r=>!r[3] && !r[2] && !r[0];
+  // Do not offer a level-8 shortcut during an early review or relearning steps.
+  const canKnow=(r,now)=>!(r[3]>now) && !((r[4]||0)<1 && (r[2]||0)>0);
   function lvlHTML(l){ let h='<span class="lvl" data-b="'+band(l)+'" data-l="'+l+'" title="уровень '+l+' из '+MAXL+'">'; for(let i=1;i<=MAXL;i++) h+='<i class="'+(i<=l?'on':'')+'"></i>'; return h+'</span>'; }
   function trHTML(w){
     const t=(typeof WORD_TR!=='undefined')&&WORD_TR[w.k]; if(!t) return '';
@@ -1120,14 +1122,11 @@ const W = (function(){
     const f=modal.querySelector('[data-act="session"]'); if(f) f.focus();
   }
   function pickWords(id){
-    const ws=CARDS[id].words;
-    const open=ws.filter(w=>lvl(id,w.k)<MAXL);
-    if(open.length){
-      const pool=shuffle(open).sort((a,b)=>{ const ra=rec(id,a.k), rb=rec(id,b.k); return ra[0]-rb[0] || ra[1]-rb[1]; });
-      return {words:shuffle(pool.slice(0,SESSION)), review:false};
-    }
-    const pool=shuffle(ws).sort((a,b)=>rec(id,a.k)[1]-rec(id,b.k)[1]);
-    return {words:shuffle(pool.slice(0,SESSION)), review:true};
+    const now=Date.now(), ws=CARDS[id].words;
+    const due=ws.filter(w=>isDue(rec(id,w.k),now))
+      .sort((a,b)=>(rec(id,a.k)[3]||0)-(rec(id,b.k)[3]||0));
+    const fresh=shuffle(ws.filter(w=>isNew(rec(id,w.k))));
+    return {words:due.concat(fresh).slice(0,SESSION), review:due.length>0};
   }
   function openLocked(id){
     const c=CARDS[id], lk=c.level, br=W_BRANCHES.find(x=>x.key===c.branch), ids=mainIds(c.branch, lk), pct=mainPct(c.branch, lk);
@@ -1251,8 +1250,11 @@ const W = (function(){
       const now0=Date.now(), ready=S.wait.filter(x=>x.due<=now0);
       if(ready.length){ S.wait=S.wait.filter(x=>x.due>now0); S.queue.unshift(...ready.map(x=>x.w)); }
     }
+    // A different tab/device may already have rescheduled a queued word.
+    S.queue=S.queue.filter(w=>{ const r=rec(w.tid,w.k); return isNew(r)||isDue(r,Date.now()); });
     if(!S.queue.length){ if(S.wait&&S.wait.length){ renderWait(); return; } renderDone(); return; }
     const w=S.queue[0], id=w.tid, l=lvl(id,w.k), r=rec(id,w.k), now=Date.now();
+    if(!canKnow(r,now)) S.kbox=false;
     const pct=Math.round(S.done/(S.done+S.queue.length)*100);
     const nx=g=>{ const sc=sched(r,g,now); return whenLabel(sc.ivl, sc.due, now); };
     let h=(S.lv?lvHead():head(id, S.review?'Повторение':'Карточки'))+
@@ -1286,7 +1288,7 @@ const W = (function(){
       '<button type="button" class="grade know" data-g="easy"'+ti+'>Легко<small>'+nx('easy')+'</small></button></div>'+
       (S.flipped?'':'<button type="button" class="m-btn show" data-act="flip">Показать ответ</button>')+'</div>'+
       '<div class="fc-row"><button type="button" class="m-btn ghost fc-back" data-act="back"'+(S.hist.length?'':' disabled')+'>← Предыдущее слово</button>'+
-      '<button type="button" class="m-btn fc-know" data-act="kopen"'+(S.flipped||S.kbox?' disabled aria-hidden="true" tabindex="-1"':'')+' title="Впиши слово по-английски: если верно — уровень 8 и проверка через 45 дней, на следующих проверках — 9 и 10">Я знаю</button></div>';
+      (canKnow(r,now)?'<button type="button" class="m-btn fc-know" data-act="kopen"'+(S.flipped||S.kbox?' disabled aria-hidden="true" tabindex="-1"':'')+' title="Впиши слово по-английски: если верно — уровень 8 и проверка через 45 дней, на следующих проверках — 9 и 10">Я знаю</button>':'')+'</div>';
     h+='<div class="fc-foot">'+
       (canSpeak?'<label class="auto"><input type="checkbox" id="autoSay"'+(autoSay?' checked':'')+'> озвучивать ответ</label>':'<span></span>')+
       (S.flipped?'<span class="fc-links"><button type="button" class="linkbtn" data-g="reset">Обнулить</button></span>':
@@ -1316,6 +1318,7 @@ const W = (function(){
   }
   function checkKnown(){
     if(!S || S.mode!=='session' || S.flipped || !S.queue.length) return;
+    if(!canKnow(rec(S.queue[0].tid,S.queue[0].k),Date.now())){ S.kbox=false; renderCard(); return; }
     const inp=modal.querySelector('#knownIn'); const typed=(inp&&inp.value||'').trim(); if(!typed){ if(inp) inp.focus(); return; }
     const w=S.queue[0];
     S.kbox=false;
@@ -1336,6 +1339,7 @@ const W = (function(){
     if(needProfile()) return;
     if(!S || S.mode!=='session' || !S.flipped || !S.queue.length) return;
     const id=S.queue[0].tid;
+    if(g==='known' && !canKnow(rec(id,S.queue[0].k),Date.now())){ S.kdone=null; S.kbox=false; S.flipped=false; renderCard(); return; }
     if(!S.wait) S.wait=[];
     S.hist.push({queue:S.queue.slice(), wait:S.wait.slice(), done:S.done, fails:Object.assign({},S.fails), seen:S.seen.slice(), tid:id,
       k:S.queue[0].k, had:!!(prog[id]&&prog[id][S.queue[0].k]), prev:prog[id]&&prog[id][S.queue[0].k]?prog[id][S.queue[0].k].slice():null});
@@ -1394,7 +1398,7 @@ const W = (function(){
     flushAll();
     const up=S.seen.filter(w=>lvl(id,w.k)>S.start[w.tid+'|'+w.k]).length;
     const down=S.seen.filter(w=>lvl(id,w.k)<S.start[w.tid+'|'+w.k]).length;
-    const msg=ci.status==='mastered'?'Тема закреплена: все слова на уровне 10.':
+    const msg=!S.seen.length?'Сейчас нет новых слов или слов, у которых подошёл срок повторения.':ci.status==='mastered'?'Тема закреплена: все слова на уровне 10.':
       'Слов выросло: '+up+(down?', опустилось: '+down:'')+'. Тема: '+S.pctStart+'% → '+ci.pct+'%.';
     S.mode='done'; modal.classList.add('fixed');
     modal.innerHTML=head(id,'Сессия окончена')+
@@ -1511,7 +1515,7 @@ const W = (function(){
       const a=ev.target.closest('[data-act]'); if(!a||!S) return;
       const id=S.id;
       if(a.dataset.act==='flip') flip();
-      else if(a.dataset.act==='kopen'){ S.kbox=true; renderCard(); }
+      else if(a.dataset.act==='kopen'){ if(S.queue.length && canKnow(rec(S.queue[0].tid,S.queue[0].k),Date.now())) S.kbox=true; renderCard(); }
       else if(a.dataset.act==='knext'){ S.kdone=null; renderCard(); }
       else if(a.dataset.act==='kcancel'){ S.kbox=false; renderCard(); }
       else if(a.dataset.act==='back'){ S.kdone=null; undo(); }
