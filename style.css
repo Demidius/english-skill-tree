@@ -18,7 +18,20 @@
   --st-none:#cfc7b8;
   --st-learn:#4c7ea8;
   --st-review:#c98a2e;
-  --st-mastered:#3f8b52;
+  --st-known:#22c55e;
+  --st-mastered:#06b6d4;
+
+  --lv0:#d1d5db;
+  --lv1:#9ca3af;
+  --lv2:#fdba74;
+  --lv3:#fb923c;
+  --lv4:#f97366;
+  --lv5:#d9e77c;
+  --lv6:#a7d86f;
+  --lv7:#65b96b;
+  --lv8:#22c55e;
+  --lv9:#16a34a;
+  --lv10:#06b6d4;
 
   --tag-be:#557fa1;
   --tag-do:#4a8a5a;
@@ -901,3 +914,76 @@ footer.note{color:var(--muted); font-size:.76rem; margin:6px 0 40px; max-width:6
 .modal-back.exitask{z-index:80;}
 .exitask .modal{max-width:380px; height:auto;}
 .exit-note{margin:10px 0 0; color:var(--muted); font-size:.92rem; line-height:1.45;}
+
+
+/* ---------- CEFR progress + 0–10 knowledge palette ---------- */
+.cefr-progress{margin-top:7px;}
+.cefr-scale{
+  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); width:100%;
+  border:1px solid var(--line); border-radius:10px; overflow:hidden;
+  background:var(--surface-2);
+}
+.cefr-seg{min-width:0; border-right:1px solid var(--line);}
+.cefr-seg:last-child{border-right:none;}
+.cefr-track{height:10px; display:flex; overflow:hidden; background:var(--lv0);}
+.cefr-piece{height:100%; flex:0 0 auto;}
+.cefr-cap{
+  border-top:1px solid var(--line); padding:5px 7px 6px;
+  display:flex; flex-direction:column; gap:1px; min-width:0;
+  background:var(--surface-2); font-variant-numeric:tabular-nums;
+}
+.cefr-cap b{
+  font:700 .68rem 'IBM Plex Mono',monospace; color:var(--ink);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.cefr-cap span{
+  font:500 .58rem 'IBM Plex Mono',monospace; color:var(--muted);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+
+/* Topic/card states follow the new semantic ranges. */
+.node[data-status="not_started"]{border-left-color:var(--lv0);}
+.node[data-status="not_started"] .status-chip{background:var(--lv0); color:var(--ink);}
+.node[data-status="learning"]{border-left-color:var(--lv3);}
+.node[data-status="learning"] .status-chip{background:var(--lv3); color:#fff;}
+.node[data-status="review"]{border-left-color:var(--lv6);}
+.node[data-status="review"] .status-chip{background:var(--lv6); color:#233019;}
+.node[data-status="known"]{border-left-color:var(--lv8); background:color-mix(in srgb, var(--lv8) 7%, var(--surface));}
+.node[data-status="known"] .status-chip{background:var(--lv8); color:#fff;}
+.node[data-status="mastered"]{border-left-color:var(--lv10); background:color-mix(in srgb, var(--lv10) 8%, var(--surface));}
+.node[data-status="mastered"] .status-chip{background:var(--lv10); color:#062e36;}
+
+/* Per-word strips use the actual level, not a broad band. */
+.wbar i[data-l="0"]{background:var(--lv0);}
+.wbar i[data-l="1"]{background:var(--lv1);}
+.wbar i[data-l="2"]{background:var(--lv2);}
+.wbar i[data-l="3"]{background:var(--lv3);}
+.wbar i[data-l="4"]{background:var(--lv4);}
+.wbar i[data-l="5"]{background:var(--lv5);}
+.wbar i[data-l="6"]{background:var(--lv6);}
+.wbar i[data-l="7"]{background:var(--lv7);}
+.wbar i[data-l="8"]{background:var(--lv8);}
+.wbar i[data-l="9"]{background:var(--lv9);}
+.wbar i[data-l="10"]{background:var(--lv10);}
+.wbar i[data-l]{opacity:1;}
+
+/* Filled 0–10 mini-scales show the meaning of every step. */
+.lvl i.on:nth-child(1), .gbar i.on[data-i="1"], .lvsegs .lvs.on:nth-child(1)::before{background:var(--lv1);}
+.lvl i.on:nth-child(2), .gbar i.on[data-i="2"], .lvsegs .lvs.on:nth-child(2)::before{background:var(--lv2);}
+.lvl i.on:nth-child(3), .gbar i.on[data-i="3"], .lvsegs .lvs.on:nth-child(3)::before{background:var(--lv3);}
+.lvl i.on:nth-child(4), .gbar i.on[data-i="4"], .lvsegs .lvs.on:nth-child(4)::before{background:var(--lv4);}
+.lvl i.on:nth-child(5), .gbar i.on[data-i="5"], .lvsegs .lvs.on:nth-child(5)::before{background:var(--lv5);}
+.lvl i.on:nth-child(6), .gbar i.on[data-i="6"], .lvsegs .lvs.on:nth-child(6)::before{background:var(--lv6);}
+.lvl i.on:nth-child(7), .gbar i.on[data-i="7"], .lvsegs .lvs.on:nth-child(7)::before{background:var(--lv7);}
+.lvl i.on:nth-child(8), .gbar i.on[data-i="8"], .lvsegs .lvs.on:nth-child(8)::before{background:var(--lv8);}
+.lvl i.on:nth-child(9), .gbar i.on[data-i="9"], .lvsegs .lvs.on:nth-child(9)::before{background:var(--lv9);}
+.lvl i.on:nth-child(10), .gbar i.on[data-i="10"], .lvsegs .lvs.on:nth-child(10)::before{background:var(--lv10);}
+
+@media (max-width:720px){
+  .stats-row{align-items:flex-start;}
+  .progress-big{min-width:100%;}
+  .cefr-cap{padding:4px 3px 5px; text-align:center;}
+  .cefr-cap b{font-size:.6rem;}
+  .cefr-cap span{font-size:.52rem;}
+  .cefr-track{height:9px;}
+}

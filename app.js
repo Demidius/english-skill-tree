@@ -196,7 +196,7 @@ window.addEventListener('popstate',()=>{
 function Board(o){
   const root=o.root;
   root.innerHTML =
-    '<div class="stats-row"><div class="progress-big"><span class="num" data-r="stat">—</span><div class="bar" data-r="bar"></div></div>'+
+    '<div class="stats-row"><div class="progress-big"><span class="num" data-r="stat">—</span><div class="cefr-progress" data-r="bar"></div></div>'+
       '<div class="legend">'+o.legend+'</div></div>'+
     '<button type="button" class="filters-toggle" data-r="ftoggle" aria-expanded="false">Фильтры <span data-r="fstate"></span></button>'+
     '<div class="controls" data-r="controls">'+
@@ -357,15 +357,38 @@ function Board(o){
   return {root, tree, H, stat:R('stat'), bar:R('bar'), applyFilter, refreshPhone, setBranch, get active(){ return active; }};
 }
 
+function progressStats(values){
+  const counts=Array(11).fill(0);
+  let sum=0;
+  values.forEach(v=>{ const l=Math.max(0,Math.min(10,+v||0)); counts[l]++; sum+=l; });
+  const t=values.length, known=counts[8]+counts[9]+counts[10], mastered=counts[10];
+  return {t,sum,known,mastered,counts,pct:t?Math.round(sum/(10*t)*100):0};
+}
+function cefrProgressHTML(byLevel){
+  return '<div class="cefr-scale">'+LEVELS.map(l=>{
+    const st=byLevel[l.key]||progressStats([]);
+    const pieces=[];
+    for(let n=10;n>=0;n--){
+      const c=st.counts[n]||0;
+      if(!c||!st.t) continue;
+      pieces.push('<span class="cefr-piece" style="width:'+(c/st.t*100)+'%;background:var(--lv'+n+')" title="уровень '+n+': '+c+'"></span>');
+    }
+    return '<div class="cefr-seg" data-cefr="'+l.key+'">'+
+      '<div class="cefr-track">'+pieces.join('')+'</div>'+
+      '<div class="cefr-cap"><b>'+l.key+' · '+st.pct+'%</b><span>знаю '+st.known+' / '+st.t+'</span></div>'+
+      '</div>';
+  }).join('')+'</div>';
+}
+
 // ================= GRAMMAR mode =================
 const G = (function(){
-  const STATUS_ORDER=['not_started','learning','review','mastered'];
-  const STATUS_LABEL={not_started:'не начато', learning:'изучаю', review:'повторяю', mastered:'освоено'};
+  const STATUS_ORDER=['not_started','learning','review','known','mastered'];
+  const STATUS_LABEL={not_started:'не начато', learning:'изучаю', review:'повторяю', known:'знаю', mastered:'закреплено'};
   const CARDS={}, state={}, scores={}, glv={}, readM={};
   const GMAX=10, GREV=5;
   const STATUS_FROM_OLD={not_started:0, learning:2, review:6, mastered:10};
-  function gstatus(l){ return l>=GMAX?'mastered':l>=GREV?'review':l>0?'learning':'not_started'; }
-  function gband(l){ return l>=GMAX?'m':l>=GREV?'r':l>0?'l':'0'; }
+  function gstatus(l){ return l>=GMAX?'mastered':l>=8?'known':l>=GREV?'review':l>0?'learning':'not_started'; }
+  function gband(l){ return l>=GMAX?'m':l>=8?'k':l>=GREV?'r':l>0?'l':'0'; }
   function sumOf(ids){ return ids.reduce((s,id)=>s+glv[id],0); }
   function avgOf(ids){ if(!ids.length) return '0'; const v=sumOf(ids)/ids.length; return (Math.round(v*10)/10).toString().replace('.',','); }
   function setG(id,l){ glv[id]=Math.max(0,Math.min(GMAX,l|0)); state[id]=gstatus(glv[id]); }
@@ -384,7 +407,7 @@ const G = (function(){
   const ICON_UP='<svg class="lvup" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.5 6 3l3.5 3.5M2.5 10.5 6 7l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const ICON_STAR='<svg class="lvup" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 .9l1.55 3.2 3.5.45-2.57 2.42.66 3.48L6 8.75 2.86 10.45l.66-3.48L.95 4.55l3.5-.45z" fill="currentColor"/></svg>';
   function chipHTML(s,l){ return esc(STATUS_LABEL[s])+' · '+(l||0)+(s==='mastered'?ICON_STAR:''); }
-  function gbarHTML(l){ let h='<span class="gbar" data-b="'+gband(l)+'">'; for(let i=1;i<=GMAX;i++) h+='<i class="'+(i<=l?'on':'')+'"></i>'; return h+'</span>'; }
+  function gbarHTML(l){ let h='<span class="gbar" data-b="'+gband(l)+'">'; for(let i=1;i<=GMAX;i++) h+='<i data-i="'+i+'" class="'+(i<=l?'on':'')+'"></i>'; return h+'</span>'; }
   function gEdit(id){
     const l=glv[id];
     if(!canWrite()) return '<p class="access-note">Уровень правила: '+l+' / '+GMAX+' · только просмотр</p>';
@@ -442,9 +465,11 @@ const G = (function(){
     key:'g', root:document.getElementById('mode-g'), branchKey:'ef_skilltree_branch',
     branches:G_BRANCHES.map(b=>Object.assign({}, b, {info:G_BINFO[b.key]})),
     legend:'<span class="lg-scale">уровень правила 0–10</span>'+
-      '<span><span class="dot" style="background:var(--st-learn)"></span>1–4</span>'+
-      '<span><span class="dot" style="background:var(--st-review)"></span>5–9</span>'+
-      '<span><span class="dot" style="background:var(--st-mastered)"></span>10</span>',
+      '<span><span class="dot" style="background:var(--lv0)"></span>0 · новое</span>'+
+      '<span><span class="dot" style="background:var(--lv3)"></span>1–4 · изучаю</span>'+
+      '<span><span class="dot" style="background:var(--lv6)"></span>5–7 · повторяю</span>'+
+      '<span><span class="dot" style="background:var(--lv8)"></span>8–9 · знаю</span>'+
+      '<span><span class="dot" style="background:var(--lv10)"></span>10 · закреплено</span>',
     range:10,
     footer:'<section><h3>Карточка темы</h3><ul>'+
       '<li>Клик по карточке открывает правило целиком: форма с переводом, когда используем, примеры, исключения и ловушки.</li>'+
@@ -454,7 +479,7 @@ const G = (function(){
       '<li>Метка справа внизу — урок в Student\'s Book своего уровня: 7B = File 7, lesson B; PE = Practical English.</li>'+
       '</ul></section>'+
       '<section><h3>Уровень правила</h3><ul>'+
-      '<li>У каждого правила уровень от 0 до 10. Цвет карточки подсказывает уровень: синий 1–4, жёлтый 5–9, зелёный 10.</li>'+
+      '<li>У каждого правила уровень от 0 до 10: 0 — новое, 1–4 — изучаю, 5–7 — повторяю, 8–9 — знаю, 10 — закреплено. Уровни 8–9 зелёные, 10 выделен бирюзовым.</li>'+
       '<li>Фильтр «Уровень от … до …» оставляет яркими только правила в этом диапазоне.</li>'+
       '<li>Кнопка внизу карточки: ‹ понижает уровень на 1, › повышает, в середине — текущий уровень. На странице правила уровень можно поставить сразу, кликом по шкале.</li>'+
       '<li>После теста на 9–10 можно сразу поставить уровень 10.</li>'+
@@ -565,10 +590,16 @@ const G = (function(){
   }
   function stats(){
     board.refreshPhone();
-    const T=ALL.length, started=ALL.filter(id=>glv[id]>0).length, pct=sumOf(ALL)/(GMAX*T)*100;
+    const T=ALL.length, started=ALL.filter(id=>glv[id]>0).length;
+    const overall=progressStats(ALL.map(id=>glv[id]));
+    const byLevel={};
+    LEVELS.forEach(l=>{
+      const ids=ALL.filter(id=>CARDS[id].level===l.key);
+      byLevel[l.key]=progressStats(ids.map(id=>glv[id]));
+    });
     const who=currentName();
-    board.stat.innerHTML=(who?'<span class="who">'+esc(who)+':</span> ':'')+'средний уровень '+avgOf(ALL)+' из '+GMAX+' · начато '+started+' из '+T+' правил';
-    board.bar.innerHTML='<span style="width:'+pct+'%;background:var(--st-mastered)"></span>';
+    board.stat.innerHTML=(who?'<span class="who">'+esc(who)+':</span> ':'')+'знаю '+overall.known+' из '+T+' правил · средний уровень '+avgOf(ALL)+' из '+GMAX+' · начато '+started;
+    board.bar.innerHTML=cefrProgressHTML(byLevel);
     G_BRANCHES.forEach(b=>{
       const ids=ALL.filter(id=>CARDS[id].branch===b.key);
       board.H.cnt[b.key].textContent='ср. '+avgOf(ids)+' из '+GMAX;
@@ -576,8 +607,9 @@ const G = (function(){
     });
     LEVELS.forEach(l=>{
       const ids=ALL.filter(id=>CARDS[id].level===l.key);
-      board.H.lp[l.key].textContent='ср. '+avgOf(ids)+' из '+GMAX;
-      board.H.lb[l.key].style.width=(ids.length?sumOf(ids)/(GMAX*ids.length)*100:0)+'%';
+      const st=byLevel[l.key];
+      board.H.lp[l.key].textContent='знаю '+st.known+' / '+st.t+' · '+st.pct+'%';
+      board.H.lb[l.key].style.width=st.pct+'%';
     });
   }
   function refresh(){ ALL.forEach(paint); ALL.forEach(paintScore); stats(); board.applyFilter(); renderPractice(); }
@@ -775,7 +807,7 @@ const G = (function(){
 // ================= WORDS mode =================
 const W = (function(){
   const MAXL=10, REVL=5, SESSION=Infinity;
-  const STATUS_LABEL={not_started:'не начато', learning:'изучаю', review:'повторяю', mastered:'закрыто'};
+  const STATUS_LABEL={not_started:'не начато', learning:'изучаю', review:'повторяю', known:'знаю', mastered:'закреплено'};
   function slug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'w'; }
   function parseWords(s){
     return s.split(';').map(x=>x.trim()).filter(Boolean).map(x=>{
@@ -799,12 +831,12 @@ const W = (function(){
   const lvl=(id,k)=>rec(id,k)[0];
   function cardInfo(id){
     const ws=CARDS[id].words;
-    let sum=0, learned=0, seen=0, min=MAXL;
-    ws.forEach(w=>{ const r=rec(id,w.k); sum+=r[0]; if(r[0]===MAXL) learned++; if(r[2]>0||r[0]>0) seen++; if(r[0]<min) min=r[0]; });
-    const status=min===MAXL?'mastered':min>=REVL?'review':seen?'learning':'not_started';
-    return {n:ws.length, sum, pct:Math.round(sum/(MAXL*ws.length)*100), learned, status};
+    let sum=0, learned=0, known=0, seen=0, min=MAXL;
+    ws.forEach(w=>{ const r=rec(id,w.k); sum+=r[0]; if(r[0]===MAXL) learned++; if(r[0]>=8) known++; if(r[2]>0||r[0]>0) seen++; if(r[0]<min) min=r[0]; });
+    const status=min===MAXL?'mastered':min>=8?'known':min>=REVL?'review':seen?'learning':'not_started';
+    return {n:ws.length, sum, pct:Math.round(sum/(MAXL*ws.length)*100), learned, known, status};
   }
-  function band(l){ return l>=MAXL?'m':l>=REVL?'r':l>0?'l':'0'; }
+  function band(l){ return l>=MAXL?'m':l>=8?'k':l>=REVL?'r':l>0?'l':'0'; }
   // spaced repetition: Anki-like SM-2; the 0–10 level is derived from the current interval
   const DAY=864e5, MIN=6e4;
   const IVL_FOR_LEVEL=[0,0,1,2.5,5,10,17,30,60,120,180];
@@ -940,18 +972,20 @@ const W = (function(){
     return d;
   }
   function wordsOf(ids){
-    let t=0, sum=0, learned=0, rev=0, lrn=0;
-    ids.forEach(id=>CARDS[id].words.forEach(w=>{ const l=lvl(id,w.k); t++; sum+=l; if(l===MAXL) learned++; else if(l>=REVL) rev++; else if(l>=1) lrn++; }));
-    return {t, sum, learned, rev, lrn, pct:t?Math.round(sum/(MAXL*t)*100):0};
+    let t=0, sum=0, learned=0, known=0, rev=0, lrn=0;
+    const counts=Array(11).fill(0);
+    ids.forEach(id=>CARDS[id].words.forEach(w=>{ const l=lvl(id,w.k); t++; sum+=l; counts[l]++; if(l===MAXL) learned++; if(l>=8) known++; else if(l>=REVL) rev++; else if(l>=1) lrn++; }));
+    return {t, sum, learned, known, rev, lrn, counts, pct:t?Math.round(sum/(MAXL*t)*100):0};
   }
 
   const board = Board({
     key:'w', root:document.getElementById('mode-w'), branchKey:'ef_wordtree_branch',
     branches:W_BRANCHES,
-    legend:'<span><span class="dot" style="background:var(--st-none)"></span>новое (0)</span>'+
-      '<span><span class="dot" style="background:var(--st-learn)"></span>изучаю (1–4)</span>'+
-      '<span><span class="dot" style="background:var(--st-review)"></span>повторяю (5–9)</span>'+
-      '<span><span class="dot" style="background:var(--st-mastered)"></span>выучено (10)</span>',
+    legend:'<span><span class="dot" style="background:var(--lv0)"></span>0 · новое</span>'+
+      '<span><span class="dot" style="background:var(--lv3)"></span>1–4 · изучаю</span>'+
+      '<span><span class="dot" style="background:var(--lv6)"></span>5–7 · повторяю</span>'+
+      '<span><span class="dot" style="background:var(--lv8)"></span>8–9 · знаю</span>'+
+      '<span><span class="dot" style="background:var(--lv10)"></span>10 · закреплено</span>',
     statusLabel:'Тема', statusChips:[['all','Все'],['not_started','Не начато'],['learning','Изучаю'],['review','Повторяю'],['mastered','Закрыто']],
     tagLabel:'Часть речи', tagChips:[['all','все'],['n','noun','Наборы с существительными'],['v','verb','Наборы с глаголами'],['a','adj','Наборы с прилагательными'],['o','other','Фразы, предлоги, союзы, наречия']],
     footer:'<section><h3>Сессия карточек</h3><ul>'+
@@ -961,14 +995,14 @@ const W = (function(){
       '</ul></section>'+
       '<section><h3>Оценки и уровень</h3><ul>'+
       '<li>Оценки как в Anki: «Забыл» — уровень слова снижается на 3 (не ниже 1), и слово вернётся через срок нового уровня (6 → 3 — через 2–3 дня); если уровень стал 1 (новое или слабое слово) — через 10 минут, ещё раз в этой сессии; «Хорошо» и «Легко» — через растущее число дней; «Трудно» тоже отодвигает повтор, но не поднимает уровень слова. Если повторяешь позже срока и вспомнил, интервал растёт сильнее: слово продержалось дольше. Под кнопкой видно, когда слово вернётся.</li>'+
-      '<li>Уровень 0–10 показывает интервал: 2 — повтор через день, 5 — через неделю, 7 — через месяц, 10 — полгода и больше (выучено; такие слова всё равно возвращаются на проверку, но не чаще раза в полгода–год).</li>'+
+      '<li>Уровень 0–10 показывает интервал и степень знания: 0 — новое, 1–4 — изучаю, 5–7 — повторяю, 8–9 — знаю, 10 — закреплено. Уровни 8–9 зелёные, 10 выделен бирюзовым.</li>'+
       '<li>Кнопка «Я знаю» на лицевой стороне открывает поле: впиши слово по-английски. Если верно — уровень 8 и проверка через 45 дней; на следующих проверках верный ответ поднимает до 9, потом до 10. Если срок слова ещё не подошёл или ты его недавно забыл, верный ответ засчитывается как «Хорошо». Если нет — открывается ответ, и слово оцениваешь как обычно. «Обнулить» возвращает слово в новые.</li>'+
       '<li>«← Предыдущее слово» возвращает к прошлой карточке и отменяет её оценку, чтобы можно было оценить заново.</li>'+
       '<li>Переводы: слово переведено верно — как «Хорошо», с ошибкой — как «Трудно», неверно — как «Забыл».</li>'+
       '</ul></section>'+
       '<section><h3>Прогресс темы</h3><ul>'+
       '<li>Полоска на карточке — все слова темы, по сегменту на слово.</li>'+
-      '<li>Шкала слова — от 0 до 10. Тема «повторяю», когда все слова на уровне 5 и выше, и «закрыта», когда все на 10.</li>'+
+      '<li>Шкала слова — от 0 до 10. Тема «повторяю», когда все слова дошли до 5, «знаю» — когда все дошли до 8, и «закреплено» — когда все на 10.</li>'+
       '</ul></section>'+
       '<section><h3>Повторение слов</h3><ul>'+
       '<li>Блок «Повторение слов» над деревом работает как Anki: после оценки слово получает срок следующего повтора.</li>'+
@@ -986,7 +1020,8 @@ const W = (function(){
     },
     phoneCount:(bk,lk)=>{
       const ids=ALL.filter(id=>CARDS[id].branch===bk && CARDS[id].level===lk);
-      return ids.length ? wordsOf(ids).learned+' / '+wordsOf(ids).t+' слов' : 'в плане';
+      if(!ids.length) return 'в плане';
+      const ws=wordsOf(ids); return 'знаю '+ws.known+' / '+ws.t;
     },
     match:(nd,F)=>{ const id=nd.dataset.id; return (F.status==='all'||nd.dataset.status===F.status) && (F.tag==='all'||CARDS[id].tags.includes(F.tag)); },
   });
@@ -1002,30 +1037,29 @@ const W = (function(){
     n.querySelector('.status-chip').innerHTML = locked ? LOCK_SVG+'с '+UNLOCK_PCT+'%' : esc(STATUS_LABEL[ci.status]);
     const segs=n.querySelectorAll('.wbar i');
     CARDS[id].words.forEach((w,i)=>{ const l=lvl(id,w.k); segs[i].dataset.l=l; segs[i].dataset.b=band(l); });
-    n.querySelector('.src').textContent=ci.learned+'/'+ci.n+' · '+ci.pct+'%';
-    n.setAttribute('aria-label', CARDS[id].title+(locked?': экстра-тема, откроется, когда основные темы ветки на этом уровне будут пройдены на '+UNLOCK_PCT+'%':': '+STATUS_LABEL[ci.status]+', выучено '+ci.learned+' из '+ci.n+' слов. Открыть карточки'));
+    n.querySelector('.src').textContent='знаю '+ci.known+'/'+ci.n+' · '+ci.pct+'%';
+    n.setAttribute('aria-label', CARDS[id].title+(locked?': экстра-тема, откроется, когда основные темы ветки на этом уровне будут пройдены на '+UNLOCK_PCT+'%':': '+STATUS_LABEL[ci.status]+', знаю '+ci.known+' из '+ci.n+' слов. Открыть карточки'));
   }
   function stats(){
     board.refreshPhone();
     if(panelReady) renderPanel();
     const s=wordsOf(ALL);
     const closed=ALL.filter(id=>cardInfo(id).status==='mastered').length;
+    const byLevel={};
+    LEVELS.forEach(l=>{ byLevel[l.key]=wordsOf(ALL.filter(id=>CARDS[id].level===l.key)); });
     const who=currentName();
     board.stat.innerHTML=(who?'<span class="who">'+esc(who)+':</span> ':'')+
-      'выучено '+s.learned+' из '+s.t+' слов · повторяю '+s.rev+' · изучаю '+s.lrn+' · тем закрыто '+closed+' из '+ALL.length;
-    board.bar.innerHTML=
-      '<span style="width:'+(s.learned/s.t*100)+'%;background:var(--st-mastered)"></span>'+
-      '<span style="width:'+(s.rev/s.t*100)+'%;background:var(--st-review)"></span>'+
-      '<span style="width:'+(s.lrn/s.t*100)+'%;background:var(--st-learn)"></span>';
+      'знаю '+s.known+' из '+s.t+' слов · закреплено '+s.learned+' · повторяю '+s.rev+' · изучаю '+s.lrn+' · тем закреплено '+closed;
+    board.bar.innerHTML=cefrProgressHTML(byLevel);
     W_BRANCHES.forEach(b=>{
       const ws=wordsOf(ALL.filter(id=>CARDS[id].branch===b.key));
-      board.H.cnt[b.key].textContent=ws.learned+' / '+ws.t+' слов · '+ws.pct+'%';
+      board.H.cnt[b.key].textContent='знаю '+ws.known+' / '+ws.t+' · '+ws.pct+'%';
       board.H.pb[b.key].style.width=ws.pct+'%';
     });
     LEVELS.forEach(l=>{
       const ids=ALL.filter(id=>CARDS[id].level===l.key);
-      const ws=wordsOf(ids);
-      board.H.lp[l.key].textContent=ids.length ? ws.learned+' / '+ws.t+' слов · '+ws.pct+'%' : 'в плане';
+      const ws=byLevel[l.key];
+      board.H.lp[l.key].textContent=ids.length ? 'знаю '+ws.known+' / '+ws.t+' · '+ws.pct+'%' : 'в плане';
       board.H.lb[l.key].style.width=ws.pct+'%';
     });
   }
@@ -1068,7 +1102,7 @@ const W = (function(){
   function cardSummary(id){
     const ci=cardInfo(id);
     return '<div class="m-sum"><span class="wbar">'+CARDS[id].words.map(w=>'<i data-l="'+lvl(id,w.k)+'" data-b="'+band(lvl(id,w.k))+'"></i>').join('')+'</span>'+
-      '<span>'+ci.pct+'% · выучено '+ci.learned+' / '+ci.n+'</span></div>';
+      '<span>'+ci.pct+'% · знаю '+ci.known+' / '+ci.n+(ci.learned?' · закреплено '+ci.learned:'')+'</span></div>';
   }
   function openList(id){
     const c=CARDS[id];
@@ -1360,7 +1394,7 @@ const W = (function(){
     flushAll();
     const up=S.seen.filter(w=>lvl(id,w.k)>S.start[w.tid+'|'+w.k]).length;
     const down=S.seen.filter(w=>lvl(id,w.k)<S.start[w.tid+'|'+w.k]).length;
-    const msg=ci.status==='mastered'?'Тема закрыта: все слова на уровне 5.':
+    const msg=ci.status==='mastered'?'Тема закреплена: все слова на уровне 10.':
       'Слов выросло: '+up+(down?', опустилось: '+down:'')+'. Тема: '+S.pctStart+'% → '+ci.pct+'%.';
     S.mode='done'; modal.classList.add('fixed');
     modal.innerHTML=head(id,'Сессия окончена')+
