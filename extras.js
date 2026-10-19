@@ -402,7 +402,7 @@ if (typeof WORD_TR !== 'undefined') {
 })();
 
 // Блок «Интервальное повторение слов»: счётчики — сразу кнопки.
-// Слева «Повторить» (сколько к повторению / сколько слов уровня ещё не выучено до 10), справа две половинки: «Изучать базовые» и «Изучать экстра».
+// Слева «Повторить» (сколько к повторению / сколько слов на выбранных уровнях ниже уровня 8), справа две половинки: «Изучать базовые» и «Изучать экстра».
 (function () {
   function num(el) { return el ? parseInt(el.textContent.replace(/\D+/g, ''), 10) || 0 : 0; }
   function build(panel) {
@@ -412,7 +412,7 @@ if (typeof WORD_TR !== 'undefined') {
     const tiles = st.querySelectorAll(':scope > div');
     if (tiles.length < 4) return;
     const due = num(tiles[0].querySelector('b')), nb = num(tiles[1].querySelector('b')), nx = num(tiles[2].querySelector('b'));
-    const left = num(tiles[3].querySelector('b')); // слов уровня, ещё не выученных до 10
+    const left = num(tiles[3].querySelector('b')); // слов на выбранных уровнях с уровнем знания 0–7
     const sig = [due, nb, nx, left].join('|');
     if (old && old.dataset.sig === sig) return;
     if (old) old.remove();
@@ -429,7 +429,7 @@ if (typeof WORD_TR !== 'undefined') {
         '<button type="button" class="rvb rvb-extra" data-k="extra"' + (dis('extra') ? ' disabled' : '') + '>' +
           '<span class="rvb-l">изучать<br>экстра</span><span class="rvb-n">' + nx + '</span></button>' +
       '</div>';
-    box.querySelector('.rvb-due').title = due + ' к повторению · ещё не выучено до конца: ' + left;
+    box.querySelector('.rvb-due').title = due + ' к повторению · слов ниже уровня 8: ' + left;
     box.addEventListener('click', ev => {
       const b = ev.target.closest('.rvb'); if (!b || b.disabled) return;
       const o = btn(b.dataset.k); if (o && !o.disabled) o.click();

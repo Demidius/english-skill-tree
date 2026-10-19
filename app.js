@@ -1153,7 +1153,7 @@ const W = (function(){
   }
   function rvCounts(lks){
     const now=Date.now(); let due=0, nb=0, nx=0, left=0, total=0;
-    lvWords(lks,'all').forEach(w=>{ const r=rec(w.tid,w.k), x=CARDS[w.tid].extra; total++; if(r[0]<MAXL) left++;
+    lvWords(lks,'all').forEach(w=>{ const r=rec(w.tid,w.k), x=CARDS[w.tid].extra; total++; if(r[0]<8) left++;
       if(isDue(r,now)) due++; else if(isNew(r)){ if(x) nx++; else nb++; } });
     return {due, nb, nx, left, total};
   }
@@ -1186,7 +1186,7 @@ const W = (function(){
     const msg=S.kind==='due'?'Сейчас нет слов, у которых подошёл срок повторения.':
       S.kind==='base'?'Новых слов в базовых темах не осталось.':'Новых слов в экстра-темах не осталось.';
     modal.innerHTML=lvHead()+'<div class="done-big">На сейчас всё</div>'+
-      '<div class="m-verdict">'+msg+(c.left?' Не выучено на выбранных уровнях: '+c.left+'.':' Все слова выбранных уровней выучены.')+'</div>'+
+      '<div class="m-verdict">'+msg+(c.left?' Слов с уровнем 0–7: '+c.left+'.':' Все слова выбранных уровней достигли уровня 8 или выше.')+'</div>'+
       '<div class="m-actions"><button type="button" class="m-btn ghost" data-act="close">Закрыть</button>'+rvNextBtns(c,S.kind)+'</div>';
   }
   function renderLvDone(){
@@ -1219,7 +1219,7 @@ const W = (function(){
         '<div><b class="rv-due">'+c.due+'</b><span>к повторению</span></div>'+
         '<div><b class="rv-new">'+c.nb+'</b><span>новых в базовых</span></div>'+
         '<div><b class="rv-new">'+c.nx+'</b><span>новых в экстра</span></div>'+
-        '<div><b>'+c.left+'</b><span>не выучено из '+c.total+'</span></div></div>')+
+        '<div><b>'+c.left+'</b><span>ниже уровня 8 из '+c.total+'</span></div></div>')+
       '<div class="rv-acts">'+
         '<button type="button" class="m-btn" data-kind="due"'+(none||!c.due?' disabled':'')+'>Повторить'+(c.due?' ('+c.due+')':'')+'</button>'+
         '<button type="button" class="m-btn ghost" data-kind="base"'+(none||!c.nb?' disabled':'')+'>Изучать базовые'+(c.nb?' ('+c.nb+')':'')+'</button>'+
