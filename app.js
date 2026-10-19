@@ -13,7 +13,7 @@ const phoneMQ = window.matchMedia('(max-width: 720px)');
 let db=null, local=false, profiles=[], current=null;
 // level coefficients (shared by all students, edited on the «Настройки» tab)
 const COEF_DEFAULT={rulesPractice:{ok:1, wrong:-2}, review:{newPerSession:20, hardPct:120, easyPct:130, maxIvl:365}};
-const COEF_RANGE={'review.newPerSession':[0,200], 'review.hardPct':[100,200], 'review.easyPct':[100,300], 'review.maxIvl':[30,3650]};
+const COEF_RANGE={'review.newPerSession':[0,200], 'review.hardPct':[100,200], 'review.easyPct':[100,300], 'review.maxIvl':[180,3650]};
 const COEF_STEP={'review.newPerSession':5, 'review.hardPct':5, 'review.easyPct':5, 'review.maxIvl':30};
 const COEF=JSON.parse(JSON.stringify(COEF_DEFAULT));
 function applyCoef(src){
@@ -812,30 +812,56 @@ const W = (function(){
     if(ivl>=180) return 10; if(ivl>=90) return 9; if(ivl>=45) return 8; if(ivl>=25) return 7; if(ivl>=14) return 6;
     if(ivl>=7) return 5; if(ivl>=4) return 4; if(ivl>=2) return 3; if(ivl>=1) return 2; return seen?1:0;
   }
+  // largest interval that still keeps the current level (e.g. 1.9 days for level 2)
+  function lvlCeil(ivl){ for(const t of [2,4,7,14,25,45,90,180]) if(ivl<t) return t-0.1; return Infinity; }
+  // due dates of 1+ day fall on the start of a "study day" (04:00 local), like Anki
+  function dueDay(now, days){ const d=new Date(now-4*36e5); d.setDate(d.getDate()+days); d.setHours(4,0,0,0); return d.getTime(); }
   function sched(r,g,now){
     const R=COEF.review, cap=x=>Math.min(R.maxIvl, x);
     let ivl=r[4]||0, ease=r[5]||2.5, due;
-    if(g==='again'){ ivl=0; ease=Math.max(1.3,ease-0.2); due=now+10*MIN; }
-    else if(g==='reset'){ ivl=0; ease=2.5; due=0; }
-    else if(g==='known'){ ivl=Math.max(ivl,180); due=now+ivl*DAY; }
-    else {
-      if(g==='hard'){ ivl=ivl?Math.max(1,ivl*R.hardPct/100):0.5; ease=Math.max(1.3,ease-0.15); }
-      else if(g==='good'){ ivl=ivl?Math.max(ivl+1,ivl*ease):1; }
-      else { ivl=ivl?Math.max(ivl+1,ivl*ease*R.easyPct/100):4; ease=ease+0.15; }
-      ivl=cap(Math.round(ivl*10)/10); due=now+ivl*DAY;
+    // early review (topic session before the due date): grow from the time that really passed, never below the current interval
+    const early=ivl>0 && r[3]>now, base=early?Math.max(0,(now-(r[1]||now))/DAY):ivl;
+    // overdue bonus (like Anki): whole days past the due date; «Хорошо» and «Я знаю» get half of them, «Легко» all, «Трудно» none
+    const late=(ivl>0 && r[3] && !early)?Math.max(0,Math.floor((now-r[3])/DAY)):0;
+    // «Забыл»: the word drops 3 levels (not below 1) and comes back after the interval of its new level;
+    // at level 1 (new or weak words) it comes back in 10 minutes, still in this session
+    if(g==='again'){
+      if(ivl>=1) ease=Math.max(1.3,ease-0.2);
+      ivl= ivl>0 ? IVL_FOR_LEVEL[Math.max(1,lvFromIvl(ivl,true)-3)] : 0;
+      due= ivl>0 ? dueDay(now, Math.max(1,Math.round(ivl))) : now+10*MIN;
     }
-    const lv = g==='reset' ? 0 : g==='known' ? 10 : Math.min(lvFromIvl(ivl, true), ivl>=180?10:9);
+    else if(g==='reset'){ ivl=0; ease=2.5; due=0; }
+    else {
+      if(g==='known'){ // «Я знаю»: first 45 days (level 8), then level 9 (90+), then level 10 (180+)
+        // before the due date, or for a word just forgotten / still in its first steps, it counts as «Хорошо»
+        if(early) ivl=Math.max(ivl, base*ease);
+        else if(ivl<1 && (r[2]||0)>0) ivl=!ivl?1:Math.max(ivl+1,(ivl+late/2)*ease);
+        else if(ivl<45) ivl=45;
+        else { const gr=Math.max(ivl+1, (ivl+late/2)*ease); ivl=ivl<90?Math.min(179.9,Math.max(90,gr)):ivl<180?Math.max(180,gr):gr; }
+      }
+      else if(g==='hard'){ // «Трудно» never lifts the word above its current level (only the first step 1 → 2)
+        let v=!ivl?0.5:early?Math.max(ivl,base*R.hardPct/100):Math.max(1,ivl*R.hardPct/100);
+        if(ivl>=1){ v=Math.min(v, lvlCeil(ivl)); ease=Math.max(1.3,ease-0.15); }
+        ivl=v; }
+      else if(g==='good'){ ivl=!ivl?1:early?Math.max(ivl,base*ease):Math.max(ivl+1,(ivl+late/2)*ease); }
+      else { ivl=!ivl?4:early?Math.max(ivl,base*ease*R.easyPct/100):Math.max(ivl+1,(ivl+late)*ease*R.easyPct/100); ease=ease+0.15; }
+      ivl=cap(Math.round(ivl*10)/10);
+      due= ivl<1 ? now+ivl*DAY : dueDay(now, Math.max(1,Math.round(ivl)));
+    }
+    const lv = g==='reset' ? 0 : lvFromIvl(ivl, true);
     return {due, ivl, ease:Math.round(ease*100)/100, lv};
   }
+  // when the word comes back: whole days for 1+ day intervals, minutes/hours for short steps
+  function whenLabel(ivl, due, now){ return ivl>=1 ? ivlLabel(Math.max(1,Math.round(ivl))*DAY) : ivlLabel(Math.max(0,due-now)); }
   function ivlLabel(ms){
     if(ms<60*MIN) return Math.max(1,Math.round(ms/MIN))+' мин';
     if(ms<DAY*0.9) return Math.round(ms/36e5)+' ч';
     const d=ms/DAY; if(d<1.5) return '1 дн.';
-    if(d<30) return Math.round(d)+' дн.';
-    if(d<365) return Math.round(d/30)+' мес.';
+    if(d<60) return Math.round(d)+' дн.';
+    if(d<345) return Math.round(d/30)+' мес.';
     return (Math.round(d/36.5)/10)+' г.';
   }
-  const isDue=(r,now)=>r[0]<MAXL && (r[3] ? r[3]<=now : (r[2]>0||r[0]>0));
+  const isDue=(r,now)=>(r[3] ? r[3]<=now : (r[2]>0||r[0]>0));
   const isNew=r=>!r[3] && !r[2] && !r[0];
   function lvlHTML(l){ let h='<span class="lvl" data-b="'+band(l)+'" data-l="'+l+'" title="уровень '+l+' из '+MAXL+'">'; for(let i=1;i<=MAXL;i++) h+='<i class="'+(i<=l?'on':'')+'"></i>'; return h+'</span>'; }
   function trHTML(w){
@@ -934,11 +960,11 @@ const W = (function(){
       '<li>В списке слов уровень можно поменять вручную: «−» и «+» или клик по шкале. Слово получит интервал этого уровня (например, 7 — повтор через месяц).</li>'+
       '</ul></section>'+
       '<section><h3>Оценки и уровень</h3><ul>'+
-      '<li>Оценки как в Anki: «Снова» — слово вернётся через 10 минут и ещё раз в этой сессии; «Трудно», «Хорошо», «Легко» — через растущее число дней. Под кнопкой видно, когда слово вернётся.</li>'+
-      '<li>Уровень 0–10 показывает интервал: 2 — повтор через день, 5 — через неделю, 7 — через месяц, 10 — полгода и больше (выучено, больше не повторяется).</li>'+
-      '<li>Кнопка «Я знаю» на лицевой стороне открывает поле: впиши слово по-английски. Если верно — уровень 10, слово больше не повторяется; если нет — открывается ответ, и слово оцениваешь как обычно. «Обнулить» возвращает слово в новые.</li>'+
+      '<li>Оценки как в Anki: «Забыл» — уровень слова снижается на 3 (не ниже 1), и слово вернётся через срок нового уровня (6 → 3 — через 2–3 дня); если уровень стал 1 (новое или слабое слово) — через 10 минут, ещё раз в этой сессии; «Хорошо» и «Легко» — через растущее число дней; «Трудно» тоже отодвигает повтор, но не поднимает уровень слова. Если повторяешь позже срока и вспомнил, интервал растёт сильнее: слово продержалось дольше. Под кнопкой видно, когда слово вернётся.</li>'+
+      '<li>Уровень 0–10 показывает интервал: 2 — повтор через день, 5 — через неделю, 7 — через месяц, 10 — полгода и больше (выучено; такие слова всё равно возвращаются на проверку, но не чаще раза в полгода–год).</li>'+
+      '<li>Кнопка «Я знаю» на лицевой стороне открывает поле: впиши слово по-английски. Если верно — уровень 8 и проверка через 45 дней; на следующих проверках верный ответ поднимает до 9, потом до 10. Если срок слова ещё не подошёл или ты его недавно забыл, верный ответ засчитывается как «Хорошо». Если нет — открывается ответ, и слово оцениваешь как обычно. «Обнулить» возвращает слово в новые.</li>'+
       '<li>«← Предыдущее слово» возвращает к прошлой карточке и отменяет её оценку, чтобы можно было оценить заново.</li>'+
-      '<li>Переводы: слово переведено верно — как «Хорошо», с ошибкой — как «Трудно», неверно — как «Снова».</li>'+
+      '<li>Переводы: слово переведено верно — как «Хорошо», с ошибкой — как «Трудно», неверно — как «Забыл».</li>'+
       '</ul></section>'+
       '<section><h3>Прогресс темы</h3><ul>'+
       '<li>Полоска на карточке — все слова темы, по сегменту на слово.</li>'+
@@ -947,8 +973,7 @@ const W = (function(){
       '<section><h3>Повторение слов</h3><ul>'+
       '<li>Блок «Повторение слов» над деревом работает как Anki: после оценки слово получает срок следующего повтора.</li>'+
       '<li>В блоке «Повторение слов» включи нужные уровни. «Повторить» — все слова, у которых подошёл срок; «Изучать базовые» и «Изучать Экстра» — все новые слова из основных или экстра-тем подряд, пока не закончатся. Окно можно закрыть в любой момент — прогресс сохраняется после каждого слова.</li>'+
-      '<li>Галочка «с экстра-темами» добавляет в повторение слова экстра-тем.</li>'+
-      '<li>Слова на уровне 10 считаются выученными и в повторение не попадают.</li>'+
+      '<li>Слова на уровне 10 считаются выученными, но всё равно возвращаются на проверку — не чаще раза в полгода–год.</li>'+
       '</ul></section>'+
       '<section><h3>Экстра-темы</h3><ul>'+
       '<li>Под основными темами каждого уровня лежат экстра-темы («Family 2», «Common verbs 2»…) с дополнительными словами того же уровня.</li>'+
@@ -1029,7 +1054,7 @@ const W = (function(){
     if(r[0]===l) return;
     if(!prog[id]) prog[id]={};
     const now=Date.now(), iv=IVL_FOR_LEVEL[l];
-    prog[id][k]= l===0 ? [0, now, r[2]||0] : [l, now, Math.max(1,r[2]||0), l===1?now:now+iv*DAY, iv, r[5]||2.5];
+    prog[id][k]= l===0 ? [0, now, r[2]||0] : [l, now, Math.max(1,r[2]||0), l===1?now:dueDay(now, Math.max(1,Math.round(iv))), iv, r[5]||2.5];
     const wasOpen=OPEN[okey(id)];
     computeOpen();
     if(OPEN[okey(id)]!==wasOpen) ALL.forEach(paint); else paint(id);
@@ -1105,7 +1130,7 @@ const W = (function(){
     lks=(lks||rvLv).slice(); if(!lks.length) return;
     const now=Date.now(); let q;
     if(kind==='due'){
-      q=lvWords(lks,'all').filter(w=>{ const r=rec(w.tid,w.k); return r[0]<MAXL && isDue(r,now); })
+      q=lvWords(lks,'all').filter(w=>{ const r=rec(w.tid,w.k); return isDue(r,now); })
         .sort((x,y)=>(rec(x.tid,x.k)[3]||0)-(rec(y.tid,y.k)[3]||0));
     } else {
       q=shuffle(lvWords(lks,kind).filter(w=>isNew(rec(w.tid,w.k))));
@@ -1140,7 +1165,7 @@ const W = (function(){
       '<div class="m-verdict">Слов: '+S.seen.length+' · выросло: '+up+(down?' · опустилось: '+down:'')+'. Сейчас к повторению: '+c.due+'.</div>'+
       '<div class="wl">'+S.seen.map(w=>{ const r=rec(w.tid,w.k);
         return '<div class="row"><span class="en">'+esc(w.en)+'</span><span class="ru">'+esc(w.ru)+'</span>'+
-        '<span class="chg">'+S.start[w.tid+'|'+w.k]+' → '+r[0]+(r[3]?' · через '+ivlLabel(Math.max(0,r[3]-Date.now())):'')+'</span>'+sayBtn(w.en)+'</div>'; }).join('')+'</div>'+
+        '<span class="chg">'+S.start[w.tid+'|'+w.k]+' → '+r[0]+(r[3]?' · через '+whenLabel(r[4]||0, r[3], Date.now()):'')+'</span>'+sayBtn(w.en)+'</div>'; }).join('')+'</div>'+
       '<div class="m-actions">'+
         (S.hist.length?'<button type="button" class="m-btn ghost" data-act="back">← Последнее слово</button>':'')+
         '<button type="button" class="m-btn ghost" data-act="close">Закрыть</button>'+rvNextBtns(c)+'</div>';
@@ -1195,7 +1220,7 @@ const W = (function(){
     if(!S.queue.length){ if(S.wait&&S.wait.length){ renderWait(); return; } renderDone(); return; }
     const w=S.queue[0], id=w.tid, l=lvl(id,w.k), r=rec(id,w.k), now=Date.now();
     const pct=Math.round(S.done/(S.done+S.queue.length)*100);
-    const nx=g=>ivlLabel(sched(r,g,now).due-now);
+    const nx=g=>{ const sc=sched(r,g,now); return whenLabel(sc.ivl, sc.due, now); };
     let h=(S.lv?lvHead():head(id, S.review?'Повторение':'Карточки'))+
       '<div class="sess-meta"><span>осталось '+S.queue.length+(S.wait&&S.wait.length?' · ждут '+S.wait.length:'')+'</span><span>'+(S.lv?esc(CARDS[id].title):'тема '+cardInfo(id).pct+'%')+'</span></div>'+
       '<div class="sess-bar"><span style="width:'+pct+'%"></span></div>'+
@@ -1221,13 +1246,13 @@ const W = (function(){
     // grades are always rendered so the block keeps the same height; before the flip they are hidden under the button
     const ti=S.flipped?'':' tabindex="-1"';
     h+='<div class="grades-wrap"><div class="grades'+(S.flipped?'':' hidden-grades')+'"'+(S.flipped?'':' aria-hidden="true"')+'>'+
-      '<button type="button" class="grade again" data-g="again"'+ti+'>Снова<small>'+nx('again')+'</small></button>'+
+      '<button type="button" class="grade again" data-g="again"'+ti+'>Забыл<small>'+nx('again')+'</small></button>'+
       '<button type="button" class="grade hard" data-g="hard"'+ti+'>Трудно<small>'+nx('hard')+'</small></button>'+
       '<button type="button" class="grade easy" data-g="good"'+ti+'>Хорошо<small>'+nx('good')+'</small></button>'+
       '<button type="button" class="grade know" data-g="easy"'+ti+'>Легко<small>'+nx('easy')+'</small></button></div>'+
       (S.flipped?'':'<button type="button" class="m-btn show" data-act="flip">Показать ответ</button>')+'</div>'+
       '<div class="fc-row"><button type="button" class="m-btn ghost fc-back" data-act="back"'+(S.hist.length?'':' disabled')+'>← Предыдущее слово</button>'+
-      '<button type="button" class="m-btn fc-know" data-act="kopen"'+(S.flipped||S.kbox?' disabled aria-hidden="true" tabindex="-1"':'')+' title="Впиши слово по-английски: если верно — уровень 10, слово больше не повторяется">Я знаю</button></div>';
+      '<button type="button" class="m-btn fc-know" data-act="kopen"'+(S.flipped||S.kbox?' disabled aria-hidden="true" tabindex="-1"':'')+' title="Впиши слово по-английски: если верно — уровень 8 и проверка через 45 дней, на следующих проверках — 9 и 10">Я знаю</button></div>';
     h+='<div class="fc-foot">'+
       (canSpeak?'<label class="auto"><input type="checkbox" id="autoSay"'+(autoSay?' checked':'')+'> озвучивать ответ</label>':'<span></span>')+
       (S.flipped?'<span class="fc-links"><button type="button" class="linkbtn" data-g="reset">Обнулить</button></span>':
@@ -1250,7 +1275,7 @@ const W = (function(){
       '<div class="kok" role="status"><div class="kok-ico" aria-hidden="true">✓</div>'+
       '<div class="kok-t">Засчитано</div>'+
       '<div class="kok-w"><span>'+esc(k.ru)+'</span><b>'+esc(k.en)+'</b></div>'+
-      '<div class="kok-n">Слово отмечено как выученное — уровень 10, в повторение больше не попадёт.</div></div>'+
+      '<div class="kok-n">'+(k.lv!=null?'Уровень '+k.lv+' · следующая проверка через '+k.when:'Слово засчитано.')+'</div></div>'+
       '<div class="m-actions kok-a"><button type="button" class="m-btn ghost" data-act="back">Отменить</button>'+
       '<button type="button" class="m-btn" data-act="knext">Дальше →</button></div>';
     const f=modal.querySelector('[data-act="knext"]'); if(f) f.focus({preventScroll:true});
@@ -1284,8 +1309,9 @@ const W = (function(){
     const r=rec(id,w.k), now=Date.now(), sc=sched(r,g,now);
     if(!prog[id]) prog[id]={};
     prog[id][w.k]=[sc.lv, now, (r[2]||0)+1, sc.due, sc.ivl, sc.ease];
+    if(g==='known' && S.kdone){ S.kdone.lv=sc.lv; S.kdone.when=whenLabel(sc.ivl, sc.due, now); }
     if(!S.seen.includes(w)){ S.seen.push(w); if(!((w.tid+'|'+w.k) in S.start)) S.start[w.tid+'|'+w.k]=r[0]; }
-    if(g==='again'){
+    if(g==='again' && !sc.ivl){
       S.fails[w.k]=(S.fails[w.k]||0)+1;
       S.wait.push({w, due:sc.due}); S.wait.sort((x,y)=>x.due-y.due);
     } else if(g==='reset' && (S.fails[w.k]||0)<3){
@@ -1305,7 +1331,7 @@ const W = (function(){
     const n=S.wait.length;
     modal.innerHTML=(S.lv?lvHead():head(S.id, S.review?'Повторение':'Карточки'))+
       '<div class="wait-box" role="status"><div class="wait-t">Следующее слово через</div><div class="wait-n" id="waitN">—</div>'+
-      '<div class="wait-s">'+n+' '+(n===1?'слово ждёт':n<5?'слова ждут':'слов ждут')+' повтора: после «Снова» карточка возвращается только через 10 минут. Можно подождать здесь или закрыть — слова придут в «Повторить», когда подойдёт срок.</div></div>'+
+      '<div class="wait-s">'+n+' '+(n===1?'слово ждёт':n<5?'слова ждут':'слов ждут')+' повтора: после «Забыл» новое или слабое слово возвращается только через 10 минут. Можно подождать здесь или закрыть — слова придут в «Повторить», когда подойдёт срок.</div></div>'+
       '<div class="m-actions">'+(S.hist.length?'<button type="button" class="m-btn ghost" data-act="back">← Назад</button>':'')+
       '<button type="button" class="m-btn ghost" data-act="wend">Завершить</button>'+
       '<button type="button" class="m-btn" data-act="close">Закрыть</button></div>';
@@ -1454,7 +1480,7 @@ const SETTINGS = (function(){
   const GROUPS=[
     {key:'rulesPractice', h:'Правила · практические работы', note:'Как меняется уровень правила: по коду из «Изучать с AI» (оценка нейросети после перевода, поиска ошибок или диалога) и при ответах в «Быстром тесте».',
      f:[['ok','Правило применено верно'],['wrong','С правилом ошибка']]},
-    {key:'review', h:'Лексика · интервальное повторение', note:'Как в Anki: «Хорошо» умножает интервал на лёгкость слова (≈2,5), «Трудно» и «Легко» — на свои множители. Переводы: верно = «Хорошо», с ошибкой = «Трудно», неверно = «Снова».',
+    {key:'review', h:'Лексика · интервальное повторение', note:'Как в Anki: «Хорошо» умножает интервал на лёгкость слова (≈2,5), «Трудно» и «Легко» — на свои множители. Переводы: верно = «Хорошо», с ошибкой = «Трудно», неверно = «Забыл».',
      f:[['hardPct','«Трудно»: интервал ×, %'],['easyPct','«Легко»: бонус к «Хорошо», %'],['maxIvl','Максимальный интервал, дней']]},
   ];
   let msg='';

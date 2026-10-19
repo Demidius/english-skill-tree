@@ -24,7 +24,7 @@ document.addEventListener('keydown', ev => {
 // «Я знаю», неверный ответ: показываем, какие буквы ошибочны.
 // Опечатка — правильная буква над неверной; слово целиком другое — правильное слово над ним;
 // пропущенное — зелёное над красной чертой; лишнее — зачёркнуто.
-// Мало ошибок — сразу предлагаем оценку: 1 буква — «Легко», 2 — «Хорошо».
+// Мало ошибок — сразу предлагаем оценку: 1 буква — «Хорошо», 2 — «Трудно».
 (function () {
   const st = document.createElement('style');
   st.textContent =
@@ -117,8 +117,8 @@ document.addEventListener('keydown', ev => {
       return col(sp('kd-del', o[1]), o[2]);
     }).join(' ');
     b.setAttribute('aria-label', 'ты написал ' + typed + ', правильно ' + best.r);
-    // 1 неверная буква — предлагаем «Легко», 2 — «Хорошо» (кнопка в фокусе: Enter или пробел)
-    const g = best.dist === 1 ? 'easy' : best.dist === 2 ? 'good' : '';
+    // 1 неверная буква — предлагаем «Хорошо», 2 — «Трудно» (кнопка в фокусе: Enter или пробел)
+    const g = best.dist === 1 ? 'good' : best.dist === 2 ? 'hard' : '';
     const btn = g && fc.closest('.modal') && fc.closest('.modal').querySelector('.grade[data-g="' + g + '"]');
     if (btn) { btn.classList.add('kd-suggest'); btn.focus({ preventScroll: true }); }
   }
