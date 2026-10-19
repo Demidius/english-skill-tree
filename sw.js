@@ -1,5 +1,5 @@
 // Service worker: сеть в приоритете, кэш — запасной вариант без интернета.
-const CACHE = 'skill-tree-v2';
+const CACHE = 'skill-tree-v3';
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil((async()=>{
