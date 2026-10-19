@@ -89,7 +89,7 @@ document.addEventListener('keydown', ev => {
     // сравнение по словам: слово целиком другое — показываем правильное слово над ним;
     // в слове 1–2 опечатки — правим по буквам (правильная буква над неверной)
     const col = (bottom, word) => '<span class="kd-col"><span class="kd-w">' + esc(word) + '</span>' + bottom + sp('kd-ins', word) + '</span>';
-    const gap = '<span class="kd-gap">​</span>';
+    const gap = '<span class="kd-gap">\u200b</span>';
     const letters = (t, r) => ops(t, r).map(o =>
       o[0] === 'ok' ? esc(o[1]) :
       o[0] === 'sub' ? col(sp('kd-del', o[1]), o[2]) :
@@ -239,6 +239,7 @@ document.addEventListener('keydown', ev => {
     'ba-phrases|never mind.': ['nevermind'],
     'da2-havetake|take care': ['take care of yourself'],
     'ba-linkers|a lot of': ['lots of'],
+    'ti2-expr|until': ['till'],
   };
   const norm = s => String(s).toLowerCase().replace(/[’`ʼ']/g, '').replace(/[^a-z0-9 ]+/g, ' ')
     .replace(/\s+/g, ' ').trim().replace(/^(to|a|an|the) /, '');
@@ -292,5 +293,44 @@ document.addEventListener('keydown', ev => {
     const ru = front.textContent.trim(), typed = norm(inp.value);
     if (!typed) return;
     for (const w of byRu()[ru] || []) if (ok(typed, w, ru)) { inp.value = w.en; return; }
+    // 7) Написал другое слово из словаря с тем же русским значением (before вместо until —
+    //    оба «до»): не засчитываем как ошибку, а подсказываем, что загадано другое слово,
+    //    и показываем перевод написанного, чтобы была видна разница. Повтор того же ответа — уже ошибка.
+    const other = sameMeaning(typed, ru);
+    if (!other || form.dataset.hinted === typed) return;
+    form.dataset.hinted = typed;
+    ev.preventDefault();
+    ev.stopPropagation();
+    let box = form.querySelector('.kbox-hint');
+    if (!box) {
+      box = document.createElement('div');
+      box.className = 'kbox-hint';
+      box.setAttribute('role', 'status');
+      const row = form.querySelector('.kbox-row');
+      (row || inp).insertAdjacentElement('afterend', box);
+    }
+    box.innerHTML = '';
+    const b = document.createElement('b'); b.textContent = other.en;
+    box.append(b, ' — это «' + other.ru + '». Здесь загадано другое слово — попробуй ещё раз.');
+    inp.focus({ preventScroll: true });
+    try { inp.select(); } catch (e) {}
   }, true);
+
+  // общий смысл: совпадает хотя бы одно русское значение (без пояснений в скобках)
+  const coreRu = r => String(r).replace(/\(.*?\)/g, ' ').split(/[,;\/]/)
+    .map(s => s.trim().toLowerCase().replace(/ё/g, 'е').replace(/[.!?…]+$/, '')).filter(Boolean);
+  let all = null;
+  function sameMeaning(typed, ru) {
+    if (!all) {
+      all = [];
+      Object.entries(byRu()).forEach(([r, ws]) => ws.forEach(w => all.push({ en: w.en, id: w.id, p: w.p, ru: r, core: coreRu(r) })));
+    }
+    const mine = new Set(coreRu(ru));
+    if (!mine.size) return null;
+    return all.find(o => o.ru !== ru && o.core.some(k => mine.has(k)) && ok(typed, o, o.ru)) || null;
+  }
+  const hs = document.createElement('style');
+  hs.textContent = '.kbox-hint{margin:.6em 0 0;font-size:.9em;line-height:1.35;color:var(--accent,#f5c84b)}' +
+    '.kbox-hint b{color:inherit}';
+  document.head.appendChild(hs);
 })();

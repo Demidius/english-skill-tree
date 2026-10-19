@@ -333,6 +333,8 @@ da-routine-2|relax|расслабляться, отдыхать (не rest)
 na-world|stone|камень (материал, камешек — не rock)
 na3-landscape-2|rock|скала, валун (большой камень)
 na2-landscape|cliff|обрыв, отвесная скала (c…)
+ti-prep|before|до, перед (раньше чего-то)
+ti2-expr|until|до (вплоть до, пока не)
 `;
   if (typeof W_BRANCHES === 'undefined') return;
   const idx = {};
