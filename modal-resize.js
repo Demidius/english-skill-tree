@@ -1,3 +1,15 @@
+// Открытое окно: страница под ним не прокручивается колёсиком — только само окно.
+(function () {
+  const root = document.documentElement;
+  const st = document.createElement('style');
+  st.textContent = 'html.modal-open,html.modal-open body{overflow:hidden}html.modal-open{scrollbar-gutter:stable}' +
+    '.modal,.modal .fc{overscroll-behavior:contain}';
+  document.head.appendChild(st);
+  function sync() { root.classList.toggle('modal-open', [...document.querySelectorAll('.modal-back')].some(b => !b.hidden)); }
+  new MutationObserver(sync).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['hidden'] });
+  sync();
+})();
+
 // ПК: окно карточек можно растянуть — потяни за правый нижний угол.
 // Размер запоминается в этом браузере; двойной клик по углу возвращает стандартный.
 (function () {
