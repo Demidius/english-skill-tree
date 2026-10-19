@@ -149,13 +149,14 @@
   }
 
   // ---- RPG, ПК: уровень героя в карточке профиля, единый вид блока со шкалами ----
-  const LEGEND = '<span><span class="dot" style="background:var(--lv0)"></span>0 · новое</span>' +
-    '<span><span class="dot" style="background:var(--lv3)"></span>1–4 · изучаю</span>' +
+  const LEGEND = '<span><span class="dot" style="background:var(--lv3)"></span>1–4 · изучаю</span>' +
     '<span><span class="dot" style="background:var(--lv6)"></span>5–7 · повторяю</span>' +
     '<span><span class="dot" style="background:var(--lv8)"></span>8–9 · знаю</span>' +
     '<span><span class="dot" style="background:var(--lv10)"></span>10 · закреплено</span>';
   const setTxt = (el, v) => { if (el && el.textContent !== v) el.textContent = v; };
   function rpgProfile() {
+    // одинаковая легенда из 4 цветов в обоих режимах и обоих оформлениях
+    document.querySelectorAll('.stats-row .legend').forEach(lg => { if (lg.dataset.uni !== '2') { lg.innerHTML = LEGEND; lg.dataset.uni = '2'; } });
     if (document.documentElement.getAttribute('data-skin') !== 'rpg') return;
     // «знаю» (уровень 8–10) — из строки статистики режима; слова — основа уровня героя (1 уровень за 50 слов)
     const knownOf = m => { const n = document.querySelector('#mode-' + m + ' .stats-row .num'); return ((n && n.textContent) || '').match(/знаю\s+(\d+)\s+из\s+(\d+)/); };
@@ -172,9 +173,6 @@
       const m = mode === 'w' ? wm : knownOf('g');
       setTxt(meta.children[0], mode === 'w' ? 'Слова' : 'Правила');
       setTxt(meta.children[1], 'знаю ' + (m ? m[1] + ' / ' + m[2] : '—'));
-      // одинаковая легенда в обоих режимах
-      const lg = row.querySelector('.legend');
-      if (lg && lg.dataset.uni !== '1') { lg.innerHTML = LEGEND; lg.dataset.uni = '1'; }
       // уровень героя под именем
       if (nav) {
         let lv = nav.querySelector('.rpg-lvl');
@@ -196,9 +194,17 @@
     });
   }
 
-  // ---- шкала A1–B2 под заголовком: под отрезком только уровень, подробности — во всплывающей подсказке ----
+  // ---- цвета уровней и шкала A1–B2: под отрезком только уровень, подробности — во всплывающей подсказке ----
   const cs = document.createElement('style');
-  cs.textContent = '.cefr-cap{display:none}' +
+  cs.textContent =
+    // 4 цвета уровней: 1–4 изучаю · 5–7 повторяю · 8–9 знаю · 10 закреплено (0 — серый фон)
+    ':root{--lv1:#fb923c;--lv2:#fb923c;--lv3:#fb923c;--lv4:#fb923c;--lv5:#facc15;--lv6:#facc15;--lv7:#facc15;--lv8:#22c55e;--lv9:#22c55e;--lv10:#06b6d4}' +
+    // шкалы 0–10 закрашиваются одним цветом — цветом группы, в которой сейчас слово или правило
+    ':is(.lvl,.gbar)[data-b="l"] i.on,.lvle[data-b="l"] .lvsegs .lvs.on::before{background:var(--lv1)}' +
+    ':is(.lvl,.gbar)[data-b="r"] i.on,.lvle[data-b="r"] .lvsegs .lvs.on::before{background:var(--lv5)}' +
+    ':is(.lvl,.gbar)[data-b="k"] i.on,.lvle[data-b="k"] .lvsegs .lvs.on::before{background:var(--lv8)}' +
+    ':is(.lvl,.gbar)[data-b="m"] i.on,.lvle[data-b="m"] .lvsegs .lvs.on::before{background:var(--lv10)}' +
+    '.cefr-cap{display:none}' +
     '.cefr-seg::after{content:attr(data-cefr);display:block;padding:4px 7px 5px;border-top:1px solid var(--line);background:var(--surface-2);' +
       'font:700 .68rem \'IBM Plex Mono\',monospace;color:var(--ink);white-space:nowrap}' +
     '@media (max-width:720px){.cefr-seg::after{text-align:center;padding:4px 3px 5px;font-size:.62rem}}';
