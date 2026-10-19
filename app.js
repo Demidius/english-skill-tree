@@ -395,7 +395,7 @@ const G = (function(){
   const actionHelp = [
     ['Тест', 'проверка этой темы: 10 вопросов.'],
     ['YouTube', 'поиск видео по названию темы в новой вкладке.'],
-    ['GPT', 'объяснение темы в GPT, Claude, DeepSeek или Qwen. GPT, Claude и Qwen открываются с запросом. Если поле пустое, вставь промт из буфера; в DeepSeek вставка нужна вручную.'],
+    ['GPT', 'объяснение темы в GPT, Claude, Gemini или Qwen. GPT, Claude и Qwen открываются с запросом. Если поле пустое, вставь промт из буфера; в Gemini вставка нужна вручную.'],
   ];
   G_BRANCHES.forEach(b=>LEVELS.forEach(l=>(b.cells[l.key]||[]).forEach(c=>{
     CARDS[c[0]]={branch:b.key, level:l.key, title:c[1], tags:c[5]};
@@ -450,7 +450,7 @@ const G = (function(){
     const topic = el('div', 'pt-topic-card');
     const ai = el('button', 'pt-topic-action pt-topic-ai', 'GPT'); ai.type = 'button'; ai.dataset.topicGpt = id;
     ai.setAttribute('aria-haspopup', 'dialog'); ai.setAttribute('aria-label', 'GPT: объяснение темы ' + t);
-    ai.title = 'Объяснить тему в GPT, Claude, DeepSeek или Qwen';
+    ai.title = 'Объяснить тему в GPT, Claude, Gemini или Qwen';
     ai.addEventListener('click', ev => { ev.stopPropagation(); if (window.PROMPTS) window.PROMPTS.openTopic(id); });
     const youtube = el('a', 'pt-topic-action pt-topic-youtube'); youtube.dataset.topicYoutube = id;
     youtube.href = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(t);

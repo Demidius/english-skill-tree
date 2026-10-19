@@ -42,7 +42,7 @@
   const AI_CHATS = {
     gpt: { name: 'GPT', url: 'https://chatgpt.com/', query: 'q', android: 'com.openai.chatgpt' },
     claude: { name: 'Claude', url: 'https://claude.ai/new', query: 'q', android: 'com.anthropic.claude' },
-    deepseek: { name: 'DeepSeek', url: 'https://chat.deepseek.com/', android: 'com.deepseek.chat' },
+    gemini: { name: 'Gemini', url: 'https://gemini.google.com/app', android: 'com.google.android.apps.bard' },
     qwen: { name: 'Qwen', url: 'https://chat.qwen.ai/', query: 'text', android: 'ai.qwenlm.chat.android' },
   };
   const IS_ANDROID = /Android/i.test(navigator.userAgent);
@@ -56,7 +56,7 @@
 
   // Промт передаётся в чат прямо в ссылке (?q=…), поэтому инструкции для нейросети написаны
   // по-английски: кириллица в адресе раздувается в 6 раз и не влезала в лимит. Если промт всё же
-  // длиннее лимита (очень много правил) или чат не принимает текст из ссылки (DeepSeek),
+  // длиннее лимита (очень много правил) или передача текста через ссылку не настроена (Gemini),
   // чат открывается пустым, а промт лежит в буфере.
   const URL_LIMIT = 12000;
   function chatDestination(ai, text) {
@@ -294,7 +294,7 @@
   function launchNote(txt) {
     if (!txt) return 'Сначала отметь хотя бы одну тему.';
     if (chatDestination(AI_CHATS.gpt, txt).prefilled)
-      return 'Нажми на чат — он откроется уже с заданием. DeepSeek не принимает текст из ссылки: для него промт скопируется, вставь его сам (' + pasteHint() + ').';
+      return 'Нажми на чат. В GPT, Claude и Qwen задание передаётся автоматически. Для Gemini промт скопируется, вставь его в чат (' + pasteHint() + ').';
     return 'Выбрано так много правил, что промт не помещается в ссылку. Нажми на чат — промт скопируется, а чат откроется; вставь его (' + pasteHint() + ') и отправь.';
   }
   function renderTopic() {
