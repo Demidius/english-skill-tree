@@ -2,7 +2,8 @@
   "name": "english-skill-tree",
   "private": true,
   "scripts": {
-    "test": "firebase emulators:exec --only firestore --project demo-skill-tree \"node --test tests/access.test.cjs\"",
+    "test": "node --test tests/word-scheduler.test.cjs && firebase emulators:exec --only firestore --project demo-skill-tree \"node --test tests/access.test.cjs\"",
+    "test:words": "node --test tests/word-scheduler.test.cjs",
     "access:setup": "node scripts/setup-access.cjs"
   },
   "devDependencies": {
@@ -12,3 +13,4 @@
     "firebase-tools": "14.27.0"
   }
 }
+
