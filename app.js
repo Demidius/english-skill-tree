@@ -1378,7 +1378,10 @@ const W = (function(){
   }
 
   // ---- persistence: one doc per topic card ----
-  const LKEY='ef_wordtree_v3', LKEY_OLD='ef_wordtree_v2';
+  // v3 = current word-record format. On first load of an older record, legacy level-10 words
+  // are moved to level 8 and their next reviews are spread across 40–65 days.
+  const DOCV=3;
+  const LKEY='ef_wordtree_v4', LKEY_PREV='ef_wordtree_v3', LKEY_OLD='ef_wordtree_v2';
   const dirty=new Set(), timers={}, inflight={}, again={};
   let unsub=null;
   function cleanRec(m, mult){
@@ -1389,6 +1392,24 @@ const W = (function(){
       else if(o[0]>0){ const iv=IVL_FOR_LEVEL[o[0]]; o[2]=Math.max(1,o[2]); o.push((o[1]||Date.now())+iv*DAY || Date.now(), iv, 2.5); }
       out[k]=o; } });
     return out;
+  }
+  function legacySpreadDays(id,k){
+    const t=id+'|'+k;
+    let h=2166136261;
+    for(let i=0;i<t.length;i++){ h^=t.charCodeAt(i); h=Math.imul(h,16777619); }
+    return 40+((h>>>0)%26);
+  }
+  function migrateLegacyTens(id,m){
+    const now=Date.now();
+    let changed=false;
+    Object.keys(m||{}).forEach(k=>{
+      const r=m[k];
+      if(!Array.isArray(r) || r[0]!==10) return;
+      const days=legacySpreadDays(id,k);
+      m[k]=[8, now, Math.max(1,+r[2]||0), dueDay(now,days), days, +r[5]||2.5];
+      changed=true;
+    });
+    return changed;
   }
   function saveCard(id){
     if(local){ lsSet(LKEY, JSON.stringify(prog)); return; }
@@ -1402,7 +1423,7 @@ const W = (function(){
     if(!db || !current || !canWrite() || !dirty.has(id)) return;
     if(inflight[id]){ again[id]=true; return; }
     inflight[id]=true;
-    db.collection('profiles/'+current+'/cards').doc(id).set({w:prog[id]||{}, v:2, updatedAt:Date.now()})
+    db.collection('profiles/'+current+'/cards').doc(id).set({w:prog[id]||{}, v:DOCV, updatedAt:Date.now()})
       .catch(onWriteError)
       .finally(()=>{ inflight[id]=false; if(again[id]){ again[id]=false; flush(id); } else dirty.delete(id); });
   }
@@ -1421,7 +1442,14 @@ const W = (function(){
         if(!(doc.id in CARDS)) return;
         seen.add(doc.id);
         if(dirty.has(doc.id)) return;
-        const dd=doc.data()||{}; prog[doc.id]=cleanRec(dd.w, dd.v===2?1:2);
+        const dd=doc.data()||{};
+        const legacy=(+dd.v||0)<DOCV;
+        prog[doc.id]=cleanRec(dd.w, (+dd.v||0)>=2?1:2);
+        if(legacy && canWrite() && current===pid){
+          migrateLegacyTens(doc.id, prog[doc.id]);
+          // Save every legacy card once, even if it has no 10s, so future genuine level-10 words are never migrated.
+          saveCard(doc.id);
+        }
       });
       Object.keys(prog).forEach(k=>{ if(!seen.has(k) && !dirty.has(k)) delete prog[k]; });
       refresh();
@@ -1429,9 +1457,14 @@ const W = (function(){
   }
   function initLocal(){
     try{
-      const cur=lsGet(LKEY), old=cur?null:lsGet(LKEY_OLD);
-      const o=JSON.parse(cur||old||'{}'), mult=cur?1:2;
-      Object.keys(o).forEach(k=>{ if(k in CARDS) prog[k]=cleanRec(o[k], mult); });
+      const cur=lsGet(LKEY), prev=cur?null:lsGet(LKEY_PREV), old=(cur||prev)?null:lsGet(LKEY_OLD);
+      const raw=cur||prev||old||'{}', o=JSON.parse(raw), mult=old?2:1, legacy=!cur;
+      Object.keys(o).forEach(k=>{
+        if(!(k in CARDS)) return;
+        prog[k]=cleanRec(o[k], mult);
+        if(legacy) migrateLegacyTens(k, prog[k]);
+      });
+      if(legacy) lsSet(LKEY, JSON.stringify(prog));
     }catch(e){}
     refresh();
   }
