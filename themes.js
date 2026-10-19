@@ -149,16 +149,17 @@
   }
 
   // ---- RPG, ПК: уровень героя в карточке профиля, единый вид блока со шкалами ----
-  const LEGEND = '<span><span class="dot" style="background:var(--st-none)"></span>новое (0)</span>' +
-    '<span><span class="dot" style="background:var(--st-learn)"></span>изучаю (1–4)</span>' +
-    '<span><span class="dot" style="background:var(--st-review)"></span>повторяю (5–9)</span>' +
-    '<span><span class="dot" style="background:var(--st-mastered)"></span>выучено (10)</span>';
+  const LEGEND = '<span><span class="dot" style="background:var(--lv0)"></span>0 · новое</span>' +
+    '<span><span class="dot" style="background:var(--lv3)"></span>1–4 · изучаю</span>' +
+    '<span><span class="dot" style="background:var(--lv6)"></span>5–7 · повторяю</span>' +
+    '<span><span class="dot" style="background:var(--lv8)"></span>8–9 · знаю</span>' +
+    '<span><span class="dot" style="background:var(--lv10)"></span>10 · закреплено</span>';
   const setTxt = (el, v) => { if (el && el.textContent !== v) el.textContent = v; };
   function rpgProfile() {
     if (document.documentElement.getAttribute('data-skin') !== 'rpg') return;
-    // выучено слов — основа уровня героя (1 уровень за 50 слов)
-    const wn = document.querySelector('#mode-w .stats-row .num');
-    const wm = ((wn && wn.textContent) || '').match(/выучено\s+(\d+)\s+из\s+(\d+)/);
+    // «знаю» (уровень 8–10) — из строки статистики режима; слова — основа уровня героя (1 уровень за 50 слов)
+    const knownOf = m => { const n = document.querySelector('#mode-' + m + ' .stats-row .num'); return ((n && n.textContent) || '').match(/знаю\s+(\d+)\s+из\s+(\d+)/); };
+    const wm = knownOf('w');
     const words = wm ? +wm[1] : 0;
     const lvl = 1 + Math.floor(words / 50), into = words % 50;
     document.querySelectorAll('.hub').forEach(hub => {
@@ -167,16 +168,10 @@
       if (!me || !row) return;
       // верхняя строка блока со шкалами: что считаем и сколько выучено
       let meta = me.querySelector('.rpg-meta');
-      if (!meta) { meta = document.createElement('div'); meta.className = 'rpg-meta'; meta.innerHTML = '<b></b><span></span>'; me.prepend(meta); }
-      let done = 0, total = 0;
-      if (mode === 'w') { if (wm) { done = +wm[1]; total = +wm[2]; } }
-      else {
-        const bar = row.querySelector('.bar');
-        const m = ((bar && bar.title) || '').match(/выучено \(10\):\s*(\d+).*из\s+(\d+)/);
-        if (m) { done = +m[1]; total = +m[2]; }
-      }
+      if (!meta) { meta = document.createElement('div'); meta.className = 'rpg-meta'; meta.innerHTML = '<b></b><span style="white-space:nowrap"></span>'; meta.style.flexWrap = 'wrap'; me.prepend(meta); }
+      const m = mode === 'w' ? wm : knownOf('g');
       setTxt(meta.children[0], mode === 'w' ? 'Слова' : 'Правила');
-      setTxt(meta.children[1], 'выучено ' + done + ' / ' + total);
+      setTxt(meta.children[1], 'знаю ' + (m ? m[1] + ' / ' + m[2] : '—'));
       // одинаковая легенда в обоих режимах
       const lg = row.querySelector('.legend');
       if (lg && lg.dataset.uni !== '1') { lg.innerHTML = LEGEND; lg.dataset.uni = '1'; }
@@ -201,8 +196,24 @@
     });
   }
 
+  // ---- шкала A1–B2 под заголовком: под отрезком только уровень, подробности — во всплывающей подсказке ----
+  const cs = document.createElement('style');
+  cs.textContent = '.cefr-cap{display:none}' +
+    '.cefr-seg::after{content:attr(data-cefr);display:block;padding:4px 7px 5px;border-top:1px solid var(--line);background:var(--surface-2);' +
+      'font:700 .68rem \'IBM Plex Mono\',monospace;color:var(--ink);white-space:nowrap}' +
+    '@media (max-width:720px){.cefr-seg::after{text-align:center;padding:4px 3px 5px;font-size:.62rem}}';
+  document.head.appendChild(cs);
+  function cefrTitles() {
+    document.querySelectorAll('.cefr-seg').forEach(seg => {
+      const b = seg.querySelector('.cefr-cap b'), sp = seg.querySelector('.cefr-cap span');
+      const pct = ((b && b.textContent) || '').split('·')[1];
+      const t = seg.dataset.cefr + ': ' + ((sp && sp.textContent) || '').replace(' / ', ' из ') + (pct ? ' ·' + pct : '');
+      if (seg.title !== t) { seg.title = t; seg.setAttribute('aria-label', t); }
+    });
+  }
+
   apply(get());
-  const run = () => { ensureSettings(); ensureMenu(); rpgProfile(); levelView(); };
+  const run = () => { ensureSettings(); ensureMenu(); rpgProfile(); levelView(); cefrTitles(); };
   run();
   new MutationObserver(run).observe(document.body, { childList: true, subtree: true });
 })();
@@ -221,7 +232,7 @@
     if (!chip) return false;
     if (!chipAt) chipAt = Date.now();
     const n = document.querySelector('#mode-w .stats-row .num');                        // …и пришедший прогресс
-    if (/(выучено|повторяю|изучаю)\s+[1-9]/.test(n ? n.textContent : '')) return true;
+    if (/(знаю|закреплено|повторяю|изучаю)\s+[1-9]/.test(n ? n.textContent : '')) return true;
     return Date.now() - chipAt > 2000;                                                 // новый аккаунт без прогресса
   }
   let iv;
@@ -235,8 +246,7 @@
   const BLOCK = '.rv-big .rvb, .rv-acts .m-btn, [data-mix], .tbtn, .lvstep, .rread';
   const stat = () => {
     const w = document.querySelector('#mode-w .stats-row .num'), g = document.querySelector('#mode-g .stats-row .num');
-    const gb = document.querySelector('#mode-g .stats-row .bar');
-    return ((w && w.textContent) || '') + '|' + ((g && g.textContent) || '') + '|' + ((gb && gb.title) || '');
+    return ((w && w.textContent) || '') + '|' + ((g && g.textContent) || '');
   };
   const active = () => { const c = document.querySelector('#profList .pchip[data-active="1"]'); return c ? c.textContent : ''; };
   let iv = null;
