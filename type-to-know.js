@@ -273,7 +273,9 @@ document.addEventListener('keydown', ev => {
       const base = norm(w.en).replace(/\s+of$/, '');
       if (base !== norm(w.en) && typed === base) return true;
     }
-    const also = /\([a-z]…\)/i.test(ru) ? [] : (ALSO[w.id + '|' + w.en.toLowerCase()] || []);
+    const answerKey = w.id + '|' + w.en.toLowerCase();
+    const phraseAnswers = typeof A1_PHRASE_ANSWERS !== 'undefined' ? (A1_PHRASE_ANSWERS[answerKey] || []) : [];
+    const also = /\([a-z]…\)/i.test(ru) ? [] : (ALSO[answerKey] || []).concat(phraseAnswers);
     const as = alts(w.en).concat(also.map(norm));
     if (as.includes(typed)) return true;
     if (ART_OK.has(w.en.toLowerCase()) && as.some(a => art(a) === art(typed))) return true;
@@ -334,3 +336,4 @@ document.addEventListener('keydown', ev => {
     '.kbox-hint b{color:inherit}';
   document.head.appendChild(hs);
 })();
+
