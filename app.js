@@ -27,9 +27,7 @@ function sgn(n){ return (n>0?'+':n<0?'−':'')+Math.abs(n); }
 function currentName(){ const p=profiles.find(p=>p.id===current); return p?p.name:''; }
 function needProfile(){ if(!canWrite()){ alert('Это только просмотр. Выбери свой аккаунт, чтобы заниматься и менять прогресс.'); return true; } return false; }
 function onWriteError(e){
-  if(e && ['invalid_argument','not_granted','revoked','permission_denied','forbidden','permission-denied','unauthenticated'].includes(e.code)){
-    document.getElementById('roFlag').hidden=false;
-  }
+  document.getElementById('roFlag').hidden=false;
 }
 
 // ---------- speech ----------
@@ -679,6 +677,34 @@ const G = (function(){
     refresh();
   }
 
+
+  async function applyRuleCode(tag,changes){
+    if(needProfile())throw Error('Выбери свой профиль.');
+    if(!/^[A-Z0-9]{3,32}$/.test(tag))throw Error('Неверный код занятия.');
+    if(local){
+      changes.forEach(x=>{if(glv[x.id]!==x.from)throw Error('Уровни изменились. Проверь код ещё раз.');});
+      changes.forEach(x=>setLevelG(x.id,x.to));
+      return {applied:changes.length};
+    }
+    // Reserved progress ids use the current access rules and are ignored by the board.
+    const pid=current,ledger=db.doc('profiles/'+pid+'/progress/__prompt_'+tag);
+    return db.runTransaction(async tx=>{
+      if((await tx.get(ledger)).exists)return {alreadyUsed:true,applied:0};
+      const refs=changes.map(x=>db.doc('profiles/'+pid+'/progress/'+x.id));
+      const snaps=await Promise.all(refs.map(ref=>tx.get(ref)));
+      snaps.forEach((snap,i)=>{
+        const v=snap.data()||{},level=typeof v.lv==='number'?v.lv:(STATUS_FROM_OLD[v.status]||0);
+        if(level!==changes[i].from)throw Error('Уровни изменились. Проверь код ещё раз.');
+      });
+      changes.forEach((x,i)=>{
+        const v=snaps[i].data()||{};
+        tx.set(refs[i],{lv:x.to,status:gstatus(x.to),read:!!v.read,updatedAt:Date.now()},{merge:true});
+      });
+      tx.set(ledger,{at:Date.now(),rules:changes.map(x=>x.id)});
+      return {applied:changes.length};
+    });
+  }
+
   // ---- tests ----
   let T=null;
   function fillGap(sentence, word, cls, wrong){
@@ -800,6 +826,7 @@ const G = (function(){
     // для prompts.js: правила с уровнями и отметкой «изучено», смена уровня по коду из нейросети
     rulesData(){ return ALL.map(id=>({id, title:CARDS[id].title, branch:CARDS[id].branch, level:CARDS[id].level, lv:glv[id], read:!!readM[id]})); },
     setRuleLevel(id,l){ if(id in CARDS) setLevelG(id,l); },
+    applyRuleCode,
   };
   return api;
 })();
@@ -829,7 +856,8 @@ const W = (function(){
   const prog={};
   function rec(id,k){
     let latest=prog[id]&&prog[id][k];
-    const aliases=typeof A1_PHRASE_PROGRESS==='undefined'?[]:(A1_PHRASE_PROGRESS[id+'|'+k]||[]);
+    const aliases=(typeof A1_PHRASE_PROGRESS==='undefined'?[]:(A1_PHRASE_PROGRESS[id+'|'+k]||[]))
+      .concat(typeof WORD_PROGRESS_ALIASES==='undefined'?[]:(WORD_PROGRESS_ALIASES[id+'|'+k]||[]));
     aliases.forEach(([sourceId,sourceKey])=>{
       const old=prog[sourceId]&&prog[sourceId][sourceKey];
       if(old && (!latest || (+old[1]||0)>(+latest[1]||0))) latest=old;
@@ -876,7 +904,7 @@ const W = (function(){
         // a correctly typed word below level 8 always goes to level 8 — even before its due date
         // or right after «Забыл»; levels 9 and 10 only come on checks that are due
         if(ivl<45) ivl=45;
-        else if(early) ivl=Math.max(ivl, base*ease);
+        else if(early) return {due:r[3], ivl, ease, lv:r[0]};
         else { const gr=Math.max(ivl+1, (ivl+late/2)*ease); ivl=ivl<90?Math.min(179.9,Math.max(90,gr)):ivl<180?Math.max(180,gr):gr; }
       }
       else if(g==='hard'){ // «Трудно» never lifts the word above its current level (only the first step 1 → 2)
@@ -1101,7 +1129,7 @@ const W = (function(){
     computeOpen();
     if(OPEN[okey(id)]!==wasOpen) ALL.forEach(paint); else paint(id);
     stats(); board.applyFilter();
-    saveCard(id);
+    saveCard(id,k);
     const w=CARDS[id].words.find(x=>x.k===k);
     const el=modal.querySelector('.lvle[data-k="'+CSS.escape(k)+'"]');
     if(el && w){ el.outerHTML=lvlEdit(id,w); const n=modal.querySelector('.lvle[data-k="'+CSS.escape(k)+'"] .lvb'); }
@@ -1128,14 +1156,10 @@ const W = (function(){
     const f=modal.querySelector('[data-act="session"]'); if(f) f.focus();
   }
   function pickWords(id){
-    const ws=CARDS[id].words;
-    const open=ws.filter(w=>lvl(id,w.k)<MAXL);
-    if(open.length){
-      const pool=shuffle(open).sort((a,b)=>{ const ra=rec(id,a.k), rb=rec(id,b.k); return ra[0]-rb[0] || ra[1]-rb[1]; });
-      return {words:shuffle(pool.slice(0,SESSION)), review:false};
-    }
-    const pool=shuffle(ws).sort((a,b)=>rec(id,a.k)[1]-rec(id,b.k)[1]);
-    return {words:shuffle(pool.slice(0,SESSION)), review:true};
+    const ws=CARDS[id].words,now=Date.now();
+    const open=ws.filter(w=>{const r=rec(id,w.k);return isNew(r)||isDue(r,now);});
+    const pool=shuffle(open).sort((a,b)=>{const ra=rec(id,a.k),rb=rec(id,b.k);return ra[0]-rb[0]||ra[1]-rb[1];});
+    return {words:pool.slice(0,SESSION),review:!open.some(w=>isNew(rec(id,w.k)))};
   }
   function openLocked(id){
     const c=CARDS[id], lk=c.level, br=W_BRANCHES.find(x=>x.key===c.branch), ids=mainIds(c.branch, lk), pct=mainPct(c.branch, lk);
@@ -1152,7 +1176,7 @@ const W = (function(){
   }
   // ---- spaced repetition: one panel, level toggles ----
   const RVKEY='ef_review_lvls';
-  let rvLv=(()=>{ const s=lsGet(RVKEY); const a=s?s.split(',').filter(k=>LEVELS.some(l=>l.key===k)):null; return a&&(a.length||s==='')?a:LEVELS.map(l=>l.key); })();
+  let rvLv=(()=>{const s=lsGet(RVKEY);if(s==='')return [];const a=s?s.split(',').filter(k=>LEVELS.some(l=>l.key===k)):null;return a&&a.length?a:LEVELS.map(l=>l.key);})();
   const KIND_NAME={due:'Повторение', base:'Новые слова · базовые темы', extra:'Новые слова · экстра-темы'};
   function lvWords(lks, part){ // part: 'base' | 'extra' | 'all'
     const out=[];
@@ -1250,6 +1274,11 @@ const W = (function(){
     pk.words.forEach(w=>{ S.start[w.tid+'|'+w.k]=lvl(id,w.k); });
     S.pctStart=cardInfo(id).pct;
     openModal(api);
+    if(!pk.words.length){
+      S.mode='done';
+      modal.innerHTML=head(id,'Повторение')+'<p class="m-verdict">В этой теме нет новых слов и слов, у которых подошёл срок повторения.</p><div class="m-actions"><button type="button" class="m-btn ghost" data-act="list">Все слова</button><button type="button" class="m-btn" data-act="close">Закрыть</button></div>';
+      return;
+    }
     renderCard();
   }
   function renderCard(){
@@ -1365,7 +1394,7 @@ const W = (function(){
     computeOpen();
     if(OPEN[okey(id)]!==wasOpen) ALL.forEach(paint); else paint(id);
     stats(); board.applyFilter();
-    saveCard(id);
+    saveCard(id,w.k);
     renderCard();
   }
   function renderWait(){
@@ -1393,7 +1422,7 @@ const W = (function(){
     if(!prog[id]) prog[id]={};
     if(h.had) prog[id][h.k]=h.prev; else delete prog[id][h.k];
     computeOpen(); ALL.forEach(paint); stats(); board.applyFilter();
-    saveCard(id);
+    saveCard(id,h.k);
     renderCard();
   }
   function renderDone(){
@@ -1424,7 +1453,7 @@ const W = (function(){
   // are moved to level 8 and their next reviews are spread across 40–65 days.
   const DOCV=3;
   const LKEY='ef_wordtree_v4', LKEY_PREV='ef_wordtree_v3', LKEY_OLD='ef_wordtree_v2';
-  const dirty=new Set(), timers={}, inflight={}, again={};
+  const queues=new Map();
   let unsub=null;
   function cleanRec(m, mult){
     const out={}; mult=mult||1;
@@ -1453,56 +1482,70 @@ const W = (function(){
     });
     return changed;
   }
-  function saveCard(id){
-    if(local){ lsSet(LKEY, JSON.stringify(prog)); return; }
-    if(!db || !current || !canWrite()) return;
-    dirty.add(id);
-    clearTimeout(timers[id]);
-    timers[id]=setTimeout(()=>flush(id), 700);
+  function queueFor(pid){
+    if(queues.has(pid))return queues.get(pid);
+    const journal='ef_word_pending_'+pid;
+    const q=SkillCore.createWriteQueue({
+      save(data){localStorage.setItem(journal,JSON.stringify(data));},
+      send(id,patch){
+        if(ME!==pid)return Promise.reject({code:'unauthenticated'});
+        const w={};
+        Object.entries(patch).forEach(([k,value])=>{w[k]=value===null?firebase.firestore.FieldValue.delete():value;});
+        const payload={v:DOCV,updatedAt:Date.now()};if(Object.keys(w).length)payload.w=w;
+        return db.collection('profiles/'+pid+'/cards').doc(id).set(payload,{merge:true});
+      },
+      onError:onWriteError,
+      onSaved(){if(![...queues.values()].some(x=>x.pending()))document.getElementById('roFlag').hidden=true;},
+    });
+    queues.set(pid,q);
+    try{q.restore(JSON.parse(lsGet(journal)||'{}'));}catch(e){onWriteError(e);}
+    return q;
   }
-  function flush(id){
-    clearTimeout(timers[id]);
-    if(!db || !current || !canWrite() || !dirty.has(id)) return;
-    if(inflight[id]){ again[id]=true; return; }
-    inflight[id]=true;
-    db.collection('profiles/'+current+'/cards').doc(id).set({w:prog[id]||{}, v:DOCV, updatedAt:Date.now()})
-      .catch(onWriteError)
-      .finally(()=>{ inflight[id]=false; if(again[id]){ again[id]=false; flush(id); } else dirty.delete(id); });
+  function saveCard(id,k){
+    if(local){lsSet(LKEY,JSON.stringify(prog));return;}
+    if(!db||!current||!canWrite())return;
+    queueFor(current).put(id,k?{[k]:prog[id]&&prog[id][k]||null}:{...prog[id]});
   }
-  function flushAll(){ Array.from(dirty).forEach(flush); }
-  window.addEventListener('pagehide', flushAll);
+  function flushAll(){queues.forEach(q=>q.flushAll());}
+  window.addEventListener('pagehide',flushAll);
+  window.addEventListener('online',flushAll);
   function select(pid){
     if(unsub){ unsub(); unsub=null; }
-    dirty.clear();
     Object.keys(prog).forEach(k=>delete prog[k]);
     refresh();
     if(!pid || !db) return;
+    const q=canWrite()?queueFor(pid):null;
     unsub=db.collection('profiles/'+pid+'/cards').onSnapshot(qs=>{
       if(current!==pid) return;
       const seen=new Set();
       qs.docs.forEach(doc=>{
-        if(!(doc.id in CARDS)) return;
+        if(!(doc.id in CARDS)&&!(typeof WORD_LEGACY_TOPICS!=='undefined'&&WORD_LEGACY_TOPICS.has(doc.id)))return;
         seen.add(doc.id);
-        if(dirty.has(doc.id)) return;
         const dd=doc.data()||{};
         const legacy=(+dd.v||0)<DOCV;
-        prog[doc.id]=cleanRec(dd.w, (+dd.v||0)>=2?1:2);
+        const remote=cleanRec(dd.w,(+dd.v||0)>=2?1:2);
+        prog[doc.id]=q?q.overlay(doc.id,remote):remote;
         if(legacy && canWrite() && current===pid){
           migrateLegacyTens(doc.id, prog[doc.id]);
           // Save every legacy card once, even if it has no 10s, so future genuine level-10 words are never migrated.
           saveCard(doc.id);
         }
       });
-      Object.keys(prog).forEach(k=>{ if(!seen.has(k) && !dirty.has(k)) delete prog[k]; });
+      Object.keys(prog).forEach(k=>{if(!seen.has(k)&&!(q&&q.pending(k)))delete prog[k];});
       refresh();
     },()=>{ACCOUNT.denied(pid);});
+    if(q){
+      const ids=typeof WORD_LEGACY_TOPICS==='undefined'?ALL:[...WORD_LEGACY_TOPICS];
+      ids.forEach(id=>{if(q.pending(id))prog[id]=q.overlay(id,prog[id]||{});});
+      refresh();q.flushAll();
+    }
   }
   function initLocal(){
     try{
       const cur=lsGet(LKEY), prev=cur?null:lsGet(LKEY_PREV), old=(cur||prev)?null:lsGet(LKEY_OLD);
       const raw=cur||prev||old||'{}', o=JSON.parse(raw), mult=old?2:1, legacy=!cur;
       Object.keys(o).forEach(k=>{
-        if(!(k in CARDS)) return;
+        if(!(k in CARDS)&&!(typeof WORD_LEGACY_TOPICS!=='undefined'&&WORD_LEGACY_TOPICS.has(k)))return;
         prog[k]=cleanRec(o[k], mult);
         if(legacy) migrateLegacyTens(k, prog[k]);
       });

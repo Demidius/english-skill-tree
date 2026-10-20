@@ -243,7 +243,6 @@ document.addEventListener('keydown', ev => {
   };
   const norm = s => String(s).toLowerCase().replace(/[’`ʼ']/g, '').replace(/[^a-z0-9 ]+/g, ' ')
     .replace(/\s+/g, ' ').trim().replace(/^(to|a|an|the) /, '');
-  const art = s => s.replace(/\b(a|an|the)\b/g, 'the');
   function alts(en) {
     const base = en.replace(/\(.*?\)/g, ' ');
     return [en, base].concat(base.split(/\s*[\/;,]\s*|\s+or\s+/)).map(norm).filter(Boolean);
@@ -278,12 +277,8 @@ document.addEventListener('keydown', ev => {
     const also = /\([a-z]…\)/i.test(ru) ? [] : (ALSO[answerKey] || []).concat(phraseAnswers);
     const as = alts(w.en).concat(also.map(norm));
     if (as.includes(typed)) return true;
-    if (ART_OK.has(w.en.toLowerCase()) && as.some(a => art(a) === art(typed))) return true;
-    // подсказка в скобках (не «(s…)», не «(2 слова)», не «букв.»): разрешаем дописать до 3 слов
-    const hint = (ru.match(/\(([^)]*)\)/) || [])[1];
-    if (hint && !/[0-9…]|слов|букв|(^|\s)не\s/.test(hint) && w.p !== 'n' && w.p !== 'a') {
-      for (const a of as) if (typed.startsWith(a + ' ') && typed.slice(a.length + 1).split(' ').length <= 3) return true;
-    }
+    if (ART_OK.has(w.en.toLowerCase()) && as.some(a => SkillCore.articleEquivalent(a,typed))) return true;
+    if (answerKey === 'wo-work|work for' && /^work for (?:(?:a|the) )?company$/.test(typed)) return true;
     return false;
   }
   document.addEventListener('submit', ev => {

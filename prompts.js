@@ -96,19 +96,17 @@
   function weakPool() { return visibleRules().filter(r => r.lv < GMAX); }
   function weakSel() { return new Set(weakPool().slice(0, TYPES[S.type].def).map(r => r.id)); }
   function newTag() {
-    const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let t = ''; for (let i = 0; i < 4; i++) t += A[Math.floor(Math.random() * A.length)];
-    return t;
+    return Array.from(crypto.getRandomValues(new Uint8Array(8)),n=>n.toString(16).padStart(2,'0')).join('').toUpperCase();
   }
   function profileKey() { return (typeof current !== 'undefined' && current) || 'local'; }
   function usedTags() {
     try { const o = JSON.parse(lsGet(USED_KEY) || '{}'); return o[profileKey()] || []; } catch (e) { return []; }
   }
-  function markUsed(tag) {
+  function markUsed(tag,profile=profileKey()) {
     try {
       const o = JSON.parse(lsGet(USED_KEY) || '{}');
-      const a = (o[profileKey()] || []).filter(t => t !== tag); a.push(tag);
-      o[profileKey()] = a.slice(-60);
+      const a = (o[profile] || []).filter(t => t !== tag); a.push(tag);
+      o[profile] = a.slice(-1000);
       lsSet(USED_KEY, JSON.stringify(o));
     } catch (e) {}
   }
@@ -145,8 +143,7 @@
       'An unanswered sentence is not a mistake. After the end command, give no new tasks.\n' +
       '6. Only after the end, summarise the whole session in Russian: how many translations were done, what went well, which mistakes repeated and what to review. ' +
       'For each selected rule, give the number of correct and incorrect uses. Assess my answers, not your own corrections. ' +
-      'Rule result: "correct" (+) if it was tested and all my answers on it were correct; "mistake" (-) if there was at least one mistake in exactly this rule; ' +
-      '"not tested" (0) if the rule was not tested, including when the session ended before the first translation. ' +
+      'Use the scoring policy below for each rule; an unanswered sentence is not an incorrect use. ' +
       'Do not add rules outside the selected list to the result. Then output one final code for the site in the format below. Do not give the code before the session ends.\n';
   }
   function buildPrompt() {
@@ -174,8 +171,7 @@
         '   — briefly: what the mistake is and which rule (id) it belongs to;\n' +
         '   — if my version is correct but sounds unnatural, suggest a more natural one and say that it is not a mistake;\n' +
         '   — mark mistakes outside the listed rules (words, prepositions, articles, word order) separately — they do not affect the rule results.\n' +
-        '4. Result for each rule in the list: "correct" — all uses are right; "mistake" — at least one mistake in exactly this rule; ' +
-        '"not tested" — the rule did not appear in the text or in my translation. Then briefly: which rules can go up, which to review and what exactly to review.\n',
+        '4. Count correct and incorrect uses of each selected rule and use the scoring policy below. Then briefly: which rules can go up, which to review and what exactly to review.\n',
       fix:
         'Task: find and correct mistakes.\n' +
         '1. Write 12 numbered sentences in English. About half of them must contain a mistake in exactly the listed rules ' +
@@ -184,9 +180,7 @@
         '2. Stop and wait for my answer: I will write the numbers of the wrong sentences and my corrections.\n' +
         '3. Analyse my answer in Russian: which mistakes I found and fixed correctly, which I missed, and where I "fixed" a correct sentence. ' +
         'For each mistake — the correct version and a short explanation with the rule id.\n' +
-        '4. Result for each rule: "correct" — I found and correctly fixed all mistakes of this rule and did not spoil correct sentences; ' +
-        '"mistake" — I missed or wrongly fixed at least one; "not tested" — the rule was not in the sentences. ' +
-        'Then briefly: which rules can go up, which to review.\n',
+        '4. Count correct fixes and correctly retained sentences as correct uses; count missed mistakes, wrong fixes and spoiled correct sentences as incorrect uses. Use the scoring policy below. Then briefly: which rules can go up, which to review.\n',
       dialog:
         'Task: speaking practice.\n' +
         '1. Offer 3 everyday situations for a dialogue, wait for my choice and start the conversation in English. ' +
@@ -195,8 +189,7 @@
         '2. During the dialogue, do not correct mistakes, just keep talking. Make 10–12 turns, or finish earlier if I write «итог».\n' +
         '3. After the dialogue, go through my lines in Russian: my version → correct one, briefly, with the rule id. ' +
         'Mark mistakes outside the listed rules separately — they do not affect the rule results.\n' +
-        '4. Result for each rule: "correct" — all uses are right; "mistake" — at least one mistake in this rule; ' +
-        '"not tested" — I did not use it. Then briefly: which rules can go up, which to review.\n',
+        '4. Count correct and incorrect uses of each selected rule and use the scoring policy below. Then briefly: which rules can go up, which to review.\n',
       explain:
         'Task: explain these rules, starting with the one where my level is lowest. For each rule:\n' +
         '1. A simple explanation in Russian: when it is used and how it is formed (positive, negative, question).\n' +
@@ -205,12 +198,15 @@
         '4. A mini-test of 5 tasks (fill the gap or translate a phrase). Put the answers at the very end under the heading «Ответы».\n',
     }[S.type];
     const code = !TYPES[S.type].code ? '' :
+      'Scoring policy for EACH selected rule: count correct and incorrect uses across the whole session. ' +
+      'Use +2 when correct uses > 3 and incorrect uses = 0; otherwise use + when correct uses > incorrect uses; ' +
+      'use 0 when there were no uses; otherwise use - (including a tie). Count only my answers, not your corrections.\n' +
       'Code for my site at the end of the final analysis — one line in a code block, strictly in this format:\n' +
       PREFIX + '|' + S.tag + '|id:level:mark|id:level:mark|…\n' +
       '— list all rules from the list;\n' +
       '— take id and level exactly from the list (level = my current level, do not change it);\n' +
-      '— mark: + correct, - mistake, 0 not tested.\n' +
-      'Format example: ' + PREFIX + '|' + S.tag + '|id1:7:+|id2:3:-|id3:5:0\n' +
+      '— mark: +2 excellent, + successful, - needs review, 0 not tested.\n' +
+      'Format example: ' + PREFIX + '|' + S.tag + '|id1:7:+2|id2:3:-|id3:5:0\n' +
       'Do not raise or lower the levels yourself — the site will recalculate them from these marks.\n';
     return head + body + code;
   }
@@ -236,19 +232,7 @@
   }
 
   // ---------- разбор кода ----------
-  const CODE_RE = new RegExp(PREFIX + '\\s*\\|\\s*([A-Za-z0-9]{3,8})((?:\\s*\\|\\s*[A-Za-z0-9-]+\\s*:\\s*\\d{1,2}\\s*:\\s*[+\\-−–—0=])+)', 'i');
-  function parseCode(txt) {
-    const m = String(txt || '').match(CODE_RE);
-    if (!m) return null;
-    const items = [];
-    m[2].split('|').forEach(part => {
-      const mm = part.trim().match(/^([A-Za-z0-9-]+)\s*:\s*(\d{1,2})\s*:\s*([+\-−–—0=])$/);
-      if (!mm) return;
-      const c = mm[3];
-      items.push({ id: mm[1].toLowerCase(), from: Math.min(GMAX, +mm[2]), sign: c === '+' ? 1 : (c === '0' || c === '=') ? 0 : -1 });
-    });
-    return { tag: m[1].toUpperCase(), items };
-  }
+  function parseCode(txt) { return SkillCore.parseRuleCode(txt); }
   function clamp(v) { return Math.max(0, Math.min(GMAX, v)); }
   function plan(parsed) {
     const byId = {}; rules().forEach(r => byId[r.id] = r);
@@ -257,11 +241,11 @@
       const r = byId[it.id];
       if (!r) return Object.assign({}, it, { kind: 'unknown', on: false });
       if (it.sign === 0) return Object.assign({}, it, { r, kind: 'skip', to: r.lv, on: false });
-      const d = it.sign > 0 ? COEF.rulesPractice.ok : COEF.rulesPractice.wrong;
+      const d = it.sign > 0 ? COEF.rulesPractice.ok * it.sign : COEF.rulesPractice.wrong;
       const exp = clamp(it.from + d);
       if (r.lv === it.from) return Object.assign({}, it, { r, d, kind: 'ok', to: exp, on: exp !== r.lv });
       if (r.lv === exp) return Object.assign({}, it, { r, d, kind: 'done', to: r.lv, on: false });
-      return Object.assign({}, it, { r, d, kind: 'moved', to: clamp(r.lv + d), on: true });
+      return Object.assign({}, it, { r, d, kind: 'moved', to: r.lv, on: false });
     });
   }
 
@@ -421,15 +405,15 @@
     if (S.rows) {
       const used = usedTags().includes(S.parsed.tag);
       const notes = [];
-      if (used) notes.push('Код <b>' + esc(S.parsed.tag) + '</b> уже применяли на этом устройстве.');
+      if (used) notes.push('Код <b>' + esc(S.parsed.tag) + '</b> уже применяли.');
       if (S.rows.some(x => x.kind === 'done')) notes.push('Где уровень уже равен итоговому, код, похоже, уже применён — эти строки выключены.');
-      if (S.rows.some(x => x.kind === 'moved')) notes.push('Где уровень изменился с момента промта, шаг считается от текущего уровня.');
+      if (S.rows.some(x => x.kind === 'moved')) notes.push('Уровни изменились с момента промта. Эти строки выключены: начни новое занятие для них.');
       if (S.rows.some(x => x.kind === 'unknown')) notes.push('Правила с неизвестным id пропущены.');
       const any = S.rows.some(x => x.on);
       prev = '<div class="m-count pt-h">Что изменится · ' + esc(typeof currentName === 'function' && currentName() ? currentName() : 'этот браузер') + '</div>' +
         (notes.length ? '<p class="pt-note pt-warn">' + notes.join(' ') + '</p>' : '') +
         '<div class="wl pt-res">' + S.rows.map((x, i) => {
-          const can = x.kind === 'ok' || x.kind === 'moved' || x.kind === 'done';
+          const can = !used && x.kind === 'ok';
           const title = x.r ? x.r.title : x.id;
           const chg = !x.r ? '—' : x.kind === 'skip' ? String(x.r.lv) : x.kind === 'done' ? 'уже ' + x.r.lv : x.r.lv + ' → ' + x.to;
           return '<label class="row pt-row" data-kind="' + x.kind + '">' +
@@ -440,7 +424,7 @@
         '<div class="m-actions"><button type="button" class="m-btn" data-pt-apply' + (any ? '' : ' disabled') + '>Применить</button></div>';
     }
     return '<p class="pt-note pt-lead">Вставь ответ нейросети целиком или только строку с кодом — сайт сам найдёт <code>' + PREFIX + '|…</code>. ' +
-      'Шаги изменения уровня — из «Настроек»: верно ' + sgn(COEF.rulesPractice.ok) + ', ошибка ' + sgn(COEF.rulesPractice.wrong) + '.</p>' +
+      'Шаги изменения уровня: успешно ' + sgn(COEF.rulesPractice.ok) + ', больше 3 верных применений без ошибок ' + sgn(2*COEF.rulesPractice.ok) + ', нужна отработка ' + sgn(COEF.rulesPractice.wrong) + '.</p>' +
       '<textarea class="pt-text pt-in" rows="4" placeholder="' + PREFIX + '|ABCD|pres-simple:7:+|past-cont:3:-" aria-label="Код от нейросети">' + esc(S.codeText) + '</textarea>' +
       (S.msg ? '<p class="pt-msg" role="status">' + S.msg + '</p>' : '') +
       (S.rows ? prev : '<div class="m-actions"><button type="button" class="m-btn" data-pt-check>Проверить код</button></div>');
@@ -458,16 +442,26 @@
     S.msg = '';
     render();
   }
-  function apply() {
-    if (!S.rows) return;
-    if (typeof needProfile === 'function' && needProfile()) return;
-    if (typeof canWrite === 'function' && !canWrite()) { S.msg = 'Это профиль другого ученика — менять его уровни нельзя.'; render(); return; }
-    const todo = S.rows.filter(x => x.on && x.r && x.to !== x.r.lv);
-    todo.forEach(x => G.setRuleLevel(x.id, x.to));
-    markUsed(S.parsed.tag);
-    S.msg = todo.length ? 'Готово: изменено правил — ' + todo.length + '.' : 'Изменений нет.';
-    S.rows = null; S.codeText = '';
-    render();
+  let applying=false;
+  async function apply() {
+    if(applying||!S.rows)return;
+    if(typeof needProfile==='function'&&needProfile())return;
+    if(typeof canWrite==='function'&&!canWrite()){S.msg='Это профиль другого ученика.';render();return;}
+    const state=S,profile=profileKey(),tag=S.parsed.tag;
+    const todo=S.rows.filter(x=>x.on&&x.kind==='ok'&&x.r&&x.to!==x.r.lv);
+    if(!todo.length||usedTags().includes(tag))return;
+    applying=true;
+    const button=modal.querySelector('[data-pt-apply]');if(button)button.disabled=true;
+    try{
+      const result=await G.applyRuleCode(tag,todo.map(x=>({id:x.id,from:x.r.lv,to:x.to})));
+      markUsed(tag,profile);
+      if(S===state){
+        S.msg=result.alreadyUsed?'Этот код уже применён к аккаунту.':'Готово: изменено правил - '+result.applied+'.';
+        S.rows=null;S.codeText='';render();
+      }
+    }catch(e){
+      if(S===state){S.msg=esc(e.message||'Не удалось сохранить результат. Проверь соединение и попробуй ещё раз.');render();}
+    }finally{applying=false;}
   }
   function copy(chatName, destination) {
     const ta = modal.querySelector('.pt-text'); if (!S || !ta || !ta.value) return;
