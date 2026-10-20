@@ -1,6 +1,7 @@
-// Three A1 practice topics. Existing entries and progress keys stay intact.
-// Full phrases practise everyday contexts alongside the shorter entries in other topics.
+// Three A1 practice topics. Equivalent older entries are consolidated here.
+// Legacy progress stays in its original document and is read through these aliases.
 const A1_PHRASE_ANSWERS = {};
+const A1_PHRASE_PROGRESS = {};
 (function () {
   if (typeof W_BRANCHES === 'undefined') return;
   const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -148,10 +149,10 @@ const A1_PHRASE_ANSWERS = {};
       'I help my neighbour every week.', 'Я помогаю соседу каждую неделю.',
       'She helped her friend yesterday.', 'Вчера она помогла своему другу.',
       'После help перед человеком предлог не нужен. Somebody и someone равнозначны.'],
-    ['call somebody', 'звонить кому-то', 'kɔːl ˈsʌmbədi', 'кол са́мбэди',
+    ['call somebody', 'звонить кому-то, звать кого-то', 'kɔːl ˈsʌmbədi', 'кол са́мбэди',
       'I call my mother every evening.', 'Я звоню маме каждый вечер.',
       'He called his friend after work.', 'Он позвонил другу после работы.',
-      'После call перед человеком предлог не нужен.', ['phone somebody', 'telephone somebody']],
+      'После call перед человеком предлог не нужен. Call somebody также может означать позвать кого-то, например к столу.', ['phone somebody', 'telephone somebody']],
   ];
   const prepositions = [
     ['listen to somebody', 'слушать кого-то', 'ˈlɪsən tə ˈsʌmbədi', 'ли́сэн тэ са́мбэди',
@@ -206,19 +207,78 @@ const A1_PHRASE_ANSWERS = {};
       'He is afraid of spiders.', 'Он боится пауков.',
       'I was afraid of dogs when I was little.', 'В детстве я боялся собак.',
       'После afraid перед тем, чего боятся, нужен of.', ['afraid of something', 'be scared of something', 'scared of something']],
-    ['be late for work', 'опаздывать на работу', 'bi ˌleɪt fə ˈwɜːk', 'би лэйт фэ уё́к',
+    ['be late for', 'опаздывать на (работу, занятия, встречу)', 'bi ˈleɪt fə', 'би лэ́йт фэ',
       'I am sometimes late for work.', 'Иногда я опаздываю на работу.',
-      'She was late for work yesterday.', 'Вчера она опоздала на работу.',
-      'Нужен for. После be меняется форма: am, is, are, was, were.', ['late for work']],
-    ['be late for school', 'опаздывать в школу', 'bi ˌleɪt fə ˈskuːl', 'би лэйт фэ ску́л',
-      'He is never late for school.', 'Он никогда не опаздывает в школу.',
       'We were late for school on Monday.', 'В понедельник мы опоздали в школу.',
-      'School без артикля: речь о занятиях в школе.', ['late for school']],
+      'Одна связка для разных ситуаций: be late for work, be late for school, be late for a meeting. После be меняется форма: am, is, are, was, were.', ['late for']],
     ['ask for help', 'просить о помощи', 'ɑːsk fə ˈhelp', 'аск фэ хэ́лп',
       'You can ask for help.', 'Ты можешь попросить о помощи.',
       'I asked for help at the station.', 'Я попросил о помощи на станции.',
       'Ask a question: задать вопрос. Ask for help: попросить о помощи.'],
   ];
+
+  // Explicit topic + word pairs avoid merging unrelated senses of the same verb.
+  const merged = [
+    ['da-a1-phrasal', 'turn on the light', [['da2-phrasal', 'turn on']]],
+    ['da-a1-phrasal', 'turn off the light', [['da2-phrasal', 'turn off']]],
+    ['da-a1-phrasal', 'put on a jacket', [['da2-phrasal', 'put on'], ['sh-clothes-2', 'put on']]],
+    ['da-a1-phrasal', 'take off your shoes', [['da2-phrasal', 'take off'], ['sh3-clothes-3', 'take off']]],
+    ['da-a1-phrasal', 'give back a book', [['da2-phrasal', 'give back']]],
+    ['da-a1-phrasal', 'throw away the rubbish', [['da2-phrasal', 'throw away'], ['na3-env-2', 'throw away']]],
+    ['da-a1-phrasal', 'turn up the music', [['da2-phrasal', 'turn up']]],
+    ['da-a1-phrasal', 'turn down the music', [['da2-phrasal', 'turn down']]],
+    ['da-a1-everyday', 'read a book', [['da-verbs', 'read']]],
+    ['da-a1-everyday', 'speak English', [['da-verbs', 'speak']]],
+    ['da-a1-everyday', 'ask a question', [['da-verbs-2', 'ask']]],
+    ['da-a1-everyday', 'be at home', [['ba2-place', 'at home']]],
+    ['da-a1-everyday', 'be tired', [['de-feel', 'tired']]],
+    ['da-a1-everyday', 'be hungry', [['de-feel', 'hungry']]],
+    ['da-a1-everyday', 'be thirsty', [['de-feel', 'thirsty']]],
+    ['da-a1-everyday', 'help somebody', [['da-verbs-2', 'help']]],
+    ['da-a1-everyday', 'call somebody', [['da-verbs-2', 'call']]],
+    ['ba-a1-prepositions', 'listen to somebody', [['da-verbs', 'listen']]],
+    ['ba-a1-prepositions', 'wait for somebody', [['ba3-verbprep', 'wait for'], ['da-verbs-2', 'wait']]],
+    ['ba-a1-prepositions', 'look at something', [['ba3-verbprep', 'look at']]],
+    ['ba-a1-prepositions', 'look for something', [['da2-phrasal', 'look for']]],
+    ['ba-a1-prepositions', 'be good at something', [['de3-adjprep', 'good at']]],
+    ['ba-a1-prepositions', 'be interested in something', [['de2-eding', 'interested']]],
+    ['ba-a1-prepositions', 'be afraid of something', [['de3-adjprep', 'afraid of']]],
+    ['ba-a1-prepositions', 'ask for help', [['ba3-verbprep', 'ask for']]],
+    ['ba-a1-prepositions', 'be late for', [
+      ['wo2-school-2', 'be late for'],
+      ['ba-a1-prepositions', 'be late for work'],
+      ['ba-a1-prepositions', 'be late for school'],
+    ]],
+  ];
+  const removed = new Set();
+  merged.forEach(([id, en, sources]) => {
+    A1_PHRASE_PROGRESS[id + '|' + slug(en)] = sources.map(([sourceId, sourceEn]) => {
+      const key = slug(sourceEn);
+      removed.add(sourceId + '|' + key);
+      return [sourceId, key];
+    });
+  });
+  W_BRANCHES.forEach(branch => ['cells', 'extra'].forEach(part => {
+    Object.values(branch[part] || {}).forEach(cards => cards.forEach(card => {
+      if (typeof card[3] !== 'string') return;
+      card[3] = card[3].split(';').filter(row => {
+        const en = row.split('|')[0].trim();
+        return en && !removed.has(card[0] + '|' + slug(en));
+      }).map(row => {
+        const fields = row.split('|');
+        // These existing cards teach a different sense. Remove the overlapping gloss only.
+        if (card[0] === 'da2-phrasal' && fields[0].trim() === 'pick up') {
+          fields[1] = 'заехать за кем-то, забрать';
+          fields[4] = 'Pick somebody up: заехать за человеком. Поднять предмет: pick up a bag.';
+        }
+        if (card[0] === 'da4-phrasal-3' && fields[0].trim() === 'put down') {
+          fields[1] = 'записать (на бумаге)';
+          fields[4] = 'Put down your name: записать имя. Положить предмет: put down a bag.';
+        }
+        return fields.join('|');
+      }).join(';');
+    }));
+  }));
 
   function addTopic(branchKey, id, title, gloss, rows) {
     const branch = W_BRANCHES.find(b => b.key === branchKey);
@@ -226,7 +286,7 @@ const A1_PHRASE_ANSWERS = {};
     const words = rows.map(([en, ru, ipa, pronunciation, example, translation, past, pastRu, note, alternatives = []]) => {
       const key = slug(en);
       if (typeof WORD_TR !== 'undefined' && !WORD_TR[key]) WORD_TR[key] = [ipa, pronunciation];
-      if (typeof WORD_EX !== 'undefined' && !WORD_EX[key]) {
+      if (typeof WORD_EX !== 'undefined' && (!WORD_EX[key] || key === 'be-late-for')) {
         // verb-forms.js fills in V1/V2/V3 after this file is loaded.
         // An imperative example stays on the front instead of being labelled Present Simple.
         const imperative = /^(Please |Come |Look )/.test(example);
@@ -248,4 +308,17 @@ const A1_PHRASE_ANSWERS = {};
   addTopic('daily', 'da-a1-phrasal', 'Фразовые глаголы', 'действия дома и в дороге', phrasal);
   addTopic('daily', 'da-a1-everyday', 'Повседневные сочетания', 'готовые фразы для обычного дня', everyday);
   addTopic('basics', 'ba-a1-prepositions', 'Связки с предлогами', 'к кому, о чём, с кем', prepositions);
+
+  // Keep the A2 pick-up examples on the transport sense after separating the two senses.
+  if (typeof WORD_EX !== 'undefined' && WORD_EX['pick-up']) {
+    const entry = WORD_EX['pick-up'];
+    entry[3] = 'Tom picked up his sister from school.';
+    entry[4] = 'Kate has picked up her son from the station.';
+    entry[6] = [['collect', 'заехать забрать']];
+    entry[7] = [['drop off', 'подвезти и высадить']];
+    if (typeof EX_RU !== 'undefined') {
+      EX_RU[entry[3]] = 'Том забрал сестру из школы.';
+      EX_RU[entry[4]] = 'Кейт забрала сына с вокзала.';
+    }
+  }
 })();

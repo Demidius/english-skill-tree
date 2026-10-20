@@ -827,7 +827,15 @@ const W = (function(){
 
   // prog[cardId][wordKey] = [level, lastReviewedMs, reviews, dueMs, intervalDays, ease]
   const prog={};
-  const rec=(id,k)=>(prog[id]&&prog[id][k])||[0,0,0];
+  function rec(id,k){
+    let latest=prog[id]&&prog[id][k];
+    const aliases=typeof A1_PHRASE_PROGRESS==='undefined'?[]:(A1_PHRASE_PROGRESS[id+'|'+k]||[]);
+    aliases.forEach(([sourceId,sourceKey])=>{
+      const old=prog[sourceId]&&prog[sourceId][sourceKey];
+      if(old && (!latest || (+old[1]||0)>(+latest[1]||0))) latest=old;
+    });
+    return latest||[0,0,0];
+  }
   const lvl=(id,k)=>rec(id,k)[0];
   function cardInfo(id){
     const ws=CARDS[id].words;
@@ -1777,3 +1785,4 @@ async function startCloud(user){
     first=false;
   });
 })();
+
