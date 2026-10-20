@@ -23,30 +23,7 @@ if (typeof WORD_TR !== 'undefined') {
 (function () {
   const norm = s => String(s).toLowerCase().replace(/[’`ʼ]/g, "'").replace(/[^a-z0-9' ]+/g, ' ')
     .replace(/\s+/g, ' ').trim().replace(/^(to|a|an|the) /, '');
-  function variants(s) {
-    let out = new Set([norm(s)]);
-    const rules = [
-      [/\bcan't\b/g, ['cannot', 'can not']],
-      [/\bwon't\b/g, ['will not']],
-      [/\bshan't\b/g, ['shall not']],
-      [/\blet's\b/g, ['let us']],
-      [/\b(\w+)n't\b/g, ['$1 not']],
-      [/\b(\w+)'m\b/g, ['$1 am']],
-      [/\b(\w+)'re\b/g, ['$1 are']],
-      [/\b(\w+)'ve\b/g, ['$1 have']],
-      [/\b(\w+)'ll\b/g, ['$1 will']],
-      [/\b(\w+)'d\b/g, ['$1 would', '$1 had']],
-      [/\b(\w+)'s\b/g, ['$1 is', '$1 has']],
-    ];
-    rules.forEach(([re, reps]) => {
-      const next = new Set(out);
-      out.forEach(v => { reps.forEach(r => { const w = v.replace(re, r); if (w !== v) next.add(w); }); });
-      out = next;
-    });
-    const fin = new Set();
-    out.forEach(v => fin.add(v.replace(/'/g, '').replace(/\s+/g, ' ').trim()));
-    return fin;
-  }
+  function variants(s) { return SkillCore.contractionVariants(s); }
   function alts(en) {
     const base = en.replace(/\(.*?\)/g, ' ');
     return [en, base].concat(base.split(/\s*[\/;,]\s*|\s+or\s+/)).map(s => s.trim()).filter(Boolean);

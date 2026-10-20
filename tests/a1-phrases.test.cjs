@@ -10,7 +10,7 @@ const run = source => vm.runInContext(source, context);
 const json = source => JSON.parse(run(`JSON.stringify(${source})`));
 const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-for (const file of ['data-words.js', 'data-wordex.js', 'data-wordtr.js', 'data-patch.js', 'fixes.js']) run(read(file));
+for (const file of ['learning-core.js', 'data-words.js', 'data-wordex.js', 'data-wordtr.js', 'data-patch.js', 'fixes.js']) run(read(file));
 run(`function inventory() {
   return W_BRANCHES.flatMap(b => ['cells', 'extra'].flatMap(p =>
     Object.values(b[p] || {}).flatMap(cards => cards.flatMap(card =>
@@ -115,5 +115,7 @@ assert.ok(!accepts('wait for somebody', 'wait somebody'));
 assert.ok(accepts('put on a jacket', 'put a jacket on'));
 assert.ok(!accepts('put on a jacket', 'put off a jacket'));
 assert.ok(accepts('be at home', 'at home'));
+assert.ok(accepts('give back a book', 'give the book back'));
+assert.ok(!accepts('give back a book', 'return the book'));
 
 console.log('PASS: 30 older duplicates consolidated; 51 A1 entries; progress, distinct senses and answers verified.');
