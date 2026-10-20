@@ -408,12 +408,17 @@ if (typeof WORD_TR !== 'undefined') {
   function build(panel) {
     const st = panel.querySelector('.rv-stats'), acts = panel.querySelector('.rv-acts');
     const old = panel.querySelector('.rv-big');
-    if (!st || !acts) { if (old) old.remove(); return; }
-    const tiles = st.querySelectorAll(':scope > div');
-    if (tiles.length < 4) return;
-    const due = num(tiles[0].querySelector('b')), nb = num(tiles[1].querySelector('b')), nx = num(tiles[2].querySelector('b'));
-    const left = num(tiles[3].querySelector('b')); // слов на выбранных уровнях в повторении: уровень знания 1–7
-    const sig = [due, nb, nx, left].join('|');
+    if (!acts) { if (old) old.remove(); return; }
+    // ни один уровень не выбран: счётчиков нет, но кнопки остаются на месте (с нулями и неактивные),
+    // чтобы блок не менял размер
+    const none = !st;
+    const hint = panel.querySelector('.rv-none'); if (hint && !hint.hidden) hint.hidden = true;
+    const tiles = none ? [] : st.querySelectorAll(':scope > div');
+    if (!none && tiles.length < 4) return;
+    const at = i => none ? 0 : num(tiles[i].querySelector('b'));
+    const due = at(0), nb = at(1), nx = at(2);
+    const left = at(3); // слов на выбранных уровнях в повторении: уровень знания 1–7
+    const sig = [due, nb, nx, left, none ? 'none' : ''].join('|');
     if (old && old.dataset.sig === sig) return;
     if (old) old.remove();
     const btn = k => acts.querySelector('[data-kind="' + k + '"]');
@@ -429,7 +434,7 @@ if (typeof WORD_TR !== 'undefined') {
         '<button type="button" class="rvb rvb-extra" data-k="extra"' + (dis('extra') ? ' disabled' : '') + '>' +
           '<span class="rvb-l">изучать<br>экстра</span><span class="rvb-n">' + nx + '</span></button>' +
       '</div>';
-    box.querySelector('.rvb-due').title = due + ' к повторению · слов в повторении (уровни 1–7): ' + left;
+    box.querySelector('.rvb-due').title = none ? 'Выбери хотя бы один уровень: A1, A2, B1 или B2' : due + ' к повторению · слов в повторении (уровни 1–7): ' + left;
     box.addEventListener('click', ev => {
       const b = ev.target.closest('.rvb'); if (!b || b.disabled) return;
       const o = btn(b.dataset.k); if (o && !o.disabled) o.click();
