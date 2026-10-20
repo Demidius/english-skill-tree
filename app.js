@@ -1160,10 +1160,10 @@ const W = (function(){
     return out;
   }
   function rvCounts(lks){
-    const now=Date.now(); let due=0, nb=0, nx=0, left=0, total=0;
-    lvWords(lks,'all').forEach(w=>{ const r=rec(w.tid,w.k), x=CARDS[w.tid].extra; total++; if(r[0]<8) left++;
+    const now=Date.now(); let due=0, nb=0, nx=0, left=0, rev=0, total=0;
+    lvWords(lks,'all').forEach(w=>{ const r=rec(w.tid,w.k), x=CARDS[w.tid].extra; total++; if(r[0]<8) left++; if(r[0]>=1 && r[0]<8) rev++;
       if(isDue(r,now)) due++; else if(isNew(r)){ if(x) nx++; else nb++; } });
-    return {due, nb, nx, left, total};
+    return {due, nb, nx, left, rev, total};
   }
   function lvLabel(lks){ return lks.length===LEVELS.length?'все уровни':lks.join(' · '); }
   function lvHead(){ return mHead(KIND_NAME[S.kind]||'Повторение', lvLabel(S.lvs)); }
@@ -1227,7 +1227,7 @@ const W = (function(){
         '<div><b class="rv-due">'+c.due+'</b><span>к повторению</span></div>'+
         '<div><b class="rv-new">'+c.nb+'</b><span>новых в базовых</span></div>'+
         '<div><b class="rv-new">'+c.nx+'</b><span>новых в экстра</span></div>'+
-        '<div><b>'+c.left+'</b><span>ниже уровня 8 из '+c.total+'</span></div></div>')+
+        '<div><b>'+c.rev+'</b><span>в повторении (уровни 1–7) из '+c.total+'</span></div></div>')+
       '<div class="rv-acts">'+
         '<button type="button" class="m-btn" data-kind="due"'+(none||!c.due?' disabled':'')+'>Повторить'+(c.due?' ('+c.due+')':'')+'</button>'+
         '<button type="button" class="m-btn ghost" data-kind="base"'+(none||!c.nb?' disabled':'')+'>Изучать базовые'+(c.nb?' ('+c.nb+')':'')+'</button>'+
