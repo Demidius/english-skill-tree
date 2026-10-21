@@ -18,6 +18,6 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-      - run: node --test tests/a1-phrases.test.cjs tests/audit-fixes.test.cjs
+      - run: npm run test:unit
       - run: pnpm install --frozen-lockfile --ignore-scripts
-      - run: pnpm test
+      - run: pnpm test:access

@@ -262,23 +262,29 @@ document.addEventListener('keydown', ev => {
     return map;
   }
   function ok(typed, w, ru) {
+    const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const sources = typeof WORD_PROGRESS_ALIASES === 'undefined' ? [] : (WORD_PROGRESS_ALIASES[w.id + '|' + slug(w.en)] || []);
+    const legacyKeys = new Set(sources.map(([id,k]) => id + '|' + k));
+    const legacyAnswers = Object.entries(ALSO).filter(([key]) => {
+      const i=key.indexOf('|'); return legacyKeys.has(key.slice(0,i)+'|'+slug(key.slice(i+1)));
+    }).flatMap(([,answers]) => answers);
     if (PLURAL_OK[w.en] && typed === PLURAL_OK[w.en]) return true;
     // В карточке многоточие — это место для подстановки слова/фразы, а не буквальная часть ответа.
     // Нормализация уже убрала кавычки и знаки препинания, поэтому проверяем саму структуру вопроса.
     if (/^what does\s+(?:\.{3}|…)\s+mean\??$/i.test(w.en.trim()) && /^what does .+ mean$/.test(typed)) return true;
     // Для ёмкостей и количеств конечное "of" нужно только перед содержимым:
     // "a box of chocolates", но если спрашивается просто "коробка", принимаем "box" / "a box".
-    if ((w.id === 'fo-drinks' || w.id === 'fo2-containers')) {
+    if ((w.id === 'fo-drinks' || w.id === 'fo2-containers' || sources.some(([id]) => id==='fo-drinks'||id==='fo2-containers'))) {
       const base = norm(w.en).replace(/\s+of$/, '');
       if (base !== norm(w.en) && typed === base) return true;
     }
     const answerKey = w.id + '|' + w.en.toLowerCase();
     const phraseAnswers = typeof A1_PHRASE_ANSWERS !== 'undefined' ? (A1_PHRASE_ANSWERS[answerKey] || []) : [];
-    const also = /\([a-z]…\)/i.test(ru) ? [] : (ALSO[answerKey] || []).concat(phraseAnswers);
+    const also = /\([a-z]…\)/i.test(ru) ? [] : (ALSO[answerKey] || []).concat(phraseAnswers,legacyAnswers);
     const as = alts(w.en).concat(also.map(norm));
     if (as.includes(typed)) return true;
     if (ART_OK.has(w.en.toLowerCase()) && as.some(a => SkillCore.articleEquivalent(a,typed))) return true;
-    if (answerKey === 'wo-work|work for' && /^work for (?:(?:a|the) )?company$/.test(typed)) return true;
+    if ((answerKey === 'wo-work|work for'||legacyKeys.has('wo-work|work-for')) && /^work for (?:(?:a|the) )?company$/.test(typed)) return true;
     return false;
   }
   document.addEventListener('submit', ev => {
@@ -289,7 +295,8 @@ document.addEventListener('keydown', ev => {
     if (!inp || !front) return;
     const ru = front.textContent.trim(), typed = norm(inp.value);
     if (!typed) return;
-    for (const w of byRu()[ru] || []) if (ok(typed, w, ru)) { inp.value = w.en; return; }
+    const active = form.dataset.wordEn ? [{id:form.dataset.wordId,en:form.dataset.wordEn,p:form.dataset.wordPos}] : (byRu()[ru] || []);
+    for (const w of active) if (ok(typed, w, ru)) { inp.value = w.en; return; }
     // 7) Написал другое слово из словаря с тем же русским значением (before вместо until —
     //    оба «до»): не засчитываем как ошибку, а подсказываем, что загадано другое слово,
     //    и показываем перевод написанного, чтобы была видна разница. Повтор того же ответа — уже ошибка.
