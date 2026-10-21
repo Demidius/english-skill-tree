@@ -91,7 +91,7 @@
     if (now - (levelView.t || 0) > 400) {
       levelView.t = now;
       let d = 0, t = 0;
-      tree.querySelectorAll(':scope > .cell.band-' + lv + ' .node .src').forEach(s => {
+      tree.querySelectorAll(':scope > .cell.band-' + lv + ' .node .word-count').forEach(s => {
         const mm = s.textContent.match(/(\d+)\s*\/\s*(\d+)/); if (mm) { d += +mm[1]; t += +mm[2]; }
       });
       const pct = t ? Math.round(d / t * 100) : 0;

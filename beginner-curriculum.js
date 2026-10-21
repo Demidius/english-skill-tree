@@ -53,7 +53,7 @@
     });
     if (rows.length) {
       WORD_LEGACY_TOPICS.add(id);
-      sectionCards.push({ branch: section.branch, card: [id, lesson.label + ' · ' + section.title, lesson.title, rows.join(';')] });
+      sectionCards.push({ branch: section.branch, card: [id, section.title, lesson.title, rows.join(';'), lesson.label] });
     }
   }));
   W_BRANCHES.forEach(b => {

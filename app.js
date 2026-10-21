@@ -846,7 +846,7 @@ const W = (function(){
   function addCard(b, l, c, extra){
     const words=parseWords(c[3]);
     words.forEach(w=>{ w.tid=c[0]; if(!w.note && NOTES[c[0]+'|'+w.en]) w.note=NOTES[c[0]+'|'+w.en]; });
-    CARDS[c[0]]={branch:b.key, level:l.key, title:c[1], gloss:c[2], tags:POS_ORDER.filter(p=>words.some(w=>w.p===p)), words, extra:!!extra};
+    CARDS[c[0]]={branch:b.key, level:l.key, title:c[1], gloss:c[2], src:c[4]||'', tags:POS_ORDER.filter(p=>words.some(w=>w.p===p)), words, extra:!!extra};
   }
   W_BRANCHES.forEach(b=>LEVELS.forEach(l=>(b.cells[l.key]||[]).forEach(c=>addCard(b,l,c,false))));
   W_BRANCHES.forEach(b=>LEVELS.forEach(l=>((b.extra&&b.extra[l.key])||[]).forEach(c=>addCard(b,l,c,true))));
@@ -985,8 +985,10 @@ const W = (function(){
       '<span class="wbtn wtest" data-wid="'+id+'" role="button" tabindex="0" title="Учить карточками">Тест</span>'+
       '<span class="t">'+esc(card.title)+'</span><span class="g">'+esc(card.gloss)+'</span>'+
       '<span class="wbar">'+card.words.map(()=>'<i data-l="0"></i>').join('')+'</span>'+
+      '<span class="word-count"></span>'+
       '<span class="foot"><span class="status-chip">'+STATUS_LABEL.not_started+'</span>'+
-      card.tags.map(x=>'<span class="tg '+x+'">'+POS_NAME[x]+'</span>').join('')+'<span class="src"></span></span>';
+      card.tags.map(x=>'<span class="tg '+x+'">'+POS_NAME[x]+'</span>').join('')+
+      (card.src?'<span class="src" title="Урок учебника">'+esc(card.src)+'</span>':'')+'</span>';
     if(card.extra) btn.classList.add('xnode');
     btn.addEventListener('click',()=>openList(id));
     return btn;
@@ -1073,7 +1075,7 @@ const W = (function(){
     n.querySelector('.status-chip').innerHTML = locked ? LOCK_SVG+'с '+UNLOCK_PCT+'%' : esc(STATUS_LABEL[ci.status]);
     const segs=n.querySelectorAll('.wbar i');
     CARDS[id].words.forEach((w,i)=>{ const l=lvl(id,w.k); segs[i].dataset.l=l; segs[i].dataset.b=band(l); });
-    n.querySelector('.src').textContent='знаю '+ci.known+'/'+ci.n+' · '+ci.pct+'%';
+    n.querySelector('.word-count').textContent='знаю '+ci.known+'/'+ci.n+' · '+ci.pct+'%';
     n.setAttribute('aria-label', CARDS[id].title+(locked?': экстра-тема, откроется, когда основные темы ветки на этом уровне будут пройдены на '+UNLOCK_PCT+'%':': '+STATUS_LABEL[ci.status]+', знаю '+ci.known+' из '+ci.n+' слов. Открыть карточки'));
   }
   function stats(){
