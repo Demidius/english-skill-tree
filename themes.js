@@ -91,7 +91,7 @@
     if (now - (levelView.t || 0) > 400) {
       levelView.t = now;
       let d = 0, t = 0;
-      tree.querySelectorAll(':scope > .cell.band-' + lv + ' .node .word-count').forEach(s => {
+      tree.querySelectorAll(':scope > .cell.band-' + lv + (lv === 'A1' ? ' .node:not(.xnode)' : ' .node') + ' .word-count').forEach(s => {
         const mm = s.textContent.match(/(\d+)\s*\/\s*(\d+)/); if (mm) { d += +mm[1]; t += +mm[2]; }
       });
       const pct = t ? Math.round(d / t * 100) : 0;
@@ -99,7 +99,7 @@
       if (nav.dataset.sig !== sig) {
         nav.dataset.sig = sig; nav.dataset.lv = lv;
         nav.querySelector('b').textContent = lv + ' · ' + LVNAME[lv];
-        nav.querySelector('span').textContent = d + ' / ' + t + ' слов · ' + pct + '%';
+        nav.querySelector('span').textContent = (lv === 'A1' ? 'База · ' : '') + d + ' / ' + t + ' слов · ' + pct + '%';
         nav.querySelector('u').style.width = pct + '%';
         nav.setAttribute('aria-label', 'Уровень ' + (LVS.indexOf(lv) + 1) + ' из ' + LVS.length);
         nav.querySelector('[data-d="-1"]').disabled = lv === LVS[0];
@@ -171,7 +171,7 @@
       let meta = me.querySelector('.rpg-meta');
       if (!meta) { meta = document.createElement('div'); meta.className = 'rpg-meta'; meta.innerHTML = '<b></b><span style="white-space:nowrap"></span>'; meta.style.flexWrap = 'wrap'; me.prepend(meta); }
       const m = mode === 'w' ? wm : knownOf('g');
-      setTxt(meta.children[0], mode === 'w' ? 'Слова' : 'Правила');
+      setTxt(meta.children[0], mode === 'w' ? 'Все слова' : 'Правила');
       setTxt(meta.children[1], 'знаю ' + (m ? m[1] + ' / ' + m[2] : '—'));
       // уровень героя под именем
       if (nav) {

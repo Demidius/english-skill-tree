@@ -371,9 +371,9 @@ function cefrProgressHTML(byLevel){
       if(!c||!st.t) continue;
       pieces.push('<span class="cefr-piece" style="width:'+(c/st.t*100)+'%;background:var(--lv'+n+')" title="уровень '+n+': '+c+'"></span>');
     }
-    return '<div class="cefr-seg" data-cefr="'+l.key+'">'+
+    return '<div class="cefr-seg" data-cefr="'+l.key+'"'+(st.scope?' data-scope="'+st.scope+'"':'')+'>'+
       '<div class="cefr-track">'+pieces.join('')+'</div>'+
-      '<div class="cefr-cap"><b>'+l.key+' · '+st.pct+'%</b><span>знаю '+st.known+' / '+st.t+'</span></div>'+
+      '<div class="cefr-cap"><b>'+l.key+' · '+st.pct+'%</b><span>'+(st.scope==='base'?'база · ':'')+'знаю '+st.known+' / '+st.t+'</span></div>'+
       '</div>';
   }).join('')+'</div>';
 }
@@ -1048,7 +1048,7 @@ const W = (function(){
       '<li>Слова на уровне 10 считаются выученными, но всё равно возвращаются на проверку — не чаще раза в полгода–год.</li>'+
       '</ul></section>'+
       '<section><h3>Экстра-темы</h3><ul>'+
-      '<li>В Beginner базовые слова, сочетания и фразы сгруппированы по урокам учебника. Во вкладке «Экстра · A1» - дополнительная лексика за его пределами. На других уровнях экстра-темы находятся под основными.</li>'+
+      '<li>В Beginner в каждом уроке отдельно доступны базовая и дополнительная лексика. База - основные слова и разговорные фразы; дополнительно - слова из текстов, заданий и справочников. Шкала A1 считает базу, общий счётчик и уровень героя учитывают все слова. Во вкладке «Экстра · A1» собрана вся дополнительная лексика. На других уровнях экстра-темы находятся под основными.</li>'+
       '<li>Экстра A1 доступна сразу. На уровнях A2-B2 экстра-темы открываются отдельно для каждой ветки, когда её основные темы на этом уровне пройдены на 75%.</li>'+
       '</ul></section>',
     cell:(b,lk)=>{
@@ -1057,9 +1057,9 @@ const W = (function(){
       return main.concat(ex.length ? [xsepNode(lk)].concat(ex.map(cardNode)) : []).concat(((b.plan&&b.plan[lk])||[]).map(planNode));
     },
     phoneCount:(bk,lk)=>{
-      const ids=ALL.filter(id=>CARDS[id].branch===bk && CARDS[id].level===lk);
+      const ids=ALL.filter(id=>CARDS[id].branch===bk && CARDS[id].level===lk && (lk!=='A1'||!CARDS[id].extra));
       if(!ids.length) return 'в плане';
-      const ws=wordsOf(ids); return 'знаю '+ws.known+' / '+ws.t;
+      const ws=wordsOf(ids); return (lk==='A1'?'база · ':'')+'знаю '+ws.known+' / '+ws.t;
     },
     match:(nd,F)=>{ const id=nd.dataset.id; return (F.status==='all'||nd.dataset.status===F.status) && (F.tag==='all'||CARDS[id].tags.includes(F.tag)); },
   });
@@ -1084,7 +1084,7 @@ const W = (function(){
     const s=wordsOf(ALL);
     const closed=ALL.filter(id=>cardInfo(id).status==='mastered').length;
     const byLevel={};
-    LEVELS.forEach(l=>{ byLevel[l.key]=wordsOf(ALL.filter(id=>CARDS[id].level===l.key)); });
+    LEVELS.forEach(l=>{ byLevel[l.key]=wordsOf(ALL.filter(id=>CARDS[id].level===l.key&&(l.key!=='A1'||!CARDS[id].extra)));if(l.key==='A1')byLevel[l.key].scope='base'; });
     const who=currentName();
     board.stat.innerHTML=(who?'<span class="who">'+esc(who)+':</span> ':'')+
       'знаю '+s.known+' из '+s.t+' слов · закреплено '+s.learned+' · повторяю '+s.rev+' · изучаю '+s.lrn+' · тем закреплено '+closed;
@@ -1097,7 +1097,7 @@ const W = (function(){
     LEVELS.forEach(l=>{
       const ids=ALL.filter(id=>CARDS[id].level===l.key);
       const ws=byLevel[l.key];
-      board.H.lp[l.key].textContent=ids.length ? 'знаю '+ws.known+' / '+ws.t+' · '+ws.pct+'%' : 'в плане';
+      board.H.lp[l.key].textContent=ids.length ? (l.key==='A1'?'база · ':'')+'знаю '+ws.known+' / '+ws.t+' · '+ws.pct+'%' : 'в плане';
       board.H.lb[l.key].style.width=ws.pct+'%';
     });
     document.dispatchEvent(new Event('wordprogress'));
@@ -1136,7 +1136,7 @@ const W = (function(){
     const w=CARDS[id].words.find(x=>x.k===k);
     const edits=modal.querySelectorAll((S&&S.mode==='course-list'?'[data-tid="'+id+'"] ':'')+'.lvle[data-k="'+CSS.escape(k)+'"]');
     if(w) edits.forEach(edit=>{edit.outerHTML=lvlEdit(id,w);});
-    const sm=modal.querySelector('.m-sum'); if(sm) sm.outerHTML=S&&S.mode==='course-list'?courseSummary(courseWords(S.course,S.section)):cardSummary(id);
+    const sm=modal.querySelector('.m-sum'); if(sm) sm.outerHTML=S&&S.mode==='course-list'?courseSummary(courseWords(S.course,S.section,S.part)):cardSummary(id);
   }
   function cardSummary(id){
     const ci=cardInfo(id);
@@ -1160,19 +1160,19 @@ const W = (function(){
   }
   // A lesson can contain words introduced in earlier lessons. References keep
   // their canonical topic/word keys throughout lists, reviews and manual edits.
-  function courseWords(courseId,sectionIndex){
+  function courseWords(courseId,sectionIndex,part='base'){
     const lesson=BEGINNER_COURSE.find(l=>l.id===courseId); if(!lesson) return [];
     const sections=sectionIndex==null?lesson.sections:[lesson.sections[sectionIndex]];
     const seen=new Set(), out=[];
     sections.filter(Boolean).forEach(section=>section.refs.forEach(([id,k,en,ru])=>{
       const key=id+'|'+k, source=CARDS[id]&&CARDS[id].words.find(w=>w.k===k);
-      if(!source||seen.has(key)) return;
+      if(!source||seen.has(key)||(part==='base'&&CARDS[id].extra)||(part==='extra'&&!CARDS[id].extra)) return;
       seen.add(key); out.push({...source,en,ru,tid:id});
     }));
     return out;
   }
-  function courseInfo(courseId,sectionIndex){
-    const words=courseWords(courseId,sectionIndex), now=Date.now();
+  function courseInfo(courseId,sectionIndex,part='base'){
+    const words=courseWords(courseId,sectionIndex,part), now=Date.now();
     const s=progressStats(words.map(w=>lvl(w.tid,w.k)));
     return {...s, due:words.filter(w=>isDue(rec(w.tid,w.k),now)).length, fresh:words.filter(w=>isNew(rec(w.tid,w.k))).length};
   }
@@ -1180,27 +1180,28 @@ const W = (function(){
     const s=progressStats(words.map(w=>lvl(w.tid,w.k)));
     return '<div class="m-sum"><span class="wbar">'+words.map(w=>'<i data-l="'+lvl(w.tid,w.k)+'" data-b="'+band(lvl(w.tid,w.k))+'"></i>').join('')+'</span><span>'+s.pct+'% · знаю '+s.known+' / '+s.t+'</span></div>';
   }
-  function openCourseList(courseId,sectionIndex){
+  function openCourseList(courseId,sectionIndex,part='base'){
     const lesson=BEGINNER_COURSE.find(l=>l.id===courseId); if(!lesson) return;
     const sections=sectionIndex==null?lesson.sections:[lesson.sections[sectionIndex]];
-    S={mode:'course-list',course:courseId,section:sectionIndex};
+    S={mode:'course-list',course:courseId,section:sectionIndex,part};
     openModal(api);
-    modal.innerHTML=mHead('Beginner · '+lesson.label,lesson.title)+
-      '<div class="m-gloss">'+esc(lesson.ru)+'<br>'+esc(lesson.source)+'</div>'+courseSummary(courseWords(courseId,sectionIndex))+
-      sections.filter(Boolean).map(section=>'<section class="course-word-section"><h3>'+esc(section.title)+'</h3><div class="wl">'+section.refs.map(([id,k,en,ru])=>{
+    const partName=part==='base'?'Базовая лексика':part==='extra'?'Дополнительная лексика':'Все слова';
+    modal.innerHTML=mHead('Beginner · '+lesson.label+' · '+partName,lesson.title)+
+      '<div class="m-gloss">'+esc(lesson.ru)+'<br>'+esc(lesson.source)+'</div>'+courseSummary(courseWords(courseId,sectionIndex,part))+
+      sections.filter(Boolean).map(section=>{const refs=section.refs.filter(([id])=>part==='all'||(part==='extra')===CARDS[id].extra);if(!refs.length)return '';return '<section class="course-word-section"><h3>'+esc(section.title)+'</h3><div class="wl">'+refs.map(([id,k,en,ru])=>{
         const w=CARDS[id].words.find(w=>w.k===k);
         return '<div class="row" data-word-id="'+esc(id)+'" data-word-key="'+esc(k)+'"><span class="en">'+esc(en)+'</span><span class="ru">'+esc(ru)+'</span>'+
           '<span class="tg '+w.p+'">'+POS_NAME[w.p]+'</span><span class="course-level" data-tid="'+id+'">'+lvlEdit(id,w)+'</span>'+sayBtn(en)+
           (w.note?'<span class="exl nt">'+esc(w.note)+'</span>':'')+(w.ex?'<span class="exl">'+exampleHTML(w)+'</span>':'')+'</div>';
-      }).join('')+'</div></section>').join('')+
+      }).join('')+'</div></section>';}).join('')+
       '<div class="m-actions"><button type="button" class="m-btn ghost" data-act="close">Закрыть</button><button type="button" class="m-btn" data-act="course-session">Отработать '+(sectionIndex==null?'урок':'подтему')+'</button></div>';
   }
-  function openCourseSession(courseId,sectionIndex){
+  function openCourseSession(courseId,sectionIndex,part='base'){
     if(needProfile()) return;
     const lesson=BEGINNER_COURSE.find(l=>l.id===courseId); if(!lesson) return;
-    const now=Date.now(), words=courseWords(courseId,sectionIndex);
+    const now=Date.now(), words=courseWords(courseId,sectionIndex,part);
     const q=shuffle(words.filter(w=>{const r=rec(w.tid,w.k);return isNew(r)||isDue(r,now);}));
-    S={mode:'session',course:courseId,section:sectionIndex,lv:lesson.label,lvs:['A1'],kind:'lesson',queue:q,wait:[],done:0,flipped:false,start:{},fails:{},seen:[],hist:[]};
+    S={mode:'session',course:courseId,section:sectionIndex,part,lv:lesson.label,lvs:['A1'],kind:'lesson',queue:q,wait:[],done:0,flipped:false,start:{},fails:{},seen:[],hist:[]};
     q.forEach(w=>{S.start[w.tid+'|'+w.k]=lvl(w.tid,w.k);});
     openModal(api);
     if(!q.length){
@@ -1246,7 +1247,7 @@ const W = (function(){
   }
   function lvLabel(lks){ return lks.length===LEVELS.length?'все уровни':lks.join(' · '); }
   function lvHead(){
-    if(S.course){ const lesson=BEGINNER_COURSE.find(l=>l.id===S.course); return mHead('Beginner · '+lesson.label,S.section==null?lesson.title:lesson.sections[S.section].title); }
+    if(S.course){ const lesson=BEGINNER_COURSE.find(l=>l.id===S.course); return mHead('Beginner · '+lesson.label+' · '+(S.part==='extra'?'Дополнительная лексика':S.part==='all'?'Все слова':'Базовая лексика'),S.section==null?lesson.title:lesson.sections[S.section].title); }
     return mHead(KIND_NAME[S.kind]||'Повторение', lvLabel(S.lvs));
   }
   function openReview(kind, lks){
@@ -1621,8 +1622,8 @@ const W = (function(){
       const g=ev.target.closest('[data-g]'); if(g){ grade(g.dataset.g); return; }
       const a=ev.target.closest('[data-act]'); if(!a||!S) return;
       const id=S.id;
-      if(a.dataset.act==='course-list') openCourseList(S.course,S.section);
-      else if(a.dataset.act==='course-session') openCourseSession(S.course,S.section);
+      if(a.dataset.act==='course-list') openCourseList(S.course,S.section,S.part);
+      else if(a.dataset.act==='course-session') openCourseSession(S.course,S.section,S.part);
       else if(a.dataset.act==='flip') flip();
       else if(a.dataset.act==='kopen'){ S.kbox=true; renderCard(); }
       else if(a.dataset.act==='knext'){ S.kdone=null; renderCard(); }
@@ -1650,6 +1651,7 @@ const W = (function(){
     onClose(){ S=null; flushAll(); },
     select, initLocal, stats, refresh, flushAll, board,
     courseInfo, openCourseList, openCourseSession,
+    catalogInfo:part=>wordsOf(ALL.filter(id=>CARDS[id].level==='A1'&&(part==='extra')===CARDS[id].extra)),
     openTopic:openList, practiceTopic:openSession,
     topicInfo:id=>cardInfo(id),
   };
