@@ -822,7 +822,7 @@ const G = (function(){
       else if(ev.key==='ArrowRight' && T.answers[T.i]!=null){ next(); ev.preventDefault(); }
     },
     onClose(){ T=null; ruleId=null; modal.classList.remove('rulepage'); },
-    select, initLocal, stats, refresh, board,
+    select, initLocal, stats, refresh, board, openTopic:openRule,
     // для prompts.js: правила с уровнями и отметкой «изучено», смена уровня по коду из нейросети
     rulesData(){ return ALL.map(id=>({id, title:CARDS[id].title, branch:CARDS[id].branch, level:CARDS[id].level, lv:glv[id], read:!!readM[id]})); },
     setRuleLevel(id,l){ if(id in CARDS) setLevelG(id,l); },
@@ -1150,7 +1150,7 @@ const W = (function(){
     modal.innerHTML=head(id,'Слова')+
       '<div class="m-gloss">'+esc(c.gloss)+' · '+c.words.length+' слов</div>'+cardSummary(id)+
       '<div class="wl">'+c.words.map(w=>
-        '<div class="row"><span class="en">'+esc(w.en)+'</span><span class="ru">'+esc(w.ru)+'</span>'+
+        '<div class="row" data-word-id="'+esc(id)+'" data-word-key="'+esc(w.k)+'"><span class="en">'+esc(w.en)+'</span><span class="ru">'+esc(w.ru)+'</span>'+
         '<span class="tg '+w.p+'" title="'+esc(POS_RU[w.p])+'">'+POS_NAME[w.p]+'</span>'+lvlEdit(id,w)+sayBtn(w.en)+
         (w.note?'<span class="exl nt">'+esc(w.note)+'</span>':'')+
         (w.ex?'<span class="exl">'+exampleHTML(w)+'</span>':'')+'</div>').join('')+'</div>'+
@@ -1189,7 +1189,7 @@ const W = (function(){
       '<div class="m-gloss">'+esc(lesson.ru)+'<br>'+esc(lesson.source)+'</div>'+courseSummary(courseWords(courseId,sectionIndex))+
       sections.filter(Boolean).map(section=>'<section class="course-word-section"><h3>'+esc(section.title)+'</h3><div class="wl">'+section.refs.map(([id,k,en,ru])=>{
         const w=CARDS[id].words.find(w=>w.k===k);
-        return '<div class="row"><span class="en">'+esc(en)+'</span><span class="ru">'+esc(ru)+'</span>'+
+        return '<div class="row" data-word-id="'+esc(id)+'" data-word-key="'+esc(k)+'"><span class="en">'+esc(en)+'</span><span class="ru">'+esc(ru)+'</span>'+
           '<span class="tg '+w.p+'">'+POS_NAME[w.p]+'</span><span class="course-level" data-tid="'+id+'">'+lvlEdit(id,w)+'</span>'+sayBtn(en)+
           (w.note?'<span class="exl nt">'+esc(w.note)+'</span>':'')+(w.ex?'<span class="exl">'+exampleHTML(w)+'</span>':'')+'</div>';
       }).join('')+'</div></section>').join('')+
