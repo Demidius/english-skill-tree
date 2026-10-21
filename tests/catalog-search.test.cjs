@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const Search=require('../catalog-search.js');
 const context=vm.createContext({console});
-for(const file of ['learning-core.js','data-words.js','data-wordex.js','data-wordtr.js','data-exru.js','data-grammar.js','data-patch.js','fixes.js','data-a1-phrases.js','data-word-dedupe.js','data-beginner-course.js','beginner-curriculum.js']){
+for(const file of ['learning-core.js','data-words.js','data-wordex.js','data-wordtr.js','data-exru.js','data-grammar.js','data-patch.js','fixes.js','data-a1-phrases.js','data-word-dedupe.js','data-beginner-course.js','beginner-curriculum.js','data-beginner-core.js','beginner-core.js']){
   vm.runInContext(fs.readFileSync(path.join(__dirname,'..',file),'utf8'),context);
 }
 const data=JSON.parse(vm.runInContext('JSON.stringify({wordBranches:W_BRANCHES,course:BEGINNER_COURSE,grammarBranches:G_BRANCHES})',context));

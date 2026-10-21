@@ -4,7 +4,7 @@
   "scripts": {
     "test": "npm run test:unit && npm run test:access",
     "test:access": "firebase emulators:exec --only firestore --project demo-skill-tree \"node --test tests/access.test.cjs\"",
-    "test:unit": "node --test tests/a1-phrases.test.cjs tests/audit-fixes.test.cjs tests/beginner-course.test.cjs tests/catalog-search.test.cjs",
+    "test:unit": "node --test tests/a1-phrases.test.cjs tests/audit-fixes.test.cjs tests/beginner-course.test.cjs tests/catalog-search.test.cjs tests/beginner-core.test.cjs",
     "access:setup": "node scripts/setup-access.cjs"
   },
   "devDependencies": {

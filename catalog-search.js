@@ -50,9 +50,11 @@ const CatalogSearch = (() => {
     }
     for (const lesson of course) {
       const lessonCodes = [...new Set([...codes(lesson.code), ...codes(lesson.label)])];
-      add({kind:'lessons', title:lesson.title, subtitle:lesson.ru, path:'Beginner', label:lesson.label, level:'A1', courseId:lesson.id, codes:lessonCodes, primary:lesson.title + ' ' + lesson.ru, text:[lesson.title, lesson.ru, lesson.label].join(' ')});
+      const hasBase = refs => refs.some(([id,k]) => !words.get(id + '|' + k)?.extra);
+      const extraLesson = !hasBase(lesson.sections.flatMap(s => s.refs));
+      add({kind:'lessons', title:lesson.title, subtitle:lesson.ru, path:'Beginner', label:lesson.label, level:'A1', courseId:lesson.id, extra:extraLesson, codes:lessonCodes, primary:lesson.title + ' ' + lesson.ru, text:[lesson.title, lesson.ru, lesson.label].join(' ')});
       lesson.sections.forEach((section, sectionIndex) => {
-        add({kind:'topics', title:section.title, subtitle:lesson.title, path:lesson.ru, label:lesson.label, level:'A1', courseId:lesson.id, sectionIndex, codes:lessonCodes, primary:section.title, text:[section.title, lesson.title, lesson.ru].join(' ')});
+        add({kind:'topics', title:section.title, subtitle:lesson.title, path:lesson.ru, label:lesson.label, level:'A1', courseId:lesson.id, sectionIndex, extra:!hasBase(section.refs), codes:lessonCodes, primary:section.title, text:[section.title, lesson.title, lesson.ru].join(' ')});
         for (const [topicId, wordKey, en, ru] of section.refs || []) {
           const item = words.get(topicId + '|' + wordKey);
           if (!item) continue;
@@ -125,8 +127,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSea
     function open(item) {
       if (!item) return;
       if (item.kind === 'rules') G.openTopic(item.topicId);
-      else if (item.courseId) W.openCourseList(item.courseId, item.sectionIndex);
-      else if (item.location) W.openCourseList(item.location.courseId, item.location.sectionIndex);
+      else if (item.courseId) W.openCourseList(item.courseId, item.sectionIndex, item.extra?'extra':'base');
+      else if (item.location) W.openCourseList(item.location.courseId, item.location.sectionIndex, item.extra?'extra':'base');
       else W.openTopic(item.topicId);
       if (item.kind === 'words') {
         const row = [...modal.querySelectorAll('[data-word-id]')].find(row => row.dataset.wordId === item.topicId && row.dataset.wordKey === item.wordKey);
