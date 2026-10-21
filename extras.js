@@ -48,7 +48,7 @@ if (typeof WORD_TR !== 'undefined') {
     const inp = form.querySelector('#knownIn');
     const front = document.querySelector('.fc .front');
     if (!inp || !front || !inp.value.trim()) return;
-    const cands = byRu()[front.textContent.trim()] || [];
+    const cands = form.dataset.wordEn ? [form.dataset.wordEn] : (byRu()[front.textContent.trim()] || []);
     const typed = variants(inp.value);
     for (const en of cands) {
       for (const a of alts(en)) {

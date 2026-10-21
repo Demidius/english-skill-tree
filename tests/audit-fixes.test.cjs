@@ -2,7 +2,7 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const Core=require('../learning-core.js');
-const read=p=>fs.readFileSync(path.join(__dirname,'..',p),'utf8');
+const read=p=>fs.readFileSync(path.join(__dirname,'..',p),'utf8').replace(/\r\n/g,'\n');
 const app=read('app.js'),json=v=>JSON.parse(JSON.stringify(v));
 function clock(){let n=0;const jobs=new Map();return {jobs,setTimer(fn,delay){jobs.set(++n,{fn,delay});return n},clearTimer(id){jobs.delete(id)}};}
 function deferred(){let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b});return {promise,resolve,reject};}

@@ -822,7 +822,7 @@ const G = (function(){
       else if(ev.key==='ArrowRight' && T.answers[T.i]!=null){ next(); ev.preventDefault(); }
     },
     onClose(){ T=null; ruleId=null; modal.classList.remove('rulepage'); },
-    select, initLocal, stats, refresh, board,
+    select, initLocal, stats, refresh, board, openTopic:openRule,
     // для prompts.js: правила с уровнями и отметкой «изучено», смена уровня по коду из нейросети
     rulesData(){ return ALL.map(id=>({id, title:CARDS[id].title, branch:CARDS[id].branch, level:CARDS[id].level, lv:glv[id], read:!!readM[id]})); },
     setRuleLevel(id,l){ if(id in CARDS) setLevelG(id,l); },
@@ -846,7 +846,7 @@ const W = (function(){
   function addCard(b, l, c, extra){
     const words=parseWords(c[3]);
     words.forEach(w=>{ w.tid=c[0]; if(!w.note && NOTES[c[0]+'|'+w.en]) w.note=NOTES[c[0]+'|'+w.en]; });
-    CARDS[c[0]]={branch:b.key, level:l.key, title:c[1], gloss:c[2], tags:POS_ORDER.filter(p=>words.some(w=>w.p===p)), words, extra:!!extra};
+    CARDS[c[0]]={branch:b.key, level:l.key, title:c[1], gloss:c[2], src:c[4]||'', tags:POS_ORDER.filter(p=>words.some(w=>w.p===p)), words, extra:!!extra};
   }
   W_BRANCHES.forEach(b=>LEVELS.forEach(l=>(b.cells[l.key]||[]).forEach(c=>addCard(b,l,c,false))));
   W_BRANCHES.forEach(b=>LEVELS.forEach(l=>((b.extra&&b.extra[l.key])||[]).forEach(c=>addCard(b,l,c,true))));
@@ -985,8 +985,10 @@ const W = (function(){
       '<span class="wbtn wtest" data-wid="'+id+'" role="button" tabindex="0" title="Учить карточками">Тест</span>'+
       '<span class="t">'+esc(card.title)+'</span><span class="g">'+esc(card.gloss)+'</span>'+
       '<span class="wbar">'+card.words.map(()=>'<i data-l="0"></i>').join('')+'</span>'+
+      '<span class="word-count"></span>'+
       '<span class="foot"><span class="status-chip">'+STATUS_LABEL.not_started+'</span>'+
-      card.tags.map(x=>'<span class="tg '+x+'">'+POS_NAME[x]+'</span>').join('')+'<span class="src"></span></span>';
+      card.tags.map(x=>'<span class="tg '+x+'">'+POS_NAME[x]+'</span>').join('')+
+      (card.src?'<span class="src" title="Урок учебника">'+esc(card.src)+'</span>':'')+'</span>';
     if(card.extra) btn.classList.add('xnode');
     btn.addEventListener('click',()=>openList(id));
     return btn;
@@ -1001,7 +1003,7 @@ const W = (function(){
   function mainIds(bk, lk){ return ALL.filter(id=>CARDS[id].branch===bk && CARDS[id].level===lk && !CARDS[id].extra); }
   function mainPct(bk, lk){ const ids=mainIds(bk, lk); return ids.length ? wordsOf(ids).pct : 100; }
   function computeOpen(){ W_BRANCHES.forEach(b=>LEVELS.forEach(l=>{ OPEN[b.key+'|'+l.key] = mainPct(b.key, l.key) >= UNLOCK_PCT; })); }
-  const isLocked = id => CARDS[id].extra && !OPEN[okey(id)];
+  const isLocked = id => CARDS[id].level!=='A1' && CARDS[id].extra && !OPEN[okey(id)];
   function planNode(p){
     const d=el('div','node plan');
     d.innerHTML='<span class="t">'+esc(p[0])+'</span><span class="g">'+esc(p[1])+'</span><span class="soon">в плане</span>';
@@ -1046,8 +1048,8 @@ const W = (function(){
       '<li>Слова на уровне 10 считаются выученными, но всё равно возвращаются на проверку — не чаще раза в полгода–год.</li>'+
       '</ul></section>'+
       '<section><h3>Экстра-темы</h3><ul>'+
-      '<li>Под основными темами каждого уровня лежат экстра-темы («Family 2», «Common verbs 2»…) с дополнительными словами того же уровня.</li>'+
-      '<li>Они открываются отдельно для каждой ветки, когда её основные темы на этом уровне пройдены на 75%.</li>'+
+      '<li>В Beginner базовые слова, сочетания и фразы сгруппированы по урокам учебника. Во вкладке «Экстра · A1» - дополнительная лексика за его пределами. На других уровнях экстра-темы находятся под основными.</li>'+
+      '<li>Экстра A1 доступна сразу. На уровнях A2-B2 экстра-темы открываются отдельно для каждой ветки, когда её основные темы на этом уровне пройдены на 75%.</li>'+
       '</ul></section>',
     cell:(b,lk)=>{
       const main=(b.cells[lk]||[]).map(cardNode);
@@ -1073,7 +1075,7 @@ const W = (function(){
     n.querySelector('.status-chip').innerHTML = locked ? LOCK_SVG+'с '+UNLOCK_PCT+'%' : esc(STATUS_LABEL[ci.status]);
     const segs=n.querySelectorAll('.wbar i');
     CARDS[id].words.forEach((w,i)=>{ const l=lvl(id,w.k); segs[i].dataset.l=l; segs[i].dataset.b=band(l); });
-    n.querySelector('.src').textContent='знаю '+ci.known+'/'+ci.n+' · '+ci.pct+'%';
+    n.querySelector('.word-count').textContent='знаю '+ci.known+'/'+ci.n+' · '+ci.pct+'%';
     n.setAttribute('aria-label', CARDS[id].title+(locked?': экстра-тема, откроется, когда основные темы ветки на этом уровне будут пройдены на '+UNLOCK_PCT+'%':': '+STATUS_LABEL[ci.status]+', знаю '+ci.known+' из '+ci.n+' слов. Открыть карточки'));
   }
   function stats(){
@@ -1098,6 +1100,7 @@ const W = (function(){
       board.H.lp[l.key].textContent=ids.length ? 'знаю '+ws.known+' / '+ws.t+' · '+ws.pct+'%' : 'в плане';
       board.H.lb[l.key].style.width=ws.pct+'%';
     });
+    document.dispatchEvent(new Event('wordprogress'));
   }
   function refresh(){ computeOpen(); ALL.forEach(paint); stats(); board.applyFilter(); }
 
@@ -1131,9 +1134,9 @@ const W = (function(){
     stats(); board.applyFilter();
     saveCard(id,k);
     const w=CARDS[id].words.find(x=>x.k===k);
-    const el=modal.querySelector('.lvle[data-k="'+CSS.escape(k)+'"]');
-    if(el && w){ el.outerHTML=lvlEdit(id,w); const n=modal.querySelector('.lvle[data-k="'+CSS.escape(k)+'"] .lvb'); }
-    const sm=modal.querySelector('.m-sum'); if(sm) sm.outerHTML=cardSummary(id);
+    const edits=modal.querySelectorAll((S&&S.mode==='course-list'?'[data-tid="'+id+'"] ':'')+'.lvle[data-k="'+CSS.escape(k)+'"]');
+    if(w) edits.forEach(edit=>{edit.outerHTML=lvlEdit(id,w);});
+    const sm=modal.querySelector('.m-sum'); if(sm) sm.outerHTML=S&&S.mode==='course-list'?courseSummary(courseWords(S.course,S.section)):cardSummary(id);
   }
   function cardSummary(id){
     const ci=cardInfo(id);
@@ -1147,13 +1150,65 @@ const W = (function(){
     modal.innerHTML=head(id,'Слова')+
       '<div class="m-gloss">'+esc(c.gloss)+' · '+c.words.length+' слов</div>'+cardSummary(id)+
       '<div class="wl">'+c.words.map(w=>
-        '<div class="row"><span class="en">'+esc(w.en)+'</span><span class="ru">'+esc(w.ru)+'</span>'+
+        '<div class="row" data-word-id="'+esc(id)+'" data-word-key="'+esc(w.k)+'"><span class="en">'+esc(w.en)+'</span><span class="ru">'+esc(w.ru)+'</span>'+
         '<span class="tg '+w.p+'" title="'+esc(POS_RU[w.p])+'">'+POS_NAME[w.p]+'</span>'+lvlEdit(id,w)+sayBtn(w.en)+
         (w.note?'<span class="exl nt">'+esc(w.note)+'</span>':'')+
         (w.ex?'<span class="exl">'+exampleHTML(w)+'</span>':'')+'</div>').join('')+'</div>'+
       '<div class="m-actions"><button type="button" class="m-btn ghost" data-act="close">Закрыть</button>'+
       (isLocked(id)?'<span class="hint" style="align-self:center">откроется с '+UNLOCK_PCT+'% основных тем ветки</span>':'<button type="button" class="m-btn" data-act="session">Учить карточками</button>')+'</div>';
     const f=modal.querySelector('[data-act="session"]'); if(f) f.focus();
+  }
+  // A lesson can contain words introduced in earlier lessons. References keep
+  // their canonical topic/word keys throughout lists, reviews and manual edits.
+  function courseWords(courseId,sectionIndex){
+    const lesson=BEGINNER_COURSE.find(l=>l.id===courseId); if(!lesson) return [];
+    const sections=sectionIndex==null?lesson.sections:[lesson.sections[sectionIndex]];
+    const seen=new Set(), out=[];
+    sections.filter(Boolean).forEach(section=>section.refs.forEach(([id,k,en,ru])=>{
+      const key=id+'|'+k, source=CARDS[id]&&CARDS[id].words.find(w=>w.k===k);
+      if(!source||seen.has(key)) return;
+      seen.add(key); out.push({...source,en,ru,tid:id});
+    }));
+    return out;
+  }
+  function courseInfo(courseId,sectionIndex){
+    const words=courseWords(courseId,sectionIndex), now=Date.now();
+    const s=progressStats(words.map(w=>lvl(w.tid,w.k)));
+    return {...s, due:words.filter(w=>isDue(rec(w.tid,w.k),now)).length, fresh:words.filter(w=>isNew(rec(w.tid,w.k))).length};
+  }
+  function courseSummary(words){
+    const s=progressStats(words.map(w=>lvl(w.tid,w.k)));
+    return '<div class="m-sum"><span class="wbar">'+words.map(w=>'<i data-l="'+lvl(w.tid,w.k)+'" data-b="'+band(lvl(w.tid,w.k))+'"></i>').join('')+'</span><span>'+s.pct+'% · знаю '+s.known+' / '+s.t+'</span></div>';
+  }
+  function openCourseList(courseId,sectionIndex){
+    const lesson=BEGINNER_COURSE.find(l=>l.id===courseId); if(!lesson) return;
+    const sections=sectionIndex==null?lesson.sections:[lesson.sections[sectionIndex]];
+    S={mode:'course-list',course:courseId,section:sectionIndex};
+    openModal(api);
+    modal.innerHTML=mHead('Beginner · '+lesson.label,lesson.title)+
+      '<div class="m-gloss">'+esc(lesson.ru)+'<br>'+esc(lesson.source)+'</div>'+courseSummary(courseWords(courseId,sectionIndex))+
+      sections.filter(Boolean).map(section=>'<section class="course-word-section"><h3>'+esc(section.title)+'</h3><div class="wl">'+section.refs.map(([id,k,en,ru])=>{
+        const w=CARDS[id].words.find(w=>w.k===k);
+        return '<div class="row" data-word-id="'+esc(id)+'" data-word-key="'+esc(k)+'"><span class="en">'+esc(en)+'</span><span class="ru">'+esc(ru)+'</span>'+
+          '<span class="tg '+w.p+'">'+POS_NAME[w.p]+'</span><span class="course-level" data-tid="'+id+'">'+lvlEdit(id,w)+'</span>'+sayBtn(en)+
+          (w.note?'<span class="exl nt">'+esc(w.note)+'</span>':'')+(w.ex?'<span class="exl">'+exampleHTML(w)+'</span>':'')+'</div>';
+      }).join('')+'</div></section>').join('')+
+      '<div class="m-actions"><button type="button" class="m-btn ghost" data-act="close">Закрыть</button><button type="button" class="m-btn" data-act="course-session">Отработать '+(sectionIndex==null?'урок':'подтему')+'</button></div>';
+  }
+  function openCourseSession(courseId,sectionIndex){
+    if(needProfile()) return;
+    const lesson=BEGINNER_COURSE.find(l=>l.id===courseId); if(!lesson) return;
+    const now=Date.now(), words=courseWords(courseId,sectionIndex);
+    const q=shuffle(words.filter(w=>{const r=rec(w.tid,w.k);return isNew(r)||isDue(r,now);}));
+    S={mode:'session',course:courseId,section:sectionIndex,lv:lesson.label,lvs:['A1'],kind:'lesson',queue:q,wait:[],done:0,flipped:false,start:{},fails:{},seen:[],hist:[]};
+    q.forEach(w=>{S.start[w.tid+'|'+w.k]=lvl(w.tid,w.k);});
+    openModal(api);
+    if(!q.length){
+      S.mode='done';
+      modal.innerHTML=lvHead()+'<p class="m-verdict">Новых слов и слов к повторению сейчас нет. Весь список урока доступен для просмотра.</p><div class="m-actions"><button type="button" class="m-btn ghost" data-act="course-list">Все слова</button><button type="button" class="m-btn" data-act="close">Закрыть</button></div>';
+      return;
+    }
+    renderCard();
   }
   function pickWords(id){
     const ws=CARDS[id].words,now=Date.now();
@@ -1190,7 +1245,10 @@ const W = (function(){
     return {due, nb, nx, left, rev, total};
   }
   function lvLabel(lks){ return lks.length===LEVELS.length?'все уровни':lks.join(' · '); }
-  function lvHead(){ return mHead(KIND_NAME[S.kind]||'Повторение', lvLabel(S.lvs)); }
+  function lvHead(){
+    if(S.course){ const lesson=BEGINNER_COURSE.find(l=>l.id===S.course); return mHead('Beginner · '+lesson.label,S.section==null?lesson.title:lesson.sections[S.section].title); }
+    return mHead(KIND_NAME[S.kind]||'Повторение', lvLabel(S.lvs));
+  }
   function openReview(kind, lks){
     if(needProfile()) return;
     lks=(lks||rvLv).slice(); if(!lks.length) return;
@@ -1234,7 +1292,7 @@ const W = (function(){
         '<span class="chg">'+S.start[w.tid+'|'+w.k]+' → '+r[0]+(r[3]?' · через '+whenLabel(r[4]||0, r[3], Date.now()):'')+'</span>'+sayBtn(w.en)+'</div>'; }).join('')+'</div>'+
       '<div class="m-actions">'+
         (S.hist.length?'<button type="button" class="m-btn ghost" data-act="back">← Последнее слово</button>':'')+
-        '<button type="button" class="m-btn ghost" data-act="close">Закрыть</button>'+rvNextBtns(c)+'</div>';
+        '<button type="button" class="m-btn ghost" data-act="close">Закрыть</button>'+(S.course?'<button type="button" class="m-btn" data-act="course-list">К словам урока</button>':rvNextBtns(c))+'</div>';
   }
   // review panel above the tree
   const rv=el('section','review-panel');
@@ -1300,7 +1358,7 @@ const W = (function(){
       '<div class="fc"><span class="pos">'+esc(POS_RU[w.p])+'</span>'+
       '<div class="front'+(S.flipped?' small':'')+'">'+esc(w.ru)+'</div>';
     if(!S.flipped && S.kbox){
-      h+='<form class="kbox" autocomplete="off"><label for="knownIn">Напиши слово по-английски</label>'+
+      h+='<form class="kbox" autocomplete="off" data-word-id="'+esc(id)+'" data-word-en="'+esc(w.en)+'" data-word-pos="'+w.p+'"><label for="knownIn">Напиши слово по-английски</label>'+
         '<div class="kbox-row"><input id="knownIn" type="text" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="english">'+
         '<button type="submit" class="m-btn">Проверить</button></div>'+
         '<button type="button" class="linkbtn" data-act="kcancel">Отмена</button></form>';
@@ -1559,11 +1617,13 @@ const W = (function(){
   const api={
     onClick(ev){
       const sl=ev.target.closest('[data-setl]');
-      if(sl && S && S.mode==='list'){ const box=sl.closest('.lvle'); if(box) setLevel(S.id, box.dataset.k, +sl.dataset.setl); return; }
+      if(sl && S && (S.mode==='list'||S.mode==='course-list')){ const box=sl.closest('.lvle'), source=sl.closest('[data-tid]'); if(box) setLevel(source?source.dataset.tid:S.id, box.dataset.k, +sl.dataset.setl); return; }
       const g=ev.target.closest('[data-g]'); if(g){ grade(g.dataset.g); return; }
       const a=ev.target.closest('[data-act]'); if(!a||!S) return;
       const id=S.id;
-      if(a.dataset.act==='flip') flip();
+      if(a.dataset.act==='course-list') openCourseList(S.course,S.section);
+      else if(a.dataset.act==='course-session') openCourseSession(S.course,S.section);
+      else if(a.dataset.act==='flip') flip();
       else if(a.dataset.act==='kopen'){ S.kbox=true; renderCard(); }
       else if(a.dataset.act==='knext'){ S.kdone=null; renderCard(); }
       else if(a.dataset.act==='kcancel'){ S.kbox=false; renderCard(); }
@@ -1589,6 +1649,9 @@ const W = (function(){
     },
     onClose(){ S=null; flushAll(); },
     select, initLocal, stats, refresh, flushAll, board,
+    courseInfo, openCourseList, openCourseSession,
+    openTopic:openList, practiceTopic:openSession,
+    topicInfo:id=>cardInfo(id),
   };
   return api;
 })();
