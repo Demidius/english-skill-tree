@@ -22,3 +22,6 @@
 .lesson-links .lesson-ref { margin: 0; font-size: inherit; }
 .lesson-related-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
 @media (max-width: 600px) { .lesson-related-grid { grid-template-columns: 1fr; } }
+
+/* Search selections mark the existing topic without opening its dialog. */
+.tree .node.search-topic-hit { outline: 3px solid var(--accent); outline-offset: 4px; opacity: 1 !important; }

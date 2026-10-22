@@ -99,3 +99,14 @@ test('lesson links keep textbook levels separate and match exact lesson codes',(
   assert.deepEqual(Search.related(fixture,'1B','A1','unknown'),[]);
   assert.equal(JSON.stringify(fixture),before);
 });
+
+test('search navigation resolves the card on the tree without changing word identity',()=>{
+  const course=[{id:'lesson-4a',sections:[{refs:[['people','person'],['family','mother']]},{refs:[['family','father'],['home','house']]}]}];
+  assert.deepEqual(Search.topicIds({kind:'words',topicId:'family',location:{courseId:'lesson-4a',sectionIndex:1}},course),['family']);
+  assert.deepEqual(Search.topicIds({kind:'rules',topicId:'pres-simple'},course),['pres-simple']);
+  assert.deepEqual(Search.topicIds({kind:'topics',courseId:'lesson-4a',sectionIndex:0},course),['people','family']);
+  assert.deepEqual(Search.topicIds({kind:'lessons',courseId:'lesson-4a'},course),['people','family','home']);
+  assert.deepEqual(Search.topicIds({courseId:'missing'},course),[]);
+  assert.deepEqual(Search.topicIds({courseId:'lesson-4a',sectionIndex:9},course),[]);
+  assert.deepEqual(Search.topicIds(null,course),[]);
+});
