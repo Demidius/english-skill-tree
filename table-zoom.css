@@ -6,3 +6,9 @@
 .tree-zoom .chip:disabled { opacity: .4; cursor: default; }
 .tree-zoom .tz-hint { margin-left: 8px; font-size: .72rem; color: var(--muted); }
 @media (max-width: 999px) { .tree-zoom .tz-hint { display: none; } }
+
+/* Keep search and table controls together; results still use the full row width. */
+.study-search.study-search-with-zoom { max-width: none; padding-inline: 0; }
+.study-search-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+.study-search-row > .study-search-field { flex: 1 1 280px; min-width: 0; }
+.study-search-row > .tree-zoom { flex: 0 0 auto; max-width: 100%; margin: 0; }

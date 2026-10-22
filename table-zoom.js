@@ -35,7 +35,16 @@
       '<button type="button" class="chip" data-z="in" aria-label="Увеличить таблицу">+</button>' +
       '<button type="button" class="chip" data-z="fit" title="Уменьшить так, чтобы все ветки поместились по ширине">Вся таблица</button>' +
       '<span class="tz-hint">Ctrl + колёсико — тоже масштаб</span>';
-    scroller.before(bar);
+    const field = mode.querySelector('.study-search-field');
+    if (field) {
+      const row = document.createElement('div');
+      row.className = 'study-search-row';
+      field.closest('.study-search').classList.add('study-search-with-zoom');
+      field.before(row);
+      row.append(field, bar);
+    } else {
+      scroller.before(bar);
+    }
     const val = bar.querySelector('.tz-val');
 
     const isGrid = () => !mode.hidden && getComputedStyle(tree).display === 'grid';
