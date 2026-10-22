@@ -102,7 +102,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSea
     search.setAttribute('aria-label', scope === 'words' ? 'Поиск лексики' : 'Поиск правил');
     search.innerHTML = '<label for="' + inputId + '">' + (scope === 'words' ? 'Поиск по словам, темам и коду урока' : 'Поиск по темам и коду урока') + '</label>'
       + '<div class="study-search-field"><input type="search" id="' + inputId + '" placeholder="' + (scope === 'words' ? 'family, семья или 4A' : 'Present Simple, вопросы или 5A') + '" maxlength="120" autocomplete="off" spellcheck="false"><button type="button" class="study-search-clear" aria-label="Очистить поиск" hidden>×</button></div>'
-      + '<p class="study-search-hint">' + (scope === 'words' ? 'Вся лексика A1-B2, включая «Экстра». Откройте результат, чтобы отработать тему.' : 'Все правила A1-B2. Можно добавить уровень, например A1.') + '</p>'
+      + '<p class="study-search-hint">' + (scope === 'words' ? 'Вся лексика A1-B2. Можно искать по коду урока, например 4A. Откройте результат, чтобы отработать тему.' : 'Все правила A1-B2. Можно добавить уровень, например A1.') + '</p>'
       + '<div class="study-search-results" hidden><p class="study-search-status" role="status" aria-live="polite"></p><div class="study-search-groups"></div></div>';
     root.insertBefore(search, before);
     const input = search.querySelector('input'), clear = search.querySelector('.study-search-clear'), results = search.querySelector('.study-search-results');
@@ -149,6 +149,6 @@ if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSea
     });
   }
   const words = document.getElementById('mode-w'), rules = document.getElementById('mode-g');
-  mount('words', words, words.querySelector('.beginner-catalog'));
+  mount('words', words, words.querySelector('.jumpnav'));
   mount('rules', rules, rules.querySelector('.jumpnav'));
 })();

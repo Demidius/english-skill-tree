@@ -1047,9 +1047,9 @@ const W = (function(){
       '<li>В блоке «Повторение слов» включи нужные уровни. «Повторить» — все слова, у которых подошёл срок; «Изучать базовые» и «Изучать Экстра» — все новые слова из основных или экстра-тем подряд, пока не закончатся. Окно можно закрыть в любой момент — прогресс сохраняется после каждого слова.</li>'+
       '<li>Слова на уровне 10 считаются выученными, но всё равно возвращаются на проверку — не чаще раза в полгода–год.</li>'+
       '</ul></section>'+
-      '<section><h3>Экстра-темы</h3><ul>'+
-      '<li>В Beginner в каждом уроке отдельно доступны базовая и дополнительная лексика. База - основные слова и разговорные фразы; дополнительно - слова из текстов, заданий и справочников. Шкала A1 считает базу, общий счётчик и уровень героя учитывают все слова. Во вкладке «Экстра · A1» собрана вся дополнительная лексика. На других уровнях экстра-темы находятся под основными.</li>'+
-      '<li>Экстра A1 доступна сразу. На уровнях A2-B2 экстра-темы открываются отдельно для каждой ветки, когда её основные темы на этом уровне пройдены на 75%.</li>'+
+      '<section><h3>Лексика по учебнику</h3><ul>'+
+      '<li>A1 — English File Beginner, A2 — English File Elementary (4th edition). В этих уровнях только то, что учебник ставит целью выучить: Vocabulary Bank, лексика урока, Words and phrases to learn и фразы Practical English. Метка на карточке — код урока, например 4A или PE 3.</li>'+
+      '<li>Экстра-темы остались только на B1-B2: они открываются отдельно для каждой ветки, когда её основные темы на этом уровне пройдены на 75%.</li>'+
       '</ul></section>',
     cell:(b,lk)=>{
       const main=(b.cells[lk]||[]).map(cardNode);
@@ -1059,7 +1059,7 @@ const W = (function(){
     phoneCount:(bk,lk)=>{
       const ids=ALL.filter(id=>CARDS[id].branch===bk && CARDS[id].level===lk && (lk!=='A1'||!CARDS[id].extra));
       if(!ids.length) return 'в плане';
-      const ws=wordsOf(ids); return (lk==='A1'?'база · ':'')+'знаю '+ws.known+' / '+ws.t;
+      const ws=wordsOf(ids); return 'знаю '+ws.known+' / '+ws.t;
     },
     match:(nd,F)=>{ const id=nd.dataset.id; return (F.status==='all'||nd.dataset.status===F.status) && (F.tag==='all'||CARDS[id].tags.includes(F.tag)); },
   });
@@ -1084,7 +1084,7 @@ const W = (function(){
     const s=wordsOf(ALL);
     const closed=ALL.filter(id=>cardInfo(id).status==='mastered').length;
     const byLevel={};
-    LEVELS.forEach(l=>{ byLevel[l.key]=wordsOf(ALL.filter(id=>CARDS[id].level===l.key&&(l.key!=='A1'||!CARDS[id].extra)));if(l.key==='A1')byLevel[l.key].scope='base'; });
+    LEVELS.forEach(l=>{ byLevel[l.key]=wordsOf(ALL.filter(id=>CARDS[id].level===l.key)); });
     const who=currentName();
     board.stat.innerHTML=(who?'<span class="who">'+esc(who)+':</span> ':'')+
       'знаю '+s.known+' из '+s.t+' слов · закреплено '+s.learned+' · повторяю '+s.rev+' · изучаю '+s.lrn+' · тем закреплено '+closed;
@@ -1097,7 +1097,7 @@ const W = (function(){
     LEVELS.forEach(l=>{
       const ids=ALL.filter(id=>CARDS[id].level===l.key);
       const ws=byLevel[l.key];
-      board.H.lp[l.key].textContent=ids.length ? (l.key==='A1'?'база · ':'')+'знаю '+ws.known+' / '+ws.t+' · '+ws.pct+'%' : 'в плане';
+      board.H.lp[l.key].textContent=ids.length ? 'знаю '+ws.known+' / '+ws.t+' · '+ws.pct+'%' : 'в плане';
       board.H.lb[l.key].style.width=ws.pct+'%';
     });
     document.dispatchEvent(new Event('wordprogress'));
