@@ -110,3 +110,43 @@ test('search navigation resolves the card on the tree without changing word iden
   assert.deepEqual(Search.topicIds({courseId:'lesson-4a',sectionIndex:9},course),[]);
   assert.deepEqual(Search.topicIds(null,course),[]);
 });
+
+test('lesson links fill the search with the correct book and fall back to the rule title',()=>{
+  assert.equal(Search.lessonQuery('11a','used to','A2'),'PI 11A');
+  assert.equal(Search.lessonQuery('1B','Future forms','B1'),'INT 1B');
+  assert.equal(Search.lessonQuery('1A–2A','be','A1'),'A1 1A-2A');
+  assert.equal(Search.lessonQuery('PE 5','Indirect questions','B1'),'INT PE5');
+  assert.equal(Search.lessonQuery('SB p. 42, урок 4а','Family','A2'),'PI 4A');
+  assert.equal(Search.lessonQuery('','Phrasal verbs','A2'),'Phrasal verbs');
+  assert.equal(Search.lessonQuery('Additional grammar','Word order','B2'),'Word order');
+});
+
+test('a lesson range or list finds every included lesson instead of requiring all codes on one item',()=>{
+  const fixture=Search.createIndex({wordBranches:[{name:'People',ru:'Люди',cells:{A1:[
+    ['one','One','','one|один|n','1A'],['two','Two','','two|два|n','1B'],
+    ['three','Three','','three|три|n','2A'],['four','Four','','four|четыре|n','2B']
+  ],A2:[['other','Other','','other|другой|n','1A']]}}]});
+  const matches=q=>Search.find(fixture,q).groups.topics.map(i=>i.topicId);
+  assert.deepEqual(matches(Search.lessonQuery('1A–2A','be','A1')),['one','two','three']);
+  assert.deepEqual(matches('A1 1A, 2A'),['one','three']);
+  assert.deepEqual(matches('A1 1B'),['two']);
+});
+
+test('a vocabulary link switches mode and fills search even without related vocabulary',()=>{
+  const source=fs.readFileSync(path.join(__dirname,'..','catalog-search.js'),'utf8'),events=[];
+  const c=vm.createContext({CatalogSearch:Search,setMode:mode=>events.push(['mode',mode]),searches:{words:q=>events.push(['search',q])}});
+  vm.runInContext(source.slice(source.indexOf('  function openRelated(scope,'),source.indexOf('  const linkedRefs')),c);
+  c.openRelated('words','A2','11A',undefined,'used to');
+  c.openRelated('words','B2','',undefined,'Word order');
+  assert.deepEqual(events,[['mode','w'],['search','PI 11A'],['mode','w'],['search','Word order']]);
+});
+
+test('rules without a lesson code retain a vocabulary link and a safely encoded title',()=>{
+  const source=fs.readFileSync(path.join(__dirname,'..','app.js'),'utf8'),c=vm.createContext({});
+  vm.runInContext(source.slice(source.indexOf('function esc('),source.indexOf('function el(')),c);
+  const html=c.lessonRefHTML('words','A2','',null,'Words "&" phrases');
+  assert.match(html,/data-lesson-title="Words &quot;&amp;&quot; phrases"/);
+  assert.match(html,/>Лексика<\/span>/);
+  assert.equal(c.lessonRefHTML('rules','A2',''), '');
+});
+

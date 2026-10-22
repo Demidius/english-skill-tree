@@ -3,9 +3,9 @@ const TESTS = window.TESTS || {};
 
 // ================= shared helpers =================
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function lessonRefHTML(scope, level, source, book){
-  if(!source) return '';
-  return '<span class="src lesson-ref" data-lesson-scope="'+esc(scope)+'" data-lesson-level="'+esc(level)+'" data-lesson-source="'+esc(source)+'"'+(book?' data-lesson-book="'+esc(book)+'"':'')+' title="Урок учебника">'+esc(source)+'</span>';
+function lessonRefHTML(scope, level, source, book, title){
+  if(!source && !(scope==='words' && title)) return '';
+  return '<span class="src lesson-ref" data-lesson-scope="'+esc(scope)+'" data-lesson-level="'+esc(level)+'" data-lesson-source="'+esc(source)+'"'+(book?' data-lesson-book="'+esc(book)+'"':'')+(title?' data-lesson-title="'+esc(title)+'"':'')+' title="Урок учебника">'+esc(source||'Лексика')+'</span>';
 }
 function el(tag, cls, html){ const e=document.createElement(tag); if(cls) e.className=cls; if(html!=null) e.innerHTML=html; return e; }
 function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
@@ -438,7 +438,7 @@ const G = (function(){
       '<span class="lvstep" data-d="1" role="button" tabindex="0" title="Повысить уровень на 1" aria-label="Повысить уровень"><b>›</b></span></span>'+
       '<span class="rread" role="checkbox" aria-checked="false" tabindex="0" title="Отметка для себя: правило уже читал(а). На уровень не влияет."><i aria-hidden="true"></i>читано</span>'+
       tags.map(x=>'<span class="tg '+x+'">'+x+'</span>').join('')+
-      '<span class="score" hidden></span>'+lessonRefHTML('words',CARDS[id].level,src)+'</span>';
+      '<span class="score" hidden></span>'+lessonRefHTML('words',CARDS[id].level,src,null,t)+'</span>';
     btn.title='Открыть правило';
     btn.addEventListener('click',()=>{ if(RULES[id]) openRule(id); else if(TESTS[id]) openTest(id); else cycle(id); });
     const rr=btn.querySelector('.rread');
@@ -553,7 +553,7 @@ const G = (function(){
     modal.innerHTML=mHead('Правило · '+b.name+' · '+card.level+' '+(card.level==='A2'?'Pre-Intermediate':lv.book), card.title,
         TESTS[id]?'<button type="button" class="m-btn ghost m-hbtn" data-act="rtest">Тест</button>':'')+
       '<div class="r-meta">'+(cell[2]?esc(cell[2])+' · ':'')+'урок '+esc(cell[4]||'')+'</div>'+
-      '<div class="lesson-links">'+lessonRefHTML('words',card.level,cell[4])+'</div>'+gEdit(id)+readEdit(id)+
+      '<div class="lesson-links">'+lessonRefHTML('words',card.level,cell[4],null,card.title)+'</div>'+gEdit(id)+readEdit(id)+
       (G_INFO[id]?'<div class="m-rule">'+esc(G_INFO[id])+'</div>':'')+
       '<h3 class="r-h">Форма</h3><div class="r-form">'+R.f.map(r=>{
         if(typeof r==='string') return '<div class="rf-row"><span class="rf-en">'+esc(r)+'</span></div>';
