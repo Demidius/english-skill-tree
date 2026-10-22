@@ -7,7 +7,7 @@ const c=vm.createContext({console});
 const run=s=>vm.runInContext(s,c), json=s=>JSON.parse(run('JSON.stringify('+s+')'));
 for(const f of ['data-words.js','data-wordex.js','data-wordtr.js','data-exru.js','data-grammar.js','data-patch.js','fixes.js','data-ef-course.js'])run(read(f));
 const before=json('W_BRANCHES');
-for(const f of ['data-textbook-vocabulary.js','textbook-vocabulary.js'])run(read(f));
+for(const f of ['data-textbook-vocabulary.js','data-textbook-topics.js','textbook-vocabulary.js'])run(read(f));
 const d=json('({wordBranches:W_BRANCHES,course:BEGINNER_COURSE,grammarBranches:G_BRANCHES,topicBooks:WORD_TOPIC_BOOKS,entryMetadata:WORD_ENTRY_METADATA,entries:TEXTBOOK_ENTRIES,aliases:WORD_PROGRESS_ALIASES,legacy:[...WORD_LEGACY_TOPICS]})');
 const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'w';
 const rows=branches=>branches.flatMap(b=>['cells','extra'].flatMap(part=>Object.entries(b[part]||{}).flatMap(([level,cards])=>cards.flatMap(card=>card[3].split(';').filter(r=>r.trim()).map(row=>{
@@ -104,3 +104,48 @@ test('typing a listed plural uses the canonical progress key',()=>{
  vm.runInContext(source.slice(source.indexOf('  const norm ='),source.indexOf("  document.addEventListener('submit'"))+';this.ok=ok;',sandbox);
  assert.equal(sandbox.ok('shelves',{id:entry.topicId,k:entry.wordKey,en:'shelf'},entry.translation_ru),true);
 });
+
+test('new vocabulary lives only in Extra within the existing thematic branches',()=>{
+ assert.deepEqual(d.wordBranches.map(b=>b.key),before.map(b=>b.key));
+ assert.equal(d.wordBranches.some(b=>b.key==='textbooks'),false);
+ const oldKeys=JSON.parse(read('tests/fixtures/textbook-progress-keys.json'));
+ for(const e of entries.filter(e=>!e.matches.length)){
+  const word=after.find(w=>w.id===e.topicId&&w.k===e.wordKey);
+  assert.ok(word.extra,e.english);
+  const [oldId,oldK]=oldKeys[e.id];
+  assert.ok(d.aliases[e.topicId+'|'+e.wordKey].some(a=>a[0]===oldId&&a[1]===oldK),e.id);
+  assert.ok(d.legacy.includes(oldId),oldId);
+  const record=[8,300,7,987654321,45,2.6];
+  c.records[oldId]||={}; c.records[oldId][oldK]=record;
+  assert.deepEqual([...c.rec(e.topicId,e.wordKey)],record,e.id);
+  c.records[e.topicId]||={}; c.records[e.topicId][e.wordKey]=[0,400,7];
+  assert.equal(c.rec(e.topicId,e.wordKey)[0],0,'reset '+e.id);
+  delete c.records[oldId][oldK]; delete c.records[e.topicId][e.wordKey];
+ }
+ assert.equal(Object.keys(oldKeys).length,1642);
+ for(const b of d.wordBranches) for(const cards of Object.values(b.extra||{})) for(const card of cards.filter(c=>c[0].startsWith('efx-'))){
+  assert.ok(card[3].split(';').filter(Boolean).length<=24,card[0]);
+  assert.doesNotMatch(card[1],/Textbook|Intermediate|New entries/);
+ }
+});
+
+test('mixed lessons are distributed by meaning, not by their lesson number',()=>{
+ const examples={blouse:'shopping',behind:'basics',sink:'home',sunny:'nature',passport:'town',beard:'people',ibuprofen:'body',keyboard:'work',crab:'food',goalkeeper:'free',million:'time'};
+ for(const [en,branch] of Object.entries(examples)){
+  const e=entries.find(e=>e.english===en&&!e.matches.length);
+  assert.ok(e,en);
+  assert.ok(d.wordBranches.find(b=>b.key===branch).extra[after.find(w=>w.id===e.topicId).level].some(c=>c[0]===e.topicId),en);
+ }
+ const newCards=new Map(d.wordBranches.flatMap(b=>Object.values(b.extra||{}).flat().map(c=>[c[0],c])));
+ const phone=entries.find(e=>e.english==='phone call');assert.match(newCards.get(phone.topicId)[1],/Phones/);
+ const drug=entries.filter(e=>e.english==='drug');assert.equal(new Set(drug.map(e=>e.topicId+'|'+e.wordKey)).size,drug.length);
+});
+
+test('the separate textbook panel and full-lesson redirects are removed',()=>{
+ const html=read('index.html');
+ assert.doesNotMatch(html,/textbook-course\.(js|css)/);
+ assert.ok(html.indexOf('data-textbook-topics.js')<html.indexOf('src="textbook-vocabulary.js'));
+ assert.doesNotMatch(app,/WORD_TOPIC_COURSE/);
+ for(const l of d.course) assert.doesNotMatch(l.source,/\bWB\b/);
+});
+

@@ -1,7 +1,0 @@
-.textbook-catalog{margin:16px 0;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink)}
-.textbook-catalog summary{padding:16px;cursor:pointer;font-weight:700}
-.textbook-content{padding:0 16px 20px}.textbook-pickers{display:flex;gap:16px;flex-wrap:wrap}
-.textbook-pickers label{flex:1 1 240px;min-width:0;font-size:12px;color:var(--muted)}
-.textbook-pickers select{box-sizing:border-box;display:block;width:100%;margin-top:6px;padding:10px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;font:inherit;font-size:14px}
-.textbook-detail h3{margin-bottom:8px}.textbook-detail p{line-height:1.6}.textbook-source,.textbook-note{font-size:12px;color:var(--muted)}
-.textbook-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px}.course-level{display:contents}
