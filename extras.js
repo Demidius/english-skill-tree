@@ -181,12 +181,8 @@ if (typeof WORD_TR !== 'undefined') {
       md.classList.remove('in-hub');
     }
   }
-  // переносим переключатель ещё до смены вкладки, чтобы он не мигал
-  document.addEventListener('click', ev => {
-    const b = ev.target.closest('.modes button');
-    if (b && (b.dataset.mode === 'w' || b.dataset.mode === 'g')) placeModes(b.dataset.mode);
-    if (ev.target.closest('.modes button, .acc-it')) setTimeout(placeModes, 0);
-  }, true);
+  // Любой переход, включая ссылки из карточек, переносит навигацию в активный режим.
+  window.addEventListener('ef-mode-change', () => placeModes());
   function apply() {
     mobileNav(!MQ.matches);
     let ok = 0;

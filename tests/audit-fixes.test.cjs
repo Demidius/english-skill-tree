@@ -8,6 +8,33 @@ function clock(){let n=0;const jobs=new Map();return {jobs,setTimer(fn,delay){jo
 function deferred(){let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b});return {promise,resolve,reject};}
 function queue(send,extra={}){const time=clock();return {time,q:Core.createWriteQueue({...time,send,...extra})};}
 
+test('direct mode changes keep the shared navigation in the visible header',()=>{
+ const listeners={},sections=Object.fromEntries(['g','w','s'].map(k=>['mode-'+k,{hidden:k!=='g'}]));
+ const classes=new Set(),buttons=['g','w','s'].map(mode=>({dataset:{mode},setAttribute(k,v){this[k]=v}}));
+ const nav={classList:{add:k=>classes.add(k),remove:k=>classes.delete(k)},querySelector:()=>buttons.find(b=>b['aria-pressed']==='true')};
+ const slot=()=>({appendChild(node){node.parentNode=this}}),title=slot(),slots={g:slot(),w:slot()};
+ title.querySelector=()=>null;title.prepend=title.appendChild;
+ const c={owner:null,unpin(){},lsSet(){},mode:'g',MQ:{matches:true},
+   MODES:Object.fromEntries(['g','w'].map(k=>[k,{sub:k,mod:{board:{active:'present',setBranch(){}}}}])),
+   SETTINGS:{render(){}},CustomEvent:class{constructor(type,options){this.type=type;this.detail=options.detail}},
+   window:{addEventListener(type,fn){listeners[type]=fn},dispatchEvent(event){listeners[event.type]?.(event)}},
+   document:{getElementById:id=>sections[id]||(id==='profileBar'?{classList:{toggle(){}}}:{}),
+     querySelector:selector=>selector==='.modes'?nav:selector==='.title-row'?title:slots[selector.match(/^#mode-([gw]) /)?.[1]],
+     querySelectorAll:()=>buttons}};
+ c.MODES.s={sub:'settings'};
+ vm.createContext(c);
+ const extras=read('extras.js');
+ vm.runInContext(extras.slice(extras.indexOf('  function placeModes('),extras.indexOf('  function apply() {')),c);
+ vm.runInContext(app.slice(app.indexOf('function setMode(m){'),app.indexOf("document.querySelectorAll('.modes button').forEach(b=>b.addEventListener")),c);
+ // Lesson links call setMode directly, without clicking the mode buttons.
+ for(const mode of ['g','w','g','s','w']){
+   c.setMode(mode);
+   assert.equal(nav.parentNode,slots[mode]||title);
+   assert.equal(classes.has('in-hub'),mode!=='s');
+   assert.deepEqual(Object.entries(sections).filter(([,s])=>!s.hidden).map(([id])=>id),['mode-'+mode]);
+ }
+});
+
 test('a second word reviewed during a write remains pending after the first acknowledgement',async()=>{
  const first=deferred(),sent=[];
  const {q}=queue((id,p)=>{sent.push(json(p));return sent.length===1?first.promise:Promise.resolve()});
