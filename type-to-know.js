@@ -262,6 +262,8 @@ document.addEventListener('keydown', ev => {
     return map;
   }
   function ok(typed, w, ru) {
+    const textbook=typeof WORD_ENTRY_METADATA==='undefined'?null:WORD_ENTRY_METADATA[w.id+'|'+w.k];
+    if(textbook&&[textbook.english,...textbook.variants].some(en=>norm(en)===typed)) return true;
     const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     const sources = typeof WORD_PROGRESS_ALIASES === 'undefined' ? [] : (WORD_PROGRESS_ALIASES[w.id + '|' + slug(w.en)] || []);
     const legacyKeys = new Set(sources.map(([id,k]) => id + '|' + k));
@@ -295,7 +297,7 @@ document.addEventListener('keydown', ev => {
     if (!inp || !front) return;
     const ru = front.textContent.trim(), typed = norm(inp.value);
     if (!typed) return;
-    const active = form.dataset.wordEn ? [{id:form.dataset.wordId,en:form.dataset.wordEn,p:form.dataset.wordPos}] : (byRu()[ru] || []);
+    const active = form.dataset.wordEn ? [{id:form.dataset.wordId,k:form.dataset.wordKey,en:form.dataset.wordEn,p:form.dataset.wordPos}] : (byRu()[ru] || []);
     for (const w of active) if (ok(typed, w, ru)) { inp.value = w.en; return; }
     // 7) Написал другое слово из словаря с тем же русским значением (before вместо until —
     //    оба «до»): не засчитываем как ошибку, а подсказываем, что загадано другое слово,
@@ -338,4 +340,5 @@ document.addEventListener('keydown', ev => {
     '.kbox-hint b{color:inherit}';
   document.head.appendChild(hs);
 })();
+
 

@@ -21,76 +21,84 @@ const CatalogSearch = (() => {
     return [...new Set(found)];
   }
   function query(value) {
+    const books=[...String(value).matchAll(/\b(PI|INT)\b/gi)].map(m=>m[1].toUpperCase());
+    value=String(value).replace(/\b(?:PI|INT)\b/gi,' ');
     const lessonCodes = codes(value);
     let text = String(value || '').replace(codePattern(), ' ');
     const levels = [...text.matchAll(/(?<![\p{L}\p{N}])([AB][12])(?![\p{L}\p{N}])/giu)].map(m => m[1].toUpperCase());
     text = text.replace(/(?<![\p{L}\p{N}])[AB][12](?![\p{L}\p{N}])/giu, ' ');
     if (lessonCodes.length) text = text.replace(/\b(?:lesson|unit)\b/gi, ' ').replace(/урок(?:а|и)?/gi, ' ');
-    return {codes: lessonCodes, levels, text: fold(text), tokens: fold(text).split(' ').filter(Boolean)};
+    return {codes: lessonCodes, levels, books, text: fold(text), tokens: fold(text).split(' ').filter(Boolean)};
   }
-  function createIndex({wordBranches = [], course = [], grammarBranches = []}) {
+  function createIndex({wordBranches = [], course = [], grammarBranches = [], topicBooks = {}, entryMetadata = {}}) {
     const entries = [], words = new Map(), lettersByLevel = {};
     const rememberLetters = (level, source) => {
       lettersByLevel[level] ||= '';
       for (const c of codes(source)) if (/^\d+[A-D]$/.test(c) && !lettersByLevel[level].includes(c.at(-1))) lettersByLevel[level] += c.at(-1);
     };
-    for (const lesson of course) rememberLetters('A1', lesson.code);
+    for (const lesson of course) rememberLetters(lesson.level || 'A1', lesson.code);
     for (const branch of grammarBranches) for (const [level, cards] of Object.entries(branch.cells || {})) for (const c of cards) rememberLetters(level, c[4]);
     const add = item => { item.primary = fold(item.primary || item.title); item.text = fold(item.text || item.primary); entries.push(item); return item; };
     for (const branch of wordBranches) {
       for (const part of ['cells', 'extra']) for (const [level, cards] of Object.entries(branch[part] || {})) for (const c of cards) {
         const path = branch.ru + ' · ' + c[1];
-        if (!c[0].startsWith('efb-')) add({kind:'topics', title:c[1], subtitle:c[2], path:branch.ru, level, extra:part === 'extra', topicId:c[0], codes:codes(c[4]), primary:c[1] + ' ' + c[2], text:[c[1], c[2], branch.name, branch.ru].join(' ')});
+        const book=topicBooks[c[0]];
+        if (!c[0].startsWith('efb-')) add({kind:'topics', title:c[1], subtitle:c[2], path:branch.ru, level, book, extra:part === 'extra', topicId:c[0], codes:codes(c[4]), primary:c[1] + ' ' + c[2], text:[c[1], c[2], branch.name, branch.ru].join(' ')});
         for (const row of c[3].split(';').filter(r => r.trim())) {
           const [en, ru] = row.split('|').map(s => s.trim()), key = slug(en);
-          const item = add({kind:'words', title:en, subtitle:ru, path, level, extra:part === 'extra', topicId:c[0], wordKey:key, codes:codes(c[4]), locations:[], primary:en + ' ' + ru});
+          const item = add({kind:'words', title:en, subtitle:ru, path, level, book, extra:part === 'extra', topicId:c[0], wordKey:key, codes:codes(c[4]), locations:[], primary:en + ' ' + ru});
+          const metadata=entryMetadata[c[0]+'|'+key];
+          if(metadata){item.primary+=' '+fold([...metadata.variants,...metadata.examples].join(' '));item.text=item.primary;}
           words.set(c[0] + '|' + key, item);
         }
       }
     }
     for (const lesson of course) {
+      const level=lesson.level || 'A1', book=lesson.book;
       const lessonCodes = [...new Set([...codes(lesson.code), ...codes(lesson.label)])];
       const hasBase = refs => refs.some(([id,k]) => !words.get(id + '|' + k)?.extra);
       const extraLesson = !hasBase(lesson.sections.flatMap(s => s.refs));
-      add({kind:'lessons', title:lesson.title, subtitle:lesson.ru, path:'Beginner', label:lesson.label, level:'A1', courseId:lesson.id, extra:extraLesson, codes:lessonCodes, primary:lesson.title + ' ' + lesson.ru, text:[lesson.title, lesson.ru, lesson.label].join(' ')});
+      add({kind:'lessons', title:lesson.title, subtitle:lesson.ru, path:lesson.bookTitle || 'Beginner', label:lesson.label, level, book, courseId:lesson.id, extra:extraLesson, codes:lessonCodes, primary:lesson.title + ' ' + lesson.ru, text:[lesson.title, lesson.ru, lesson.label,lesson.bookTitle].join(' ')});
       lesson.sections.forEach((section, sectionIndex) => {
-        add({kind:'topics', title:section.title, subtitle:lesson.title, path:lesson.ru, label:lesson.label, level:'A1', courseId:lesson.id, sectionIndex, extra:!hasBase(section.refs), codes:lessonCodes, primary:section.title, text:[section.title, lesson.title, lesson.ru].join(' ')});
+        add({kind:'topics', title:section.title, subtitle:lesson.title, path:lesson.bookTitle || lesson.ru, label:lesson.label, level, book, courseId:lesson.id, sectionIndex, extra:!hasBase(section.refs), codes:lessonCodes, primary:section.title, text:[section.title, lesson.title, lesson.ru,lesson.bookTitle].join(' ')});
         for (const [topicId, wordKey, en, ru] of section.refs || []) {
           const item = words.get(topicId + '|' + wordKey);
           if (!item) continue;
-          item.locations.push({courseId:lesson.id, sectionIndex, label:lesson.label, title:section.title, codes:lessonCodes});
-          item.codes = [...new Set([...item.codes, ...lessonCodes])];
+          item.locations.push({courseId:lesson.id, sectionIndex, label:lesson.label, title:section.title, codes:lessonCodes, level, book, bookTitle:lesson.bookTitle});
           item.primary += ' ' + fold(en + ' ' + ru);
           item.text = item.primary;
         }
       });
     }
     for (const branch of grammarBranches) for (const [level, cards] of Object.entries(branch.cells || {})) for (const c of cards) {
-      add({kind:'rules', title:c[1], subtitle:c[2], path:branch.ru, level, topicId:c[0], label:c[4], codes:codes(c[4], true, lettersByLevel[level]), primary:c[1] + ' ' + c[2], text:[c[1], c[2], branch.name, branch.ru].join(' ')});
+      const book={A1:'BEGINNER',A2:'PI',B1:'INT',B2:'UPPER'}[level];
+      add({kind:'rules', title:c[1], subtitle:c[2], path:branch.ru, level, book, topicId:c[0], label:c[4], codes:codes(c[4], true, lettersByLevel[level]), primary:c[1] + ' ' + c[2], text:[c[1], c[2], branch.name, branch.ru].join(' ')});
     }
     return entries;
   }
   function find(index, value, scope = 'words') {
     const q = query(String(value).slice(0, 120)), groups = {lessons:[], topics:[], words:[], rules:[]};
-    if (!q.tokens.length && !q.codes.length && !q.levels.length) return {groups, total:0, query:q};
+    if (!q.tokens.length && !q.codes.length && !q.levels.length && !q.books.length) return {groups, total:0, query:q};
     for (const item of index) {
       if ((scope === 'rules') !== (item.kind === 'rules')) continue;
-      if (q.levels.length && !q.levels.includes(item.level)) continue;
-      if (q.codes.length && !q.codes.every(c => item.codes.includes(c))) continue;
+      const contexts=[item,...(item.locations || [])];
+      const matches=contexts.filter(c=>(!q.levels.length||q.levels.includes(c.level))&&(!q.books.length||q.books.includes(c.book))&&(!q.codes.length||q.codes.every(code=>c.codes.includes(code))));
+      if(!matches.length) continue;
       if (!q.tokens.length && q.codes.length && item.kind === 'words') continue;
       if (!q.tokens.every(t => item.text.includes(t))) continue;
-      const location = item.locations && (item.locations.find(l => q.codes.length && q.codes.every(c => l.codes.includes(c))) || item.locations[0]);
+      const location = item.locations && (matches.find(c=>c.courseId) || (!q.codes.length&&!q.books.length&&!q.levels.length ? item.locations[0] : undefined));
       const primary = item.primary.split(' ');
       const score = (fold(item.title) === q.text || fold(item.subtitle) === q.text ? 100 : 0)
         + q.tokens.reduce((n, t) => n + (primary.includes(t) ? 10 : item.primary.includes(t) ? 3 : 0), 0);
-      groups[item.kind].push({...item, location, score});
+      groups[item.kind].push({...item, level:location?.level || item.level, location, score});
     }
     for (const group of Object.values(groups)) group.sort((a, b) => b.score - a.score);
     return {groups, total:Object.values(groups).reduce((n, g) => n + g.length, 0), query:q};
   }
-  function related(index, source, level, scope) {
+  function related(index, source, level, scope, book) {
     if (!['words', 'rules'].includes(scope)) return [];
-    const entries = index.filter(item => item.level === level);
+    book ||= {A1:'BEGINNER',A2:'PI',B1:'INT',B2:'UPPER'}[level];
+    const entries = index.filter(item => item.level === level && (!item.book || item.book === book));
     const letters = [...new Set(entries.flatMap(item => item.codes || []).filter(c => /^\d+[A-D]$/.test(c)).map(c => c.at(-1)))].join('');
     const wanted = new Set(codes(source, true, letters));
     return entries.filter(item => item.kind === (scope === 'rules' ? 'rules' : 'topics')
@@ -101,6 +109,7 @@ const CatalogSearch = (() => {
     if (item.topicId) return [item.topicId];
     const lesson = course.find(lesson => lesson.id === item.courseId);
     if (!lesson) return [];
+    if(lesson.topicIds?.length) return lesson.topicIds;
     const sections = item.sectionIndex == null ? lesson.sections : [lesson.sections[item.sectionIndex]];
     return [...new Set(sections.filter(Boolean).flatMap(section => section.refs.map(ref => ref[0])))];
   }
@@ -110,7 +119,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSea
 
 (() => {
   if (typeof document === 'undefined') return;
-  const index = CatalogSearch.createIndex({wordBranches:W_BRANCHES, course:BEGINNER_COURSE, grammarBranches:G_BRANCHES});
+  const index = CatalogSearch.createIndex({wordBranches:W_BRANCHES, course:BEGINNER_COURSE, grammarBranches:G_BRANCHES, topicBooks:typeof WORD_TOPIC_BOOKS==='undefined'?{}:WORD_TOPIC_BOOKS, entryMetadata:typeof WORD_ENTRY_METADATA==='undefined'?{}:WORD_ENTRY_METADATA});
   const headings = {lessons:'Уроки', topics:'Темы и подтемы', words:'Слова и фразы', rules:'Правила'};
   function mount(scope, root, before) {
     const search = document.createElement('section'), inputId = 'catalog-search-' + scope;
@@ -118,7 +127,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSea
     search.setAttribute('aria-label', scope === 'words' ? 'Поиск лексики' : 'Поиск правил');
     search.innerHTML = '<label for="' + inputId + '">' + (scope === 'words' ? 'Поиск по словам, темам и коду урока' : 'Поиск по темам и коду урока') + '</label>'
       + '<div class="study-search-field"><input type="search" id="' + inputId + '" placeholder="' + (scope === 'words' ? 'family, семья или 4A' : 'Present Simple, вопросы или 5A') + '" maxlength="120" autocomplete="off" spellcheck="false"><button type="button" class="study-search-clear" aria-label="Очистить поиск" hidden>×</button></div>'
-      + '<p class="study-search-hint">' + (scope === 'words' ? 'Вся лексика A1-B2. Можно искать по коду урока, например 4A. Нажмите на результат, чтобы выделить тему на схеме.' : 'Все правила A1-B2. Можно добавить уровень, например A1. Нажмите на результат, чтобы выделить тему на схеме.') + '</p>'
+      + '<p class="study-search-hint">' + (scope === 'words' ? 'Вся лексика A1-B2. Уточните учебник: PI 4A или INT 4A. Нажмите на результат, чтобы выделить тему на схеме.' : 'Все правила A1-B2. Можно добавить уровень, например A1. Нажмите на результат, чтобы выделить тему на схеме.') + '</p>'
       + '<div class="study-search-results" hidden><p class="study-search-status" role="status" aria-live="polite"></p><div class="study-search-groups"></div></div>';
     root.insertBefore(search, before);
     const input = search.querySelector('input'), clear = search.querySelector('.study-search-clear'), results = search.querySelector('.study-search-results');
@@ -135,7 +144,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSea
         return '<section class="study-search-group"><h3>' + headings[kind] + ' <span>' + items.length + '</span></h3><div class="study-search-items">' + items.slice(0, limit).map(item => {
           const action = actions.push(item) - 1, location = item.location;
           const label = location ? location.label : item.label || '';
-          const context = location ? location.title : item.path;
+          const context = location ? [location.bookTitle,location.title].filter(Boolean).join(' · ') : item.path;
           return '<button type="button" class="study-search-item" data-search-result="' + action + '"><span class="study-search-meta">' + esc(item.level) + (item.extra ? ' · Экстра' : '') + (label ? ' · ' + esc(label) : '') + '</span><strong>' + esc(item.title) + '</strong><span class="study-search-translation">' + esc(item.subtitle || '') + '</span><span class="study-search-path">' + esc(context) + '</span></button>';
         }).join('') + '</div>' + (items.length > limit ? '<button type="button" class="study-search-more" data-search-more="' + kind + '">Показать ещё (' + (items.length - limit) + ')</button>' : '') + '</section>';
       }).join('');
@@ -174,11 +183,11 @@ if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSea
   }
   function openRelatedItem(item) {
     if (item.kind === 'rules') G.openTopic(item.topicId);
-    else if (item.courseId) W.openCourseList(item.courseId, item.sectionIndex, item.extra ? 'extra' : 'base');
+    else if (item.courseId) W.openCourseList(item.courseId, item.sectionIndex, 'all');
     else W.openTopic(item.topicId);
   }
-  function openRelated(scope, level, source) {
-    const items = CatalogSearch.related(index, source, level, scope);
+  function openRelated(scope, level, source, book) {
+    const items = CatalogSearch.related(index, source, level, scope, book);
     if (!items.length) return;
     setMode(scope === 'rules' ? 'g' : 'w');
     if (items.length === 1) { openRelatedItem(items[0]); return; }
@@ -192,7 +201,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSea
     };
     openModal(adapter);
     modal.innerHTML = mHead(level + ' · урок ' + source, scope === 'rules' ? 'Правила этого урока' : 'Лексика этого урока')
-      + '<div class="lesson-links">' + lessonRefHTML(scope === 'rules' ? 'words' : 'rules', level, source) + '</div>'
+      + '<div class="lesson-links">' + lessonRefHTML(scope === 'rules' ? 'words' : 'rules', level, source, book) + '</div>'
       + '<div class="lesson-related-grid">' + items.map((item, i) =>
         '<button type="button" class="study-search-item" data-related-item="' + i + '"><span class="study-search-meta">' + esc(item.level) + ' · ' + esc(source)
         + '</span><strong>' + esc(item.title) + '</strong><span class="study-search-translation">' + esc(item.subtitle || '')
@@ -205,8 +214,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSea
     root.querySelectorAll('[data-lesson-scope]').forEach(ref => {
       if (linkedRefs.has(ref)) return;
       linkedRefs.add(ref);
-      const {lessonScope:scope, lessonLevel:level, lessonSource:source} = ref.dataset;
-      if (!CatalogSearch.related(index, source, level, scope).length) return;
+      const {lessonScope:scope, lessonLevel:level, lessonSource:source, lessonBook:book} = ref.dataset;
+      if (!CatalogSearch.related(index, source, level, scope, book).length) return;
       const name = scope === 'rules' ? 'Правила' : 'Лексика';
       ref.textContent = name + ' · ' + source;
       ref.setAttribute('role', 'button');
@@ -216,7 +225,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSea
       const go = event => {
         event.preventDefault();
         event.stopPropagation();
-        openRelated(scope, level, source);
+        openRelated(scope, level, source, book);
       };
       ref.addEventListener('click', go);
       ref.addEventListener('keydown', event => {
@@ -230,3 +239,4 @@ if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSea
   mount('words', words, words.querySelector('.jumpnav'));
   mount('rules', rules, rules.querySelector('.jumpnav'));
 })();
+
