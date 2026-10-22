@@ -96,7 +96,15 @@ const CatalogSearch = (() => {
     return entries.filter(item => item.kind === (scope === 'rules' ? 'rules' : 'topics')
       && (item.kind === 'rules' ? codes(item.label, true, letters) : item.codes).some(c => wanted.has(c)));
   }
-  return {createIndex, find, related};
+  function topicIds(item, course = []) {
+    if (!item) return [];
+    if (item.topicId) return [item.topicId];
+    const lesson = course.find(lesson => lesson.id === item.courseId);
+    if (!lesson) return [];
+    const sections = item.sectionIndex == null ? lesson.sections : [lesson.sections[item.sectionIndex]];
+    return [...new Set(sections.filter(Boolean).flatMap(section => section.refs.map(ref => ref[0])))];
+  }
+  return {createIndex, find, related, topicIds};
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSearch;
 
@@ -110,7 +118,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSea
     search.setAttribute('aria-label', scope === 'words' ? 'Поиск лексики' : 'Поиск правил');
     search.innerHTML = '<label for="' + inputId + '">' + (scope === 'words' ? 'Поиск по словам, темам и коду урока' : 'Поиск по темам и коду урока') + '</label>'
       + '<div class="study-search-field"><input type="search" id="' + inputId + '" placeholder="' + (scope === 'words' ? 'family, семья или 4A' : 'Present Simple, вопросы или 5A') + '" maxlength="120" autocomplete="off" spellcheck="false"><button type="button" class="study-search-clear" aria-label="Очистить поиск" hidden>×</button></div>'
-      + '<p class="study-search-hint">' + (scope === 'words' ? 'Вся лексика A1-B2. Можно искать по коду урока, например 4A. Откройте результат, чтобы отработать тему.' : 'Все правила A1-B2. Можно добавить уровень, например A1.') + '</p>'
+      + '<p class="study-search-hint">' + (scope === 'words' ? 'Вся лексика A1-B2. Можно искать по коду урока, например 4A. Нажмите на результат, чтобы выделить тему на схеме.' : 'Все правила A1-B2. Можно добавить уровень, например A1. Нажмите на результат, чтобы выделить тему на схеме.') + '</p>'
       + '<div class="study-search-results" hidden><p class="study-search-status" role="status" aria-live="polite"></p><div class="study-search-groups"></div></div>';
     root.insertBefore(search, before);
     const input = search.querySelector('input'), clear = search.querySelector('.study-search-clear'), results = search.querySelector('.study-search-results');
@@ -132,20 +140,28 @@ if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSea
         }).join('') + '</div>' + (items.length > limit ? '<button type="button" class="study-search-more" data-search-more="' + kind + '">Показать ещё (' + (items.length - limit) + ')</button>' : '') + '</section>';
       }).join('');
     }
-    function open(item) {
+    function focusTopic(item) {
       if (!item) return;
-      if (item.kind === 'rules') G.openTopic(item.topicId);
-      else if (item.courseId) W.openCourseList(item.courseId, item.sectionIndex, item.extra?'extra':'base');
-      else if (item.location) W.openCourseList(item.location.courseId, item.location.sectionIndex, item.extra?'extra':'base');
-      else W.openTopic(item.topicId);
-      if (item.kind === 'words') {
-        const row = [...modal.querySelectorAll('[data-word-id]')].find(row => row.dataset.wordId === item.topicId && row.dataset.wordKey === item.wordKey);
-        if (row) { row.classList.add('search-word-hit'); row.tabIndex = -1; row.focus({preventScroll:true}); row.scrollIntoView({block:'center'}); }
-      }
+      const board = item.kind === 'rules' ? G.board : W.board;
+      const node = CatalogSearch.topicIds(item, BEGINNER_COURSE)
+        .map(id => board.tree.querySelector('.node[data-id="' + CSS.escape(id) + '"]'))
+        .find(Boolean);
+      if (!node) { status.textContent = 'Эта тема пока отсутствует на схеме.'; return; }
+      if (board.root.hidden) setMode(item.kind === 'rules' ? 'g' : 'w');
+      const branch = node.closest('.cell')?.dataset.branch;
+      if (branch) board.setBranch(branch);
+      document.querySelectorAll('.search-topic-hit').forEach(previous => previous.classList.remove('search-topic-hit'));
+      node.classList.add('search-topic-hit');
+      node.focus({preventScroll:true});
+      requestAnimationFrame(() => node.scrollIntoView({
+        behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        block: 'center',
+        inline: 'center'
+      }));
     }
     input.addEventListener('input', () => { visible = {}; render(); });
     input.addEventListener('keydown', event => {
-      if (event.key === 'Enter') { event.preventDefault(); open(actions[0]); }
+      if (event.key === 'Enter') { event.preventDefault(); focusTopic(actions[0]); }
       if (event.key === 'Escape') { event.preventDefault(); input.value = ''; render(); }
     });
     clear.addEventListener('click', () => { input.value = ''; visible = {}; render(); input.focus(); });
@@ -153,7 +169,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSea
       const more = event.target.closest('[data-search-more]');
       if (more) { const kind = more.dataset.searchMore; visible[kind] = (visible[kind] || 6) + 12; render(); body.querySelector('[data-search-more="' + kind + '"]')?.focus({preventScroll:true}); return; }
       const result = event.target.closest('[data-search-result]');
-      if (result) open(actions[+result.dataset.searchResult]);
+      if (result) focusTopic(actions[+result.dataset.searchResult]);
     });
   }
   function openRelatedItem(item) {
@@ -195,7 +211,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSea
       ref.textContent = name + ' · ' + source;
       ref.setAttribute('role', 'button');
       ref.tabIndex = 0;
-      ref.title = 'Открыть ' + name.toLowerCase() + ': ' + level + ', урок ' + source;
+      ref.title = 'Открыть ' + (scope === 'rules' ? 'правила' : 'лексику') + ': ' + level + ', урок ' + source;
       ref.setAttribute('aria-label', ref.title);
       const go = event => {
         event.preventDefault();
