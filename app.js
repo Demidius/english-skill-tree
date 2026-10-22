@@ -1751,6 +1751,7 @@ function setMode(m){
   document.querySelectorAll('.modes button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.mode===m?'true':'false'));
   document.getElementById('modeSub').textContent = MODES[m].sub;
   if(MODES[m].mod){ const bd=MODES[m].mod.board; bd.setBranch(bd.active); } else SETTINGS.render();
+  window.dispatchEvent(new CustomEvent('ef-mode-change', {detail:{mode:m}}));
 }
 document.querySelectorAll('.modes button').forEach(b=>b.addEventListener('click',()=>{ if(b.dataset.mode!==mode) setMode(b.dataset.mode); }));
 setMode(mode);
