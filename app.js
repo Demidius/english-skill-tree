@@ -3,9 +3,9 @@ const TESTS = window.TESTS || {};
 
 // ================= shared helpers =================
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function lessonRefHTML(scope, level, source){
+function lessonRefHTML(scope, level, source, book){
   if(!source) return '';
-  return '<span class="src lesson-ref" data-lesson-scope="'+esc(scope)+'" data-lesson-level="'+esc(level)+'" data-lesson-source="'+esc(source)+'" title="Урок учебника">'+esc(source)+'</span>';
+  return '<span class="src lesson-ref" data-lesson-scope="'+esc(scope)+'" data-lesson-level="'+esc(level)+'" data-lesson-source="'+esc(source)+'"'+(book?' data-lesson-book="'+esc(book)+'"':'')+' title="Урок учебника">'+esc(source)+'</span>';
 }
 function el(tag, cls, html){ const e=document.createElement(tag); if(cls) e.className=cls; if(html!=null) e.innerHTML=html; return e; }
 function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
@@ -235,7 +235,7 @@ function Board(o){
   LEVELS.forEach((l,li)=>{
     const lab=el('div','lvl-label band-'+l.key+(li?' row-sep':''));
     lab.innerHTML='<div class="diamond" style="background:var('+l.c+')"><span>'+l.key+'</span></div>'+
-      '<div class="book">'+l.book+'</div><div class="lp"></div><div class="lbar"><span style="width:0"></span></div><div class="lpm"></div>';
+      '<div class="book">'+(l.key==='A2'?(o.key==='g'?'Pre-Intermediate':'Elementary / Pre-Intermediate'):l.book)+'</div><div class="lp"></div><div class="lbar"><span style="width:0"></span></div><div class="lpm"></div>';
     H.lp[l.key]=lab.querySelector('.lp'); H.lb[l.key]=lab.querySelector('.lbar span'); H.lpm[l.key]=lab.querySelector('.lpm');
     tree.appendChild(lab);
     o.branches.forEach(b=>{
@@ -550,7 +550,7 @@ const G = (function(){
     modal.classList.add('rulepage');
     const li=arr=>'<ul>'+arr.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>';
     const sc=scores[id];
-    modal.innerHTML=mHead('Правило · '+b.name+' · '+card.level+' '+lv.book, card.title,
+    modal.innerHTML=mHead('Правило · '+b.name+' · '+card.level+' '+(card.level==='A2'?'Pre-Intermediate':lv.book), card.title,
         TESTS[id]?'<button type="button" class="m-btn ghost m-hbtn" data-act="rtest">Тест</button>':'')+
       '<div class="r-meta">'+(cell[2]?esc(cell[2])+' · ':'')+'урок '+esc(cell[4]||'')+'</div>'+
       '<div class="lesson-links">'+lessonRefHTML('words',card.level,cell[4])+'</div>'+gEdit(id)+readEdit(id)+
@@ -728,7 +728,7 @@ const G = (function(){
     if(!TESTS[id]) return;
     const card=CARDS[id]; const b=G_BRANCHES.find(x=>x.key===card.branch); const lv=LEVELS.find(l=>l.key===card.level);
     modal.classList.remove('rulepage'); ruleId=null;
-    T={id, title:card.title, kicker:b.name+' · '+card.level+' '+lv.book, i:0, answers:[],
+    T={id, title:card.title, kicker:b.name+' · '+card.level+' '+(card.level==='A2'?'Pre-Intermediate':lv.book), i:0, answers:[],
        qs:shuffle(TESTS[id]).map(q=>({s:q[0], a:q[1], opts:shuffle(q.slice(1))}))};
     openModal(api);
     renderQ();
@@ -851,7 +851,13 @@ const W = (function(){
   function addCard(b, l, c, extra){
     const words=parseWords(c[3]);
     words.forEach(w=>{ w.tid=c[0]; if(!w.note && NOTES[c[0]+'|'+w.en]) w.note=NOTES[c[0]+'|'+w.en]; });
-    CARDS[c[0]]={branch:b.key, level:l.key, title:c[1], gloss:c[2], src:c[4]||'', tags:POS_ORDER.filter(p=>words.some(w=>w.p===p)), words, extra:!!extra};
+    words.forEach(w=>{
+      const e=typeof WORD_ENTRY_METADATA==='undefined'?null:WORD_ENTRY_METADATA[c[0]+'|'+w.k];
+      if(!e) return;
+      if(!e.matches.length) w.p=''; // The source list does not label parts of speech.
+      w.note=[w.note,e.variants.length?'Формы: '+e.variants.join(', '):'',e.examples.length?'Сочетания: '+e.examples.join('; '):''].filter(Boolean).join(' · ');
+    });
+    CARDS[c[0]]={branch:b.key, level:l.key, title:c[1], gloss:c[2], src:c[4]||'', book:typeof WORD_TOPIC_BOOKS==='undefined'?null:WORD_TOPIC_BOOKS[c[0]], tags:POS_ORDER.filter(p=>words.some(w=>w.p===p)), words, extra:!!extra};
   }
   W_BRANCHES.forEach(b=>LEVELS.forEach(l=>(b.cells[l.key]||[]).forEach(c=>addCard(b,l,c,false))));
   W_BRANCHES.forEach(b=>LEVELS.forEach(l=>((b.extra&&b.extra[l.key])||[]).forEach(c=>addCard(b,l,c,true))));
@@ -992,7 +998,7 @@ const W = (function(){
       '<span class="wbar">'+card.words.map(()=>'<i data-l="0"></i>').join('')+'</span>'+
       '<span class="word-count"></span>'+
       '<span class="foot"><span class="status-chip">'+STATUS_LABEL.not_started+'</span>'+
-      lessonRefHTML('rules',card.level,card.src)+'</span>';
+      lessonRefHTML('rules',card.level,card.src,card.book)+'</span>';
     if(card.extra) btn.classList.add('xnode');
     btn.addEventListener('click',()=>openList(id));
     return btn;
@@ -1148,15 +1154,16 @@ const W = (function(){
       '<span>'+ci.pct+'% · знаю '+ci.known+' / '+ci.n+(ci.learned?' · закреплено '+ci.learned:'')+'</span></div>';
   }
   function openList(id){
+    if(typeof WORD_TOPIC_COURSE!=='undefined'&&WORD_TOPIC_COURSE[id]) return openCourseList(WORD_TOPIC_COURSE[id],null,'all');
     const c=CARDS[id];
     S={mode:'list', id};
     openModal(api);
     modal.innerHTML=head(id,'Слова')+
       '<div class="m-gloss">'+esc(c.gloss)+' · '+c.words.length+' слов</div>'+
-      '<div class="lesson-links">'+lessonRefHTML('rules',c.level,c.src)+'</div>'+cardSummary(id)+
+      '<div class="lesson-links">'+lessonRefHTML('rules',c.level,c.src,c.book)+'</div>'+cardSummary(id)+
       '<div class="wl">'+c.words.map(w=>
         '<div class="row" data-word-id="'+esc(id)+'" data-word-key="'+esc(w.k)+'"><span class="en">'+esc(w.en)+'</span><span class="ru">'+esc(w.ru)+'</span>'+
-        '<span class="tg '+w.p+'" title="'+esc(POS_RU[w.p])+'">'+POS_NAME[w.p]+'</span>'+lvlEdit(id,w)+sayBtn(w.en)+
+        (w.p?'<span class="tg '+w.p+'" title="'+esc(POS_RU[w.p])+'">'+POS_NAME[w.p]+'</span>':'')+lvlEdit(id,w)+sayBtn(w.en)+
         (w.note?'<span class="exl nt">'+esc(w.note)+'</span>':'')+
         (w.ex?'<span class="exl">'+exampleHTML(w)+'</span>':'')+'</div>').join('')+'</div>'+
       '<div class="m-actions"><button type="button" class="m-btn ghost" data-act="close">Закрыть</button>'+
@@ -1191,13 +1198,13 @@ const W = (function(){
     S={mode:'course-list',course:courseId,section:sectionIndex,part};
     openModal(api);
     const partName=part==='base'?'Базовая лексика':part==='extra'?'Дополнительная лексика':'Все слова';
-    modal.innerHTML=mHead('Beginner · '+lesson.label+' · '+partName,lesson.title)+
+    modal.innerHTML=mHead((lesson.bookTitle||'Beginner')+' · '+lesson.label+' · '+partName,lesson.title)+
       '<div class="m-gloss">'+esc(lesson.ru)+'<br>'+esc(lesson.source)+'</div>'+
-      '<div class="lesson-links">'+lessonRefHTML('rules','A1',lesson.code||lesson.label)+'</div>'+courseSummary(courseWords(courseId,sectionIndex,part))+
+      '<div class="lesson-links">'+lessonRefHTML('rules',lesson.ruleLevel||'A1',lesson.code||lesson.label,lesson.book)+'</div>'+courseSummary(courseWords(courseId,sectionIndex,part))+
       sections.filter(Boolean).map(section=>{const refs=section.refs.filter(([id])=>part==='all'||(part==='extra')===CARDS[id].extra);if(!refs.length)return '';return '<section class="course-word-section"><h3>'+esc(section.title)+'</h3><div class="wl">'+refs.map(([id,k,en,ru])=>{
         const w=CARDS[id].words.find(w=>w.k===k);
         return '<div class="row" data-word-id="'+esc(id)+'" data-word-key="'+esc(k)+'"><span class="en">'+esc(en)+'</span><span class="ru">'+esc(ru)+'</span>'+
-          '<span class="tg '+w.p+'">'+POS_NAME[w.p]+'</span><span class="course-level" data-tid="'+id+'">'+lvlEdit(id,w)+'</span>'+sayBtn(en)+
+          (w.p?'<span class="tg '+w.p+'">'+POS_NAME[w.p]+'</span>':'')+'<span class="course-level" data-tid="'+id+'">'+lvlEdit(id,w)+'</span>'+sayBtn(en)+
           (w.note?'<span class="exl nt">'+esc(w.note)+'</span>':'')+(w.ex?'<span class="exl">'+exampleHTML(w)+'</span>':'')+'</div>';
       }).join('')+'</div></section>';}).join('')+
       '<div class="m-actions"><button type="button" class="m-btn ghost" data-act="close">Закрыть</button><button type="button" class="m-btn" data-act="course-session">Отработать '+(sectionIndex==null?'урок':'подтему')+'</button></div>';
@@ -1207,7 +1214,7 @@ const W = (function(){
     const lesson=BEGINNER_COURSE.find(l=>l.id===courseId); if(!lesson) return;
     const now=Date.now(), words=courseWords(courseId,sectionIndex,part);
     const q=shuffle(words.filter(w=>{const r=rec(w.tid,w.k);return isNew(r)||isDue(r,now);}));
-    S={mode:'session',course:courseId,section:sectionIndex,part,lv:lesson.label,lvs:['A1'],kind:'lesson',queue:q,wait:[],done:0,flipped:false,start:{},fails:{},seen:[],hist:[]};
+    S={mode:'session',course:courseId,section:sectionIndex,part,lv:lesson.label,lvs:[lesson.level||'A1'],kind:'lesson',queue:q,wait:[],done:0,flipped:false,start:{},fails:{},seen:[],hist:[]};
     q.forEach(w=>{S.start[w.tid+'|'+w.k]=lvl(w.tid,w.k);});
     openModal(api);
     if(!q.length){
@@ -1253,7 +1260,7 @@ const W = (function(){
   }
   function lvLabel(lks){ return lks.length===LEVELS.length?'все уровни':lks.join(' · '); }
   function lvHead(){
-    if(S.course){ const lesson=BEGINNER_COURSE.find(l=>l.id===S.course); return mHead('Beginner · '+lesson.label+' · '+(S.part==='extra'?'Дополнительная лексика':S.part==='all'?'Все слова':'Базовая лексика'),S.section==null?lesson.title:lesson.sections[S.section].title); }
+    if(S.course){ const lesson=BEGINNER_COURSE.find(l=>l.id===S.course); return mHead((lesson.bookTitle||'Beginner')+' · '+lesson.label+' · '+(S.part==='extra'?'Дополнительная лексика':S.part==='all'?'Все слова':'Базовая лексика'),S.section==null?lesson.title:lesson.sections[S.section].title); }
     return mHead(KIND_NAME[S.kind]||'Повторение', lvLabel(S.lvs));
   }
   function openReview(kind, lks){
@@ -1332,6 +1339,7 @@ const W = (function(){
   setInterval(()=>{ if(!document.hidden && !S) renderPanel(); }, 60000);
 
   function openSession(id){
+    if(typeof WORD_TOPIC_COURSE!=='undefined'&&WORD_TOPIC_COURSE[id]) return openCourseSession(WORD_TOPIC_COURSE[id],null,'all');
     if(isLocked(id)){ openLocked(id); return; }
     if(needProfile()) return;
     const pk=pickWords(id);
@@ -1362,10 +1370,10 @@ const W = (function(){
     let h=(S.lv?lvHead():head(id, S.review?'Повторение':'Карточки'))+
       '<div class="sess-meta"><span>осталось '+S.queue.length+(S.wait&&S.wait.length?' · ждут '+S.wait.length:'')+'</span><span>'+(S.lv?esc(CARDS[id].title):'тема '+cardInfo(id).pct+'%')+'</span></div>'+
       '<div class="sess-bar"><span style="width:'+pct+'%"></span></div>'+
-      '<div class="fc"><span class="pos">'+esc(POS_RU[w.p])+'</span>'+
+      '<div class="fc">'+(w.p?'<span class="pos">'+esc(POS_RU[w.p])+'</span>':'')+
       '<div class="front'+(S.flipped?' small':'')+'">'+esc(w.ru)+'</div>';
     if(!S.flipped && S.kbox){
-      h+='<form class="kbox" autocomplete="off" data-word-id="'+esc(id)+'" data-word-en="'+esc(w.en)+'" data-word-pos="'+w.p+'"><label for="knownIn">Напиши слово по-английски</label>'+
+      h+='<form class="kbox" autocomplete="off" data-word-id="'+esc(id)+'" data-word-key="'+esc(w.k)+'" data-word-en="'+esc(w.en)+'" data-word-pos="'+w.p+'"><label for="knownIn">Напиши слово по-английски</label>'+
         '<div class="kbox-row"><input id="knownIn" type="text" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="english">'+
         '<button type="submit" class="m-btn">Проверить</button></div>'+
         '<button type="button" class="linkbtn" data-act="kcancel">Отмена</button></form>';
@@ -1602,7 +1610,7 @@ const W = (function(){
       refresh();
     },()=>{ACCOUNT.denied(pid);});
     if(q){
-      const ids=typeof WORD_LEGACY_TOPICS==='undefined'?ALL:[...WORD_LEGACY_TOPICS];
+      const ids=typeof WORD_LEGACY_TOPICS==='undefined'?ALL:[...new Set([...ALL,...WORD_LEGACY_TOPICS])];
       ids.forEach(id=>{if(q.pending(id))prog[id]=q.overlay(id,prog[id]||{});});
       refresh();q.flushAll();
     }
@@ -1901,4 +1909,5 @@ async function startCloud(user){
     first=false;
   });
 })();
+
 
