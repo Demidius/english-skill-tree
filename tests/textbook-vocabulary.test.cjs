@@ -85,7 +85,7 @@ test('rule links use textbook identity rather than accidentally linking Elementa
  assert.ok(Search.related(index,'1A','B1','words','INT').some(i=>i.courseId==='INT-1A'));
 });
 test('lesson search targets a visible lesson topic without invoking a dialog',()=>{
- for(const lesson of d.course){const ids=Search.topicIds({courseId:lesson.id},d.course);assert.ok(ids.length);for(const id of ids)assert.ok(after.some(w=>w.id===id));}
+ for(const lesson of d.course){const ids=Search.topicIds({courseId:lesson.id},d.course);assert.ok(ids.length);for(const id of ids)assert.ok(after.some(w=>w.id===id));assert.equal(d.topicBooks[ids[0]],lesson.book,lesson.id+' should focus its own book');}
  const focus=read('catalog-search.js').split('function focusTopic(item) {')[1].split("    input.addEventListener")[0];
  assert.match(focus,/search-topic-hit/);assert.match(focus,/scrollIntoView/);assert.doesNotMatch(focus,/openCourse|openModal|openTopic/);
 });

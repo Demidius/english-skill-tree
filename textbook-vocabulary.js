@@ -124,7 +124,8 @@ const WORD_ENTRY_METADATA = {};
     BEGINNER_COURSE.push({id:lesson.id,book:lesson.book,bookTitle:book.title,level:book.level,ruleLevel:book.ruleLevel,
       code:lesson.code,label:lesson.code,title:lesson.title,ru:lesson.subtitle,source:lesson.source.replace(/;\s*WB[^;]*/g,''),
       entryIds:lesson.entry_ids,firstMentions:lesson.first_mentions,repeatMentions:lesson.repeat_mentions,
-      topicIds:[...new Set(lesson.entry_ids.map(id=>TEXTBOOK_ENTRIES[id].topicId))],
+      topicIds:[...new Set(lesson.entry_ids.map(id=>TEXTBOOK_ENTRIES[id].topicId))]
+        .sort((a,b)=>Number(WORD_TOPIC_BOOKS[b]===lesson.book)-Number(WORD_TOPIC_BOOKS[a]===lesson.book)),
       sections:[{title:lesson.subtitle||lesson.title,refs:lesson.entry_ids.map(id=>{
         const e=TEXTBOOK_ENTRIES[id]; return [e.topicId,e.wordKey,e.english,e.translation_ru];
       })}]});
