@@ -1059,7 +1059,7 @@ const W = (function(){
       '</ul></section>'+
       '<section><h3>Лексика по учебнику</h3><ul>'+
       '<li>A1 — English File Beginner, A2 — English File Elementary (4th edition). В этих уровнях только то, что учебник ставит целью выучить: Vocabulary Bank, лексика урока, Words and phrases to learn и фразы Practical English. Метка на карточке — код урока, например 4A или PE 3.</li>'+
-      '<li>Экстра-темы остались только на B1-B2: они открываются отдельно для каждой ветки, когда её основные темы на этом уровне пройдены на 75%.</li>'+
+      '<li>Дополнительная лексика Pre-Intermediate и Intermediate распределена по обычным темам как Экстра. Экстра-темы открываются отдельно для каждой ветки, когда её основные темы на этом уровне пройдены на 75%.</li>'+
       '</ul></section>',
     cell:(b,lk)=>{
       const main=(b.cells[lk]||[]).map(cardNode);
@@ -1118,7 +1118,8 @@ const W = (function(){
   let S=null;
   function head(id, what){
     const c=CARDS[id]; const b=W_BRANCHES.find(x=>x.key===c.branch); const lv=LEVELS.find(l=>l.key===c.level);
-    return mHead(what+' · '+b.name+' · '+c.level+' '+lv.book, c.title);
+    const book=typeof TEXTBOOK_BOOKS==='undefined'?null:TEXTBOOK_BOOKS[c.book];
+    return mHead(what+' · '+b.name+' · '+c.level+' '+(book?.title||lv.book), c.title);
   }
   function lvlEdit(id,w){
     const l=lvl(id,w.k), k=esc(w.k);
@@ -1154,7 +1155,6 @@ const W = (function(){
       '<span>'+ci.pct+'% · знаю '+ci.known+' / '+ci.n+(ci.learned?' · закреплено '+ci.learned:'')+'</span></div>';
   }
   function openList(id){
-    if(typeof WORD_TOPIC_COURSE!=='undefined'&&WORD_TOPIC_COURSE[id]) return openCourseList(WORD_TOPIC_COURSE[id],null,'all');
     const c=CARDS[id];
     S={mode:'list', id};
     openModal(api);
@@ -1339,7 +1339,6 @@ const W = (function(){
   setInterval(()=>{ if(!document.hidden && !S) renderPanel(); }, 60000);
 
   function openSession(id){
-    if(typeof WORD_TOPIC_COURSE!=='undefined'&&WORD_TOPIC_COURSE[id]) return openCourseSession(WORD_TOPIC_COURSE[id],null,'all');
     if(isLocked(id)){ openLocked(id); return; }
     if(needProfile()) return;
     const pk=pickWords(id);
@@ -1909,5 +1908,6 @@ async function startCloud(user){
     first=false;
   });
 })();
+
 
 

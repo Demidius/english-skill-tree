@@ -5,7 +5,6 @@ const TEXTBOOK_BOOKS = {
   INT: {title:'Intermediate', level:'B1', ruleLevel:'B1'}
 };
 const WORD_TOPIC_BOOKS = {};
-const WORD_TOPIC_COURSE = {};
 const TEXTBOOK_ENTRIES = {};
 const WORD_ENTRY_METADATA = {};
 (function () {
@@ -51,7 +50,7 @@ const WORD_ENTRY_METADATA = {};
       const card=newCards.get(topic), clean=s=>String(s||'').replace(/[;|]/g,',');
       card.keys.add(key);
       card.rows.push([clean(entry.english),clean(entry.translation_ru),'o',clean(entry.examples.join(' / '))].join('|'));
-      WORD_TOPIC_BOOKS[topic]=lesson.book; WORD_TOPIC_COURSE[topic]=lesson.id;
+      WORD_TOPIC_BOOKS[topic]=lesson.book;
       WORD_LEGACY_TOPICS.add(topic);
     }
     TEXTBOOK_ENTRIES[entry.id]={...entry,topicId:topic,wordKey:key};
@@ -63,17 +62,72 @@ const WORD_ENTRY_METADATA = {};
       return c[3].trim();
     });
   }
-  const branch={key:'textbooks',name:'Textbook lessons',ru:'Уроки учебников',color:'#8a785a',cells:{A1:[],A2:[],B1:[],B2:[]}};
-  for(const [id,card] of newCards) branch.cells[card.book.level].push([id,card.book.title+' · '+card.lesson.code,'Новые записи · '+card.lesson.title,card.rows.join(';'),card.lesson.code]);
-  W_BRANCHES.push(branch);
+  // Keep the previous lesson-owned keys as aliases, then place supplementary
+  // words in compact thematic cards. Earlier canonical words stay in place.
+  const routes = new Map(), groups = new Map();
+  for (const lesson of TEXTBOOK_VOCABULARY.lessons) {
+    const spec = TEXTBOOK_EXTRA_TOPICS.lessons[lesson.id];
+    if (!spec || !TEXTBOOK_EXTRA_TOPICS.topics[spec.topic]) throw Error('Missing topic: ' + lesson.id);
+    const overrides = new Map();
+    for (const [topic, names] of Object.entries(spec.overrides || {})) {
+      if (!TEXTBOOK_EXTRA_TOPICS.topics[topic]) throw Error('Unknown topic: ' + topic);
+      for (const en of names.split('|')) {
+        if (overrides.has(en)) throw Error('Duplicate topic assignment: ' + lesson.id + '/' + en);
+        overrides.set(en, topic);
+      }
+    }
+    routes.set(lesson.id, {topic:spec.topic, overrides});
+  }
+  for (const entry of Object.values(TEXTBOOK_ENTRIES)) {
+    if (entry.matches.length) continue;
+    const lesson = TEXTBOOK_VOCABULARY.lessons.find(l => l.id === entry.first_lesson);
+    const route = routes.get(lesson.id), topic = route.overrides.get(entry.english) || route.topic;
+    const groupKey = lesson.book + '|' + topic;
+    if (!groups.has(groupKey)) groups.set(groupKey, {book:lesson.book, topic, entries:[]});
+    groups.get(groupKey).entries.push(entry);
+  }
+  for (const group of groups.values()) {
+    const [branchKey, title, ru] = TEXTBOOK_EXTRA_TOPICS.topics[group.topic];
+    const branch = W_BRANCHES.find(b => b.key === branchKey), book = TEXTBOOK_BOOKS[group.book];
+    if (!branch) throw Error('Unknown vocabulary branch: ' + branchKey);
+    branch.extra ||= {}; branch.extra[book.level] ||= [];
+    const chunks = [];
+    for (const entry of group.entries) {
+      let chunk = chunks.at(-1);
+      // Same spelling with different meanings must have separate progress keys.
+      if (!chunk || chunk.entries.length >= 24 || chunk.keys.has(entry.wordKey)) {
+        chunk = {entries:[], keys:new Set()}; chunks.push(chunk);
+      }
+      chunk.entries.push(entry); chunk.keys.add(entry.wordKey);
+    }
+    chunks.forEach((chunk, i) => {
+      const id = 'efx-' + group.book.toLowerCase() + '-' + group.topic + '-' + (i + 1);
+      const codes = new Set(), rows = [];
+      for (const entry of chunk.entries) {
+        const oldKey = entry.topicId + '|' + entry.wordKey;
+        const row = newCards.get(entry.topicId).rows.find(r => slug(r.split('|')[0]) === entry.wordKey);
+        if (!row) throw Error('Missing supplementary row: ' + entry.id);
+        rows.push(row);
+        entry.lesson_ids.filter(l => l.startsWith(group.book + '-')).forEach(l => codes.add(l.slice(group.book.length + 1)));
+        mergeAliases(id + '|' + entry.wordKey, [oldKey]);
+        delete WORD_ENTRY_METADATA[oldKey];
+        entry.topicId = id;
+        WORD_ENTRY_METADATA[id + '|' + entry.wordKey] = entry;
+      }
+      const suffix = chunks.length > 1 ? ' ' + (i + 1) : '';
+      branch.extra[book.level].push([id, title + suffix, ru, rows.join(';'), group.book + ' ' + [...codes].join(', ')]);
+      WORD_TOPIC_BOOKS[id] = group.book; WORD_LEGACY_TOPICS.add(id);
+    });
+  }
   for(const lesson of TEXTBOOK_VOCABULARY.lessons) {
     const book=TEXTBOOK_BOOKS[lesson.book];
     BEGINNER_COURSE.push({id:lesson.id,book:lesson.book,bookTitle:book.title,level:book.level,ruleLevel:book.ruleLevel,
-      code:lesson.code,label:lesson.code,title:lesson.title,ru:lesson.subtitle,source:lesson.source,
+      code:lesson.code,label:lesson.code,title:lesson.title,ru:lesson.subtitle,source:lesson.source.replace(/;\s*WB[^;]*/g,''),
       entryIds:lesson.entry_ids,firstMentions:lesson.first_mentions,repeatMentions:lesson.repeat_mentions,
-      topicIds:[...newCards].filter(([,c])=>c.lesson.id===lesson.id).map(([id])=>id),
+      topicIds:[...new Set(lesson.entry_ids.map(id=>TEXTBOOK_ENTRIES[id].topicId))],
       sections:[{title:lesson.subtitle||lesson.title,refs:lesson.entry_ids.map(id=>{
         const e=TEXTBOOK_ENTRIES[id]; return [e.topicId,e.wordKey,e.english,e.translation_ru];
       })}]});
   }
 })();
+

@@ -1,0 +1,6570 @@
+{
+  "lex-be-from-d16ff8f7": [
+    "eft-pi-1a",
+    "be-from"
+  ],
+  "lex-be-born-fa6df846": [
+    "eft-pi-1a",
+    "be-born"
+  ],
+  "lex-live-in-a-house-3fe3b486": [
+    "eft-pi-1a",
+    "live-in-a-house"
+  ],
+  "lex-live-with-friends-b2d1a06b": [
+    "eft-pi-1a",
+    "live-with-friends"
+  ],
+  "lex-have-brothers-and-sisters-094ff629": [
+    "eft-pi-1a",
+    "have-brothers-and-sisters"
+  ],
+  "lex-have-a-pet-5db61a43": [
+    "eft-pi-1a",
+    "have-a-pet"
+  ],
+  "lex-and-you-bc34f91b": [
+    "eft-pi-1a",
+    "and-you"
+  ],
+  "lex-foreign-language-359be4e4": [
+    "eft-pi-1a",
+    "foreign-language"
+  ],
+  "lex-learn-english-04e68650": [
+    "eft-pi-1a",
+    "learn-english"
+  ],
+  "lex-study-at-university-74bb5b46": [
+    "eft-pi-1a",
+    "study-at-university"
+  ],
+  "lex-watch-1f52c524": [
+    "eft-pi-1a",
+    "watch"
+  ],
+  "lex-watch-a-tv-series-ae69a4f0": [
+    "eft-pi-1a",
+    "watch-a-tv-series"
+  ],
+  "lex-during-the-week-c574cc54": [
+    "eft-pi-1a",
+    "during-the-week"
+  ],
+  "lex-at-the-weekend-55c70222": [
+    "eft-pi-1a",
+    "at-the-weekend"
+  ],
+  "lex-last-weekend-80e7b740": [
+    "eft-pi-1a",
+    "last-weekend"
+  ],
+  "lex-appearance-ce2b0446": [
+    "eft-pi-1b",
+    "appearance"
+  ],
+  "lex-medium-height-c74d0707": [
+    "eft-pi-1b",
+    "medium-height"
+  ],
+  "lex-thin-93e96a52": [
+    "eft-pi-1b",
+    "thin"
+  ],
+  "lex-slim-5c2425fd": [
+    "eft-pi-1b",
+    "slim"
+  ],
+  "lex-overweight-3c7ae5e6": [
+    "eft-pi-1b",
+    "overweight"
+  ],
+  "lex-fat-dac076b7": [
+    "eft-pi-1b",
+    "fat"
+  ],
+  "lex-hair-aa490271": [
+    "eft-pi-1b",
+    "hair"
+  ],
+  "lex-straight-aad07b4b": [
+    "eft-pi-1b",
+    "straight"
+  ],
+  "lex-curly-3b6236af": [
+    "eft-pi-1b",
+    "curly"
+  ],
+  "lex-blonde-58d9ae63": [
+    "eft-pi-1b",
+    "blonde"
+  ],
+  "lex-eye-efa857ce": [
+    "eft-pi-1b",
+    "eye"
+  ],
+  "lex-beard-e4787976": [
+    "eft-pi-1b",
+    "beard"
+  ],
+  "lex-moustache-022b8110": [
+    "eft-pi-1b",
+    "moustache"
+  ],
+  "lex-bald-159eda1b": [
+    "eft-pi-1b",
+    "bald"
+  ],
+  "lex-handsome-7c59e200": [
+    "eft-pi-1b",
+    "handsome"
+  ],
+  "lex-good-looking-a8fa3720": [
+    "eft-pi-1b",
+    "good-looking"
+  ],
+  "lex-what-does-he-look-like-677ff60e": [
+    "eft-pi-1b",
+    "what-does-he-look-like"
+  ],
+  "lex-what-s-he-like-d90d1abf": [
+    "eft-pi-1b",
+    "what-s-he-like"
+  ],
+  "lex-personality-d4c63a66": [
+    "eft-pi-1b",
+    "personality"
+  ],
+  "lex-friendly-0d792edc": [
+    "eft-pi-1b",
+    "friendly"
+  ],
+  "lex-unfriendly-58adf433": [
+    "eft-pi-1b",
+    "unfriendly"
+  ],
+  "lex-talkative-57884a74": [
+    "eft-pi-1b",
+    "talkative"
+  ],
+  "lex-quiet-c7e7e384": [
+    "eft-pi-1b",
+    "quiet"
+  ],
+  "lex-generous-676d94e4": [
+    "eft-pi-1b",
+    "generous"
+  ],
+  "lex-mean-fc6bb3e5": [
+    "eft-pi-1b",
+    "mean"
+  ],
+  "lex-kind-5ba23cf2": [
+    "eft-pi-1b",
+    "kind"
+  ],
+  "lex-unkind-db394d66": [
+    "eft-pi-1b",
+    "unkind"
+  ],
+  "lex-lazy-d5715b9a": [
+    "eft-pi-1b",
+    "lazy"
+  ],
+  "lex-hard-working-8c3ca66b": [
+    "eft-pi-1b",
+    "hard-working"
+  ],
+  "lex-funny-0f47ea31": [
+    "eft-pi-1b",
+    "funny"
+  ],
+  "lex-serious-682530ea": [
+    "eft-pi-1b",
+    "serious"
+  ],
+  "lex-clever-b0c351c0": [
+    "eft-pi-1b",
+    "clever"
+  ],
+  "lex-stupid-edaa5248": [
+    "eft-pi-1b",
+    "stupid"
+  ],
+  "lex-shy-3d3d04e4": [
+    "eft-pi-1b",
+    "shy"
+  ],
+  "lex-extrovert-19fffab9": [
+    "eft-pi-1b",
+    "extrovert"
+  ],
+  "lex-warm-996830f4": [
+    "eft-pi-1b",
+    "warm"
+  ],
+  "lex-romantic-3b7fe34d": [
+    "eft-pi-1b",
+    "romantic"
+  ],
+  "lex-go-on-a-date-1d75a68e": [
+    "eft-pi-1b",
+    "go-on-a-date"
+  ],
+  "lex-single-0b534b30": [
+    "eft-pi-1b",
+    "single"
+  ],
+  "lex-divorced-55d14d6f": [
+    "eft-pi-1b",
+    "divorced"
+  ],
+  "lex-remarry-955e30ac": [
+    "eft-pi-1b",
+    "remarry"
+  ],
+  "lex-be-close-6f29dc0b": [
+    "eft-pi-1b",
+    "be-close"
+  ],
+  "lex-look-after-somebody-f08323af": [
+    "eft-pi-1b",
+    "look-after-somebody"
+  ],
+  "lex-face-to-face-dcbb29c7": [
+    "eft-pi-1b",
+    "face-to-face"
+  ],
+  "lex-online-dating-website-f9b47c9e": [
+    "eft-pi-1b",
+    "online-dating-website"
+  ],
+  "lex-dating-profile-cba758ec": [
+    "eft-pi-1b",
+    "dating-profile"
+  ],
+  "lex-profile-picture-6659ff09": [
+    "eft-pi-1b",
+    "profile-picture"
+  ],
+  "lex-blouse-5b072c4c": [
+    "eft-pi-1c",
+    "blouse"
+  ],
+  "lex-cardigan-eb7335de": [
+    "eft-pi-1c",
+    "cardigan"
+  ],
+  "lex-coat-a389a6e8": [
+    "eft-pi-1c",
+    "coat"
+  ],
+  "lex-dress-30a8f535": [
+    "eft-pi-1c",
+    "dress"
+  ],
+  "lex-jacket-1262bcd1": [
+    "eft-pi-1c",
+    "jacket"
+  ],
+  "lex-leggings-c35270b3": [
+    "eft-pi-1c",
+    "leggings"
+  ],
+  "lex-pyjamas-dd50a9d9": [
+    "eft-pi-1c",
+    "pyjamas"
+  ],
+  "lex-shirt-bacde7ec": [
+    "eft-pi-1c",
+    "shirt"
+  ],
+  "lex-skirt-b28a0652": [
+    "eft-pi-1c",
+    "skirt"
+  ],
+  "lex-suit-7067898a": [
+    "eft-pi-1c",
+    "suit"
+  ],
+  "lex-sweater-373bb346": [
+    "eft-pi-1c",
+    "sweater"
+  ],
+  "lex-jumper-7aad8d06": [
+    "eft-pi-1c",
+    "jumper"
+  ],
+  "lex-tights-39ee808d": [
+    "eft-pi-1c",
+    "tights"
+  ],
+  "lex-top-86bb0e8c": [
+    "eft-pi-1c",
+    "top"
+  ],
+  "lex-tracksuit-6db79c6e": [
+    "eft-pi-1c",
+    "tracksuit"
+  ],
+  "lex-t-shirt-6f39f820": [
+    "eft-pi-1c",
+    "t-shirt"
+  ],
+  "lex-underwear-54192f3b": [
+    "eft-pi-1c",
+    "underwear"
+  ],
+  "lex-boot-a06fb6f6": [
+    "eft-pi-1c",
+    "boot"
+  ],
+  "lex-flip-flop-bd0afd8a": [
+    "eft-pi-1c",
+    "flip-flop"
+  ],
+  "lex-sandal-cfc66303": [
+    "eft-pi-1c",
+    "sandal"
+  ],
+  "lex-belt-e6c7a923": [
+    "eft-pi-1c",
+    "belt"
+  ],
+  "lex-cap-01cfb251": [
+    "eft-pi-1c",
+    "cap"
+  ],
+  "lex-hat-54dd7e13": [
+    "eft-pi-1c",
+    "hat"
+  ],
+  "lex-glove-8a420551": [
+    "eft-pi-1c",
+    "glove"
+  ],
+  "lex-scarf-66147df5": [
+    "eft-pi-1c",
+    "scarf"
+  ],
+  "lex-tie-ff17273d": [
+    "eft-pi-1c",
+    "tie"
+  ],
+  "lex-jewellery-320df3cd": [
+    "eft-pi-1c",
+    "jewellery"
+  ],
+  "lex-bracelet-5cdf24ca": [
+    "eft-pi-1c",
+    "bracelet"
+  ],
+  "lex-earring-80d92eea": [
+    "eft-pi-1c",
+    "earring"
+  ],
+  "lex-necklace-9f154640": [
+    "eft-pi-1c",
+    "necklace"
+  ],
+  "lex-ring-e0265372": [
+    "eft-pi-1c",
+    "ring"
+  ],
+  "lex-wear-clothes-22bab2c8": [
+    "eft-pi-1c",
+    "wear-clothes"
+  ],
+  "lex-carry-3119de3e": [
+    "eft-pi-1c",
+    "carry"
+  ],
+  "lex-pair-of-shoes-8e01ba7d": [
+    "eft-pi-1c",
+    "pair-of-shoes"
+  ],
+  "lex-behind-880f9d03": [
+    "eft-pi-1c",
+    "behind"
+  ],
+  "lex-in-front-of-49245d3b": [
+    "eft-pi-1c",
+    "in-front-of"
+  ],
+  "lex-in-the-middle-of-d21deb86": [
+    "eft-pi-1c",
+    "in-the-middle-of"
+  ],
+  "lex-in-the-corner-d104293d": [
+    "eft-pi-1c",
+    "in-the-corner"
+  ],
+  "lex-on-the-wall-2e3f624a": [
+    "eft-pi-1c",
+    "on-the-wall"
+  ],
+  "lex-painting-d4e3d0d9": [
+    "eft-pi-1c",
+    "painting"
+  ],
+  "lex-sink-66750be1": [
+    "eft-pi-1c",
+    "sink"
+  ],
+  "lex-washing-machine-295df3ff": [
+    "eft-pi-1c",
+    "washing-machine"
+  ],
+  "lex-cleaning-products-33118ace": [
+    "eft-pi-1c",
+    "cleaning-products"
+  ],
+  "lex-receptionist-31680ba1": [
+    "eft-pi-pe1",
+    "receptionist"
+  ],
+  "lex-guest-752ddb85": [
+    "eft-pi-pe1",
+    "guest"
+  ],
+  "lex-signal-4ded9043": [
+    "eft-pi-pe1",
+    "signal"
+  ],
+  "lex-view-4343343f": [
+    "eft-pi-pe1",
+    "view"
+  ],
+  "lex-there-s-a-problem-with-1530a17f": [
+    "eft-pi-pe1",
+    "there-s-a-problem-with"
+  ],
+  "lex-it-isn-t-working-12d2c207": [
+    "eft-pi-pe1",
+    "it-isn-t-working"
+  ],
+  "lex-i-can-t-get-a-signal-daefb21f": [
+    "eft-pi-pe1",
+    "i-can-t-get-a-signal"
+  ],
+  "lex-i-m-sorry-to-bother-you-a3052f44": [
+    "eft-pi-pe1",
+    "i-m-sorry-to-bother-you"
+  ],
+  "lex-i-ll-send-somebody-up-d4ccde75": [
+    "eft-pi-pe1",
+    "i-ll-send-somebody-up"
+  ],
+  "lex-right-now-cd093f79": [
+    "eft-pi-pe1",
+    "right-now"
+  ],
+  "lex-put-somebody-through-to-9b820c81": [
+    "eft-pi-pe1",
+    "put-somebody-through-to"
+  ],
+  "lex-it-s-great-to-be-here-60ae4a9a": [
+    "eft-pi-pe1",
+    "it-s-great-to-be-here"
+  ],
+  "lex-do-you-have-a-good-view-649cb167": [
+    "eft-pi-pe1",
+    "do-you-have-a-good-view"
+  ],
+  "lex-you-must-be-really-tired-80cbcb25": [
+    "eft-pi-pe1",
+    "you-must-be-really-tired"
+  ],
+  "lex-i-guess-you-re-right-4ddd44c7": [
+    "eft-pi-pe1",
+    "i-guess-you-re-right"
+  ],
+  "lex-it-s-great-to-see-you-too-7b8dfdbd": [
+    "eft-pi-pe1",
+    "it-s-great-to-see-you-too"
+  ],
+  "lex-go-abroad-5424ed31": [
+    "eft-pi-2a",
+    "go-abroad"
+  ],
+  "lex-go-away-for-the-weekend-0f3c39f5": [
+    "eft-pi-2a",
+    "go-away-for-the-weekend"
+  ],
+  "lex-go-camping-62311c80": [
+    "eft-pi-2a",
+    "go-camping"
+  ],
+  "lex-go-out-at-night-56e5e398": [
+    "eft-pi-2a",
+    "go-out-at-night"
+  ],
+  "lex-go-skiing-bcdfd952": [
+    "eft-pi-2a",
+    "go-skiing"
+  ],
+  "lex-go-cycling-d883e95e": [
+    "eft-pi-2a",
+    "go-cycling"
+  ],
+  "lex-go-swimming-c1104a1a": [
+    "eft-pi-2a",
+    "go-swimming"
+  ],
+  "lex-go-sailing-2ed10eaa": [
+    "eft-pi-2a",
+    "go-sailing"
+  ],
+  "lex-go-surfing-0ade0383": [
+    "eft-pi-2a",
+    "go-surfing"
+  ],
+  "lex-go-fishing-ac52cffb": [
+    "eft-pi-2a",
+    "go-fishing"
+  ],
+  "lex-stay-at-a-campsite-59c064ec": [
+    "eft-pi-2a",
+    "stay-at-a-campsite"
+  ],
+  "lex-stay-with-friends-91ebfab4": [
+    "eft-pi-2a",
+    "stay-with-friends"
+  ],
+  "lex-take-photos-e0acb3da": [
+    "eft-pi-2a",
+    "take-photos"
+  ],
+  "lex-buy-2b6a6592": [
+    "eft-pi-2a",
+    "buy"
+  ],
+  "lex-sunbathe-on-the-beach-b2fd4cf6": [
+    "eft-pi-2a",
+    "sunbathe-on-the-beach"
+  ],
+  "lex-spend-money-4a10ec5b": [
+    "eft-pi-2a",
+    "spend-money"
+  ],
+  "lex-rent-1cd6130e": [
+    "eft-pi-2a",
+    "rent"
+  ],
+  "lex-hire-16bfa21f": [
+    "eft-pi-2a",
+    "hire"
+  ],
+  "lex-book-06bd8d84": [
+    "eft-pi-2a",
+    "book"
+  ],
+  "lex-passport-4468392a": [
+    "eft-pi-2a",
+    "passport"
+  ],
+  "lex-flight-56cc8e3b": [
+    "eft-pi-2a",
+    "flight"
+  ],
+  "lex-luggage-b66d5dd8": [
+    "eft-pi-2a",
+    "luggage"
+  ],
+  "lex-suitcase-57e4adc4": [
+    "eft-pi-2a",
+    "suitcase"
+  ],
+  "lex-comfortable-761fd15e": [
+    "eft-pi-2a",
+    "comfortable"
+  ],
+  "lex-uncomfortable-1ac52d68": [
+    "eft-pi-2a",
+    "uncomfortable"
+  ],
+  "lex-luxurious-7c7217f7": [
+    "eft-pi-2a",
+    "luxurious"
+  ],
+  "lex-helpful-7f2f53ad": [
+    "eft-pi-2a",
+    "helpful"
+  ],
+  "lex-unhelpful-277d46dc": [
+    "eft-pi-2a",
+    "unhelpful"
+  ],
+  "lex-lovely-9ede5d16": [
+    "eft-pi-2a",
+    "lovely"
+  ],
+  "lex-crowded-7789444a": [
+    "eft-pi-2a",
+    "crowded"
+  ],
+  "lex-sunny-2ff90f88": [
+    "eft-pi-2a",
+    "sunny"
+  ],
+  "lex-windy-98ecc7f6": [
+    "eft-pi-2a",
+    "windy"
+  ],
+  "lex-foggy-8c094b41": [
+    "eft-pi-2a",
+    "foggy"
+  ],
+  "lex-cloudy-923b934b": [
+    "eft-pi-2a",
+    "cloudy"
+  ],
+  "lex-wonderful-e211d1f2": [
+    "eft-pi-2a",
+    "wonderful"
+  ],
+  "lex-not-bad-939e9254": [
+    "eft-pi-2a",
+    "not-bad"
+  ],
+  "lex-all-right-112a88e6": [
+    "eft-pi-2a",
+    "all-right"
+  ],
+  "lex-in-a-photo-c43a39b4": [
+    "eft-pi-2b",
+    "in-a-photo"
+  ],
+  "lex-in-the-background-2ce5c53f": [
+    "eft-pi-2b",
+    "in-the-background"
+  ],
+  "lex-at-the-airport-c42b66b1": [
+    "eft-pi-2b",
+    "at-the-airport"
+  ],
+  "lex-at-the-station-09703c2f": [
+    "eft-pi-2b",
+    "at-the-station"
+  ],
+  "lex-at-a-bus-stop-44690b45": [
+    "eft-pi-2b",
+    "at-a-bus-stop"
+  ],
+  "lex-in-a-room-a3f38861": [
+    "eft-pi-2b",
+    "in-a-room"
+  ],
+  "lex-in-a-building-1f5f2e34": [
+    "eft-pi-2b",
+    "in-a-building"
+  ],
+  "lex-in-a-park-892c94f2": [
+    "eft-pi-2b",
+    "in-a-park"
+  ],
+  "lex-in-a-garden-99a1c366": [
+    "eft-pi-2b",
+    "in-a-garden"
+  ],
+  "lex-on-a-bus-61b9c5e8": [
+    "eft-pi-2b",
+    "on-a-bus"
+  ],
+  "lex-on-a-bike-975785fb": [
+    "eft-pi-2b",
+    "on-a-bike"
+  ],
+  "lex-on-the-floor-9fc1acab": [
+    "eft-pi-2b",
+    "on-the-floor"
+  ],
+  "lex-on-a-shelf-b8cbf12e": [
+    "eft-pi-2b",
+    "on-a-shelf"
+  ],
+  "lex-on-the-balcony-daeedd94": [
+    "eft-pi-2b",
+    "on-the-balcony"
+  ],
+  "lex-on-the-roof-77549ba1": [
+    "eft-pi-2b",
+    "on-the-roof"
+  ],
+  "lex-at-night-481bae10": [
+    "eft-pi-2b",
+    "at-night"
+  ],
+  "lex-on-monday-morning-3a79269f": [
+    "eft-pi-2b",
+    "on-monday-morning"
+  ],
+  "lex-on-new-year-s-day-e9b43e77": [
+    "eft-pi-2b",
+    "on-new-year-s-day"
+  ],
+  "lex-at-christmas-febbf64b": [
+    "eft-pi-2b",
+    "at-christmas"
+  ],
+  "lex-at-easter-49a0c681": [
+    "eft-pi-2b",
+    "at-easter"
+  ],
+  "lex-in-winter-23c255e8": [
+    "eft-pi-2b",
+    "in-winter"
+  ],
+  "lex-in-2018-ce526cec": [
+    "eft-pi-2b",
+    "in-2018"
+  ],
+  "lex-on-1st-march-f52aca9e": [
+    "eft-pi-2b",
+    "on-1st-march"
+  ],
+  "lex-at-six-o-clock-edc61ed3": [
+    "eft-pi-2b",
+    "at-six-o-clock"
+  ],
+  "lex-invite-somebody-to-dinner-77a886ee": [
+    "eft-pi-2c",
+    "invite-somebody-to-dinner"
+  ],
+  "lex-meet-in-a-club-1723736d": [
+    "eft-pi-2c",
+    "meet-in-a-club"
+  ],
+  "lex-meet-in-a-coffee-bar-cc00f9fe": [
+    "eft-pi-2c",
+    "meet-in-a-coffee-bar"
+  ],
+  "lex-play-a-song-18a5ad78": [
+    "eft-pi-2c",
+    "play-a-song"
+  ],
+  "lex-give-somebody-your-phone-number-510c7406": [
+    "eft-pi-2c",
+    "give-somebody-your-phone-number"
+  ],
+  "lex-wait-for-somebody-17ed0b29": [
+    "eft-pi-2c",
+    "wait-for-somebody"
+  ],
+  "lex-take-somebody-to-a-restaurant-c4a8803a": [
+    "eft-pi-2c",
+    "take-somebody-to-a-restaurant"
+  ],
+  "lex-have-a-great-time-093c1477": [
+    "eft-pi-2c",
+    "have-a-great-time"
+  ],
+  "lex-leave-the-club-6abe8260": [
+    "eft-pi-2c",
+    "leave-the-club"
+  ],
+  "lex-drive-along-the-high-street-4f4c2eb5": [
+    "eft-pi-2c",
+    "drive-along-the-high-street"
+  ],
+  "lex-run-across-the-road-11499d8c": [
+    "eft-pi-2c",
+    "run-across-the-road"
+  ],
+  "lex-stay-in-touch-f74b6f7f": [
+    "eft-pi-2c",
+    "stay-in-touch"
+  ],
+  "lex-stop-in-time-da6b5fc8": [
+    "eft-pi-2c",
+    "stop-in-time"
+  ],
+  "lex-few-minutes-later-44f85e75": [
+    "eft-pi-2c",
+    "few-minutes-later"
+  ],
+  "lex-after-that-616fcea0": [
+    "eft-pi-2c",
+    "after-that"
+  ],
+  "lex-next-day-4c19c593": [
+    "eft-pi-2c",
+    "next-day"
+  ],
+  "lex-one-evening-in-october-98affa8c": [
+    "eft-pi-2c",
+    "one-evening-in-october"
+  ],
+  "lex-suddenly-08755a9c": [
+    "eft-pi-2c",
+    "suddenly"
+  ],
+  "lex-although-9f6dfea6": [
+    "eft-pi-2c",
+    "although"
+  ],
+  "lex-because-315eb11c": [
+    "eft-pi-2c",
+    "because"
+  ],
+  "lex-so-a76c58a0": [
+    "eft-pi-2c",
+    "so"
+  ],
+  "lex-but-e34a6e23": [
+    "eft-pi-2c",
+    "but"
+  ],
+  "lex-arrivals-4f788fa2": [
+    "eft-pi-3a",
+    "arrivals"
+  ],
+  "lex-departures-0411c035": [
+    "eft-pi-3a",
+    "departures"
+  ],
+  "lex-bag-drop-fcb6fab3": [
+    "eft-pi-3a",
+    "bag-drop"
+  ],
+  "lex-baggage-reclaim-e64b94bf": [
+    "eft-pi-3a",
+    "baggage-reclaim"
+  ],
+  "lex-check-in-306142d1": [
+    "eft-pi-3a",
+    "check-in"
+  ],
+  "lex-check-in-for-a-flight-1435ea90": [
+    "eft-pi-3a",
+    "check-in-for-a-flight"
+  ],
+  "lex-gate-302a672d": [
+    "eft-pi-3a",
+    "gate"
+  ],
+  "lex-gate-number-b08d7b21": [
+    "eft-pi-3a",
+    "gate-number"
+  ],
+  "lex-lift-f1c46c72": [
+    "eft-pi-3a",
+    "lift"
+  ],
+  "lex-security-check-2c5f458c": [
+    "eft-pi-3a",
+    "security-check"
+  ],
+  "lex-terminal-91804ffa": [
+    "eft-pi-3a",
+    "terminal"
+  ],
+  "lex-trolley-23b32e9f": [
+    "eft-pi-3a",
+    "trolley"
+  ],
+  "lex-boarding-pass-c25dc866": [
+    "eft-pi-3a",
+    "boarding-pass"
+  ],
+  "lex-board-a-plane-68471322": [
+    "eft-pi-3a",
+    "board-a-plane"
+  ],
+  "lex-land-d8bae1ff": [
+    "eft-pi-3a",
+    "land"
+  ],
+  "lex-pick-somebody-up-f8f0da7f": [
+    "eft-pi-3a",
+    "pick-somebody-up"
+  ],
+  "lex-drop-somebody-off-b8b9d3ed": [
+    "eft-pi-3a",
+    "drop-somebody-off"
+  ],
+  "lex-connecting-flight-86319b2a": [
+    "eft-pi-3a",
+    "connecting-flight"
+  ],
+  "lex-departure-lounge-258f2d27": [
+    "eft-pi-3a",
+    "departure-lounge"
+  ],
+  "lex-miss-a-flight-c060a8af": [
+    "eft-pi-3a",
+    "miss-a-flight"
+  ],
+  "lex-catch-a-flight-a86f1964": [
+    "eft-pi-3a",
+    "catch-a-flight"
+  ],
+  "lex-guide-ec309141": [
+    "eft-pi-3a",
+    "guide"
+  ],
+  "lex-tourist-attraction-2e132893": [
+    "eft-pi-3a",
+    "tourist-attraction"
+  ],
+  "lex-look-around-4fe2167b": [
+    "eft-pi-3a",
+    "look-around"
+  ],
+  "lex-on-your-own-2ebf495b": [
+    "eft-pi-3a",
+    "on-your-own"
+  ],
+  "lex-worldwide-d8cb0db9": [
+    "eft-pi-3a",
+    "worldwide"
+  ],
+  "lex-arrive-in-a-city-a7278a4f": [
+    "eft-pi-3b",
+    "arrive-in-a-city"
+  ],
+  "lex-depend-on-something-b06a37c6": [
+    "eft-pi-3b",
+    "depend-on-something"
+  ],
+  "lex-agree-with-somebody-ce35a619": [
+    "eft-pi-3b",
+    "agree-with-somebody"
+  ],
+  "lex-ask-for-something-8111dc68": [
+    "eft-pi-3b",
+    "ask-for-something"
+  ],
+  "lex-listen-to-somebody-e7833c53": [
+    "eft-pi-3b",
+    "listen-to-somebody"
+  ],
+  "lex-pay-for-a-meal-e4fb5088": [
+    "eft-pi-3b",
+    "pay-for-a-meal"
+  ],
+  "lex-speak-to-somebody-fe7b9d62": [
+    "eft-pi-3b",
+    "speak-to-somebody"
+  ],
+  "lex-talk-to-somebody-about-something-81a44ead": [
+    "eft-pi-3b",
+    "talk-to-somebody-about-something"
+  ],
+  "lex-write-to-somebody-75cc8a8d": [
+    "eft-pi-3b",
+    "write-to-somebody"
+  ],
+  "lex-spend-money-on-something-ff799e29": [
+    "eft-pi-3b",
+    "spend-money-on-something"
+  ],
+  "lex-worry-about-something-6686e3b8": [
+    "eft-pi-3b",
+    "worry-about-something"
+  ],
+  "lex-believe-in-ghosts-f58ab84c": [
+    "eft-pi-3b",
+    "believe-in-ghosts"
+  ],
+  "lex-think-about-something-bcb596fe": [
+    "eft-pi-3b",
+    "think-about-something"
+  ],
+  "lex-think-of-something-573a2ed2": [
+    "eft-pi-3b",
+    "think-of-something"
+  ],
+  "lex-belong-to-somebody-7842ebe6": [
+    "eft-pi-3b",
+    "belong-to-somebody"
+  ],
+  "lex-belong-to-a-club-86f42657": [
+    "eft-pi-3b",
+    "belong-to-a-club"
+  ],
+  "lex-calendar-e45534e3": [
+    "eft-pi-3b",
+    "calendar"
+  ],
+  "lex-list-ead61399": [
+    "eft-pi-3b",
+    "list"
+  ],
+  "lex-post-it-note-2ee66bfd": [
+    "eft-pi-3b",
+    "post-it-note"
+  ],
+  "lex-keep-something-in-your-head-6cc7ffb1": [
+    "eft-pi-3b",
+    "keep-something-in-your-head"
+  ],
+  "lex-at-the-last-possible-minute-0c8fc3ae": [
+    "eft-pi-3b",
+    "at-the-last-possible-minute"
+  ],
+  "lex-arrange-to-meet-d8a7ecea": [
+    "eft-pi-3b",
+    "arrange-to-meet"
+  ],
+  "lex-somebody-who-4dda612b": [
+    "eft-pi-3c",
+    "somebody-who"
+  ],
+  "lex-something-which-0b06a57d": [
+    "eft-pi-3c",
+    "something-which"
+  ],
+  "lex-somewhere-where-1e814cbe": [
+    "eft-pi-3c",
+    "somewhere-where"
+  ],
+  "lex-kind-of-737e17a3": [
+    "eft-pi-3c",
+    "kind-of"
+  ],
+  "lex-opposite-of-309aeeae": [
+    "eft-pi-3c",
+    "opposite-of"
+  ],
+  "lex-like-ade4cda9": [
+    "eft-pi-3c",
+    "like"
+  ],
+  "lex-for-example-4859c1a1": [
+    "eft-pi-3c",
+    "for-example"
+  ],
+  "lex-it-s-used-for-025d0856": [
+    "eft-pi-3c",
+    "it-s-used-for"
+  ],
+  "lex-explain-what-you-mean-1f563e13": [
+    "eft-pi-3c",
+    "explain-what-you-mean"
+  ],
+  "lex-look-up-a-translation-a90565c5": [
+    "eft-pi-3c",
+    "look-up-a-translation"
+  ],
+  "lex-mime-a-word-2014628d": [
+    "eft-pi-3c",
+    "mime-a-word"
+  ],
+  "lex-definition-c7bf9437": [
+    "eft-pi-3c",
+    "definition"
+  ],
+  "lex-contestant-607fcda1": [
+    "eft-pi-3c",
+    "contestant"
+  ],
+  "lex-presenter-d6c041bf": [
+    "eft-pi-3c",
+    "presenter"
+  ],
+  "lex-game-show-86095983": [
+    "eft-pi-3c",
+    "game-show"
+  ],
+  "lex-crossword-cdb02f63": [
+    "eft-pi-3c",
+    "crossword"
+  ],
+  "lex-aim-of-the-game-2dcf0774": [
+    "eft-pi-3c",
+    "aim-of-the-game"
+  ],
+  "lex-get-an-answer-right-c260060e": [
+    "eft-pi-3c",
+    "get-an-answer-right"
+  ],
+  "lex-get-an-answer-wrong-b3484fd2": [
+    "eft-pi-3c",
+    "get-an-answer-wrong"
+  ],
+  "lex-win-4c789295": [
+    "eft-pi-3c",
+    "win"
+  ],
+  "lex-pass-3b60efea": [
+    "eft-pi-3c",
+    "pass"
+  ],
+  "lex-bakery-2e54faec": [
+    "eft-pi-3c",
+    "bakery"
+  ],
+  "lex-wallet-309db949": [
+    "eft-pi-3c",
+    "wallet"
+  ],
+  "lex-credit-card-e99f38fe": [
+    "eft-pi-3c",
+    "credit-card"
+  ],
+  "lex-post-office-618be6e1": [
+    "eft-pi-3c",
+    "post-office"
+  ],
+  "lex-parcel-ca79f0c2": [
+    "eft-pi-3c",
+    "parcel"
+  ],
+  "lex-banana-57c32fac": [
+    "eft-pi-3c",
+    "banana"
+  ],
+  "lex-purse-6542eaad": [
+    "eft-pi-3c",
+    "purse"
+  ],
+  "lex-menu-c71ac052": [
+    "eft-pi-pe2",
+    "menu"
+  ],
+  "lex-course-85e5169e": [
+    "eft-pi-pe2",
+    "course"
+  ],
+  "lex-waiter-817a5a10": [
+    "eft-pi-pe2",
+    "waiter"
+  ],
+  "lex-order-eedde440": [
+    "eft-pi-pe2",
+    "order"
+  ],
+  "lex-medium-8117dc28": [
+    "eft-pi-pe2",
+    "medium"
+  ],
+  "lex-fries-5eab47af": [
+    "eft-pi-pe2",
+    "fries"
+  ],
+  "lex-baked-potato-3c954c97": [
+    "eft-pi-pe2",
+    "baked-potato"
+  ],
+  "lex-still-water-ea786178": [
+    "eft-pi-pe2",
+    "still-water"
+  ],
+  "lex-sparkling-water-59711386": [
+    "eft-pi-pe2",
+    "sparkling-water"
+  ],
+  "lex-table-for-two-a81d870c": [
+    "eft-pi-pe2",
+    "table-for-two"
+  ],
+  "lex-i-d-like-the-steak-please-9d4d9414": [
+    "eft-pi-pe2",
+    "i-d-like-the-steak-please"
+  ],
+  "lex-how-would-you-like-your-steak-8e1f5612": [
+    "eft-pi-pe2",
+    "how-would-you-like-your-steak"
+  ],
+  "lex-could-we-have-the-bill-please-7c699da3": [
+    "eft-pi-pe2",
+    "could-we-have-the-bill-please"
+  ],
+  "lex-i-asked-for-not-65eb0fd9": [
+    "eft-pi-pe2",
+    "i-asked-for-not"
+  ],
+  "lex-i-ll-take-it-back-to-the-kitchen-d2a177ca": [
+    "eft-pi-pe2",
+    "i-ll-take-it-back-to-the-kitchen"
+  ],
+  "lex-to-start-with-5c75de07": [
+    "eft-pi-pe2",
+    "to-start-with"
+  ],
+  "lex-do-you-have-any-suggestions-480bfc49": [
+    "eft-pi-pe2",
+    "do-you-have-any-suggestions"
+  ],
+  "lex-that-would-be-great-7e0d8abe": [
+    "eft-pi-pe2",
+    "that-would-be-great"
+  ],
+  "lex-there-s-a-mistake-789a732c": [
+    "eft-pi-pe2",
+    "there-s-a-mistake"
+  ],
+  "lex-housework-d75f9d60": [
+    "eft-pi-4a",
+    "housework"
+  ],
+  "lex-clean-the-floor-214a2c74": [
+    "eft-pi-4a",
+    "clean-the-floor"
+  ],
+  "lex-do-the-ironing-275fd804": [
+    "eft-pi-4a",
+    "do-the-ironing"
+  ],
+  "lex-do-the-vacuuming-f0188c3c": [
+    "eft-pi-4a",
+    "do-the-vacuuming"
+  ],
+  "lex-do-the-hoovering-3c628adb": [
+    "eft-pi-4a",
+    "do-the-hoovering"
+  ],
+  "lex-do-the-washing-dd96a2d2": [
+    "eft-pi-4a",
+    "do-the-washing"
+  ],
+  "lex-do-the-washing-up-17c6ed2f": [
+    "eft-pi-4a",
+    "do-the-washing-up"
+  ],
+  "lex-dust-the-furniture-f25eca61": [
+    "eft-pi-4a",
+    "dust-the-furniture"
+  ],
+  "lex-lay-the-table-fb79be40": [
+    "eft-pi-4a",
+    "lay-the-table"
+  ],
+  "lex-clear-the-table-5f27e447": [
+    "eft-pi-4a",
+    "clear-the-table"
+  ],
+  "lex-load-the-dishwasher-c2997173": [
+    "eft-pi-4a",
+    "load-the-dishwasher"
+  ],
+  "lex-unload-the-dishwasher-f6af3f4f": [
+    "eft-pi-4a",
+    "unload-the-dishwasher"
+  ],
+  "lex-make-lunch-8bd522ba": [
+    "eft-pi-4a",
+    "make-lunch"
+  ],
+  "lex-make-the-bed-800ab8fc": [
+    "eft-pi-4a",
+    "make-the-bed"
+  ],
+  "lex-pick-up-dirty-clothes-0d240a92": [
+    "eft-pi-4a",
+    "pick-up-dirty-clothes"
+  ],
+  "lex-put-away-d150b66a": [
+    "eft-pi-4a",
+    "put-away"
+  ],
+  "lex-take-out-the-rubbish-80f84df8": [
+    "eft-pi-4a",
+    "take-out-the-rubbish"
+  ],
+  "lex-tidy-your-room-3fdbf78e": [
+    "eft-pi-4a",
+    "tidy-your-room"
+  ],
+  "lex-make-a-mistake-5c6a4e27": [
+    "eft-pi-4a",
+    "make-a-mistake"
+  ],
+  "lex-do-an-exam-6b8e0c5b": [
+    "eft-pi-4a",
+    "do-an-exam"
+  ],
+  "lex-do-an-exercise-1244ef64": [
+    "eft-pi-4a",
+    "do-an-exercise"
+  ],
+  "lex-basket-0d29fead": [
+    "eft-pi-4b",
+    "basket"
+  ],
+  "lex-changing-room-087d29fe": [
+    "eft-pi-4b",
+    "changing-room"
+  ],
+  "lex-checkout-f75ebfc5": [
+    "eft-pi-4b",
+    "checkout"
+  ],
+  "lex-self-service-checkout-08ca9b85": [
+    "eft-pi-4b",
+    "self-service-checkout"
+  ],
+  "lex-customer-1f841644": [
+    "eft-pi-4b",
+    "customer"
+  ],
+  "lex-receipt-c149b171": [
+    "eft-pi-4b",
+    "receipt"
+  ],
+  "lex-shop-assistant-80771de7": [
+    "eft-pi-4b",
+    "shop-assistant"
+  ],
+  "lex-sales-51602dee": [
+    "eft-pi-4b",
+    "sales"
+  ],
+  "lex-till-aa157274": [
+    "eft-pi-4b",
+    "till"
+  ],
+  "lex-try-on-clothes-f0a94236": [
+    "eft-pi-4b",
+    "try-on-clothes"
+  ],
+  "lex-fit-somebody-ea6b6fcf": [
+    "eft-pi-4b",
+    "fit-somebody"
+  ],
+  "lex-suit-somebody-db710dd2": [
+    "eft-pi-4b",
+    "suit-somebody"
+  ],
+  "lex-take-back-195b51a5": [
+    "eft-pi-4b",
+    "take-back"
+  ],
+  "lex-i-m-just-looking-thank-you-5a1ef2e7": [
+    "eft-pi-4b",
+    "i-m-just-looking-thank-you"
+  ],
+  "lex-what-size-are-you-f8448e61": [
+    "eft-pi-4b",
+    "what-size-are-you"
+  ],
+  "lex-can-i-try-on-this-shirt-dcd2ad6c": [
+    "eft-pi-4b",
+    "can-i-try-on-this-shirt"
+  ],
+  "lex-it-s-too-big-for-me-ff5c6318": [
+    "eft-pi-4b",
+    "it-s-too-big-for-me"
+  ],
+  "lex-website-8168d3c1": [
+    "eft-pi-4b",
+    "website"
+  ],
+  "lex-create-an-account-456ba08e": [
+    "eft-pi-4b",
+    "create-an-account"
+  ],
+  "lex-personal-details-08508c45": [
+    "eft-pi-4b",
+    "personal-details"
+  ],
+  "lex-click-on-an-item-0e10d177": [
+    "eft-pi-4b",
+    "click-on-an-item"
+  ],
+  "lex-item-3eb84a8b": [
+    "eft-pi-4b",
+    "item"
+  ],
+  "lex-shopping-basket-39a932c1": [
+    "eft-pi-4b",
+    "shopping-basket"
+  ],
+  "lex-proceed-to-checkout-b957a9da": [
+    "eft-pi-4b",
+    "proceed-to-checkout"
+  ],
+  "lex-delivery-address-c1a6591c": [
+    "eft-pi-4b",
+    "delivery-address"
+  ],
+  "lex-standard-delivery-466fdebf": [
+    "eft-pi-4b",
+    "standard-delivery"
+  ],
+  "lex-debit-card-b1b2f028": [
+    "eft-pi-4b",
+    "debit-card"
+  ],
+  "lex-payment-details-4d832781": [
+    "eft-pi-4b",
+    "payment-details"
+  ],
+  "lex-expiry-date-7ea4e5d5": [
+    "eft-pi-4b",
+    "expiry-date"
+  ],
+  "lex-confirm-a-payment-6c8b4e65": [
+    "eft-pi-4b",
+    "confirm-a-payment"
+  ],
+  "lex-reference-number-ed66bb2c": [
+    "eft-pi-4b",
+    "reference-number"
+  ],
+  "lex-confirmation-email-3b3f5d29": [
+    "eft-pi-4b",
+    "confirmation-email"
+  ],
+  "lex-auction-site-5b9cfd55": [
+    "eft-pi-4b",
+    "auction-site"
+  ],
+  "lex-chain-store-868e920a": [
+    "eft-pi-4b",
+    "chain-store"
+  ],
+  "lex-independent-shop-44d4a8c6": [
+    "eft-pi-4b",
+    "independent-shop"
+  ],
+  "lex-boring-5b99f45b": [
+    "eft-pi-4c",
+    "boring"
+  ],
+  "lex-depressed-44640846": [
+    "eft-pi-4c",
+    "depressed"
+  ],
+  "lex-depressing-b9d4ad2d": [
+    "eft-pi-4c",
+    "depressing"
+  ],
+  "lex-relaxed-1cb33435": [
+    "eft-pi-4c",
+    "relaxed"
+  ],
+  "lex-relaxing-022392a8": [
+    "eft-pi-4c",
+    "relaxing"
+  ],
+  "lex-interested-93d529a8": [
+    "eft-pi-4c",
+    "interested"
+  ],
+  "lex-interesting-1b3f0548": [
+    "eft-pi-4c",
+    "interesting"
+  ],
+  "lex-excited-e7cafc7c": [
+    "eft-pi-4c",
+    "excited"
+  ],
+  "lex-frightening-d1ebf76d": [
+    "eft-pi-4c",
+    "frightening"
+  ],
+  "lex-feel-jealous-a3458b4f": [
+    "eft-pi-4c",
+    "feel-jealous"
+  ],
+  "lex-be-bored-with-something-b30aa268": [
+    "eft-pi-4c",
+    "be-bored-with-something"
+  ],
+  "lex-be-interested-in-something-cfda37cf": [
+    "eft-pi-4c",
+    "be-interested-in-something"
+  ],
+  "lex-be-excited-about-something-a843f7ff": [
+    "eft-pi-4c",
+    "be-excited-about-something"
+  ],
+  "lex-be-frightened-of-something-c6d09991": [
+    "eft-pi-4c",
+    "be-frightened-of-something"
+  ],
+  "lex-tell-lies-8c6ee8df": [
+    "eft-pi-4c",
+    "tell-lies"
+  ],
+  "lex-tell-the-truth-c0cf7204": [
+    "eft-pi-4c",
+    "tell-the-truth"
+  ],
+  "lex-social-media-bc4ff3bd": [
+    "eft-pi-4c",
+    "social-media"
+  ],
+  "lex-post-90e2a407": [
+    "eft-pi-4c",
+    "post"
+  ],
+  "lex-invent-a-story-979ca006": [
+    "eft-pi-4c",
+    "invent-a-story"
+  ],
+  "lex-survey-14c094ea": [
+    "eft-pi-4c",
+    "survey"
+  ],
+  "lex-romantic-break-daa63da7": [
+    "eft-pi-4c",
+    "romantic-break"
+  ],
+  "lex-in-reality-126d6b51": [
+    "eft-pi-4c",
+    "in-reality"
+  ],
+  "lex-look-forward-to-something-3105f0e9": [
+    "eft-pi-4c",
+    "look-forward-to-something"
+  ],
+  "lex-hundred-85fd0523": [
+    "eft-pi-5a",
+    "hundred"
+  ],
+  "lex-thousand-d2cc7dea": [
+    "eft-pi-5a",
+    "thousand"
+  ],
+  "lex-million-11039108": [
+    "eft-pi-5a",
+    "million"
+  ],
+  "lex-three-thousand-and-twenty-five-e8f94783": [
+    "eft-pi-5a",
+    "three-thousand-and-twenty-five"
+  ],
+  "lex-two-and-a-half-thousand-0ab624f5": [
+    "eft-pi-5a",
+    "two-and-a-half-thousand"
+  ],
+  "lex-quarter-f4f703dc": [
+    "eft-pi-5a",
+    "quarter"
+  ],
+  "lex-three-quarters-95b99e62": [
+    "eft-pi-5a",
+    "three-quarters"
+  ],
+  "lex-two-thirds-9c8fc39b": [
+    "eft-pi-5a",
+    "two-thirds"
+  ],
+  "lex-seventy-five-per-cent-fbe988b0": [
+    "eft-pi-5a",
+    "seventy-five-per-cent"
+  ],
+  "lex-nine-point-two-94efca96": [
+    "eft-pi-5a",
+    "nine-point-two"
+  ],
+  "lex-twenty-fifth-of-may-136774f4": [
+    "eft-pi-5a",
+    "twenty-fifth-of-may"
+  ],
+  "lex-about-five-hundred-e6accc9b": [
+    "eft-pi-5a",
+    "about-five-hundred"
+  ],
+  "lex-at-least-twelve-7571263d": [
+    "eft-pi-5a",
+    "at-least-twelve"
+  ],
+  "lex-between-two-thousand-and-three-thousand-82a8e811": [
+    "eft-pi-5a",
+    "between-two-thousand-and-three-thousand"
+  ],
+  "lex-more-than-a30bf13e": [
+    "eft-pi-5a",
+    "more-than"
+  ],
+  "lex-less-than-6aab7070": [
+    "eft-pi-5a",
+    "less-than"
+  ],
+  "lex-percentage-6353bb4b": [
+    "eft-pi-5a",
+    "percentage"
+  ],
+  "lex-average-price-a8eb12b5": [
+    "eft-pi-5a",
+    "average-price"
+  ],
+  "lex-patient-285ab0fc": [
+    "eft-pi-5a",
+    "patient"
+  ],
+  "lex-patience-9c784378": [
+    "eft-pi-5a",
+    "patience"
+  ],
+  "lex-be-stuck-in-traffic-165ac0d5": [
+    "eft-pi-5a",
+    "be-stuck-in-traffic"
+  ],
+  "lex-queue-a21a58e3": [
+    "eft-pi-5a",
+    "queue"
+  ],
+  "lex-web-page-29fb2032": [
+    "eft-pi-5a",
+    "web-page"
+  ],
+  "lex-load-addc56b7": [
+    "eft-pi-5a",
+    "load"
+  ],
+  "lex-download-1ada7ea5": [
+    "eft-pi-5a",
+    "download"
+  ],
+  "lex-in-the-north-3cee29d3": [
+    "eft-pi-5b",
+    "in-the-north"
+  ],
+  "lex-in-the-south-59e7c37e": [
+    "eft-pi-5b",
+    "in-the-south"
+  ],
+  "lex-in-the-east-cb344e65": [
+    "eft-pi-5b",
+    "in-the-east"
+  ],
+  "lex-in-the-west-fce0ad77": [
+    "eft-pi-5b",
+    "in-the-west"
+  ],
+  "lex-on-the-coast-4453e3a0": [
+    "eft-pi-5b",
+    "on-the-coast"
+  ],
+  "lex-on-a-river-a14f2fe4": [
+    "eft-pi-5b",
+    "on-a-river"
+  ],
+  "lex-medium-sized-e79c70e5": [
+    "eft-pi-5b",
+    "medium-sized"
+  ],
+  "lex-have-a-population-of-5fde856a": [
+    "eft-pi-5b",
+    "have-a-population-of"
+  ],
+  "lex-be-famous-for-fe1072ff": [
+    "eft-pi-5b",
+    "be-famous-for"
+  ],
+  "lex-city-centre-35a47acd": [
+    "eft-pi-5b",
+    "city-centre"
+  ],
+  "lex-modern-b9132318": [
+    "eft-pi-5b",
+    "modern"
+  ],
+  "lex-historic-d9e1162c": [
+    "eft-pi-5b",
+    "historic"
+  ],
+  "lex-polluted-a802eb27": [
+    "eft-pi-5b",
+    "polluted"
+  ],
+  "lex-bridge-b23e3d99": [
+    "eft-pi-5b",
+    "bridge"
+  ],
+  "lex-canal-fcdbf91e": [
+    "eft-pi-5b",
+    "canal"
+  ],
+  "lex-castle-03dde8ad": [
+    "eft-pi-5b",
+    "castle"
+  ],
+  "lex-cathedral-6db6baa2": [
+    "eft-pi-5b",
+    "cathedral"
+  ],
+  "lex-church-d0de7315": [
+    "eft-pi-5b",
+    "church"
+  ],
+  "lex-city-walls-769c8a98": [
+    "eft-pi-5b",
+    "city-walls"
+  ],
+  "lex-department-store-3d028607": [
+    "eft-pi-5b",
+    "department-store"
+  ],
+  "lex-hill-2bc328a2": [
+    "eft-pi-5b",
+    "hill"
+  ],
+  "lex-lake-e35be8af": [
+    "eft-pi-5b",
+    "lake"
+  ],
+  "lex-market-056d1500": [
+    "eft-pi-5b",
+    "market"
+  ],
+  "lex-mosque-30d83b1d": [
+    "eft-pi-5b",
+    "mosque"
+  ],
+  "lex-museum-b11a3b2e": [
+    "eft-pi-5b",
+    "museum"
+  ],
+  "lex-palace-201c5e47": [
+    "eft-pi-5b",
+    "palace"
+  ],
+  "lex-ruins-809bc201": [
+    "eft-pi-5b",
+    "ruins"
+  ],
+  "lex-shopping-centre-097f8b69": [
+    "eft-pi-5b",
+    "shopping-centre"
+  ],
+  "lex-mall-465e29ec": [
+    "eft-pi-5b",
+    "mall"
+  ],
+  "lex-statue-b2f62996": [
+    "eft-pi-5b",
+    "statue"
+  ],
+  "lex-synagogue-83748c6a": [
+    "eft-pi-5b",
+    "synagogue"
+  ],
+  "lex-temple-9e00be40": [
+    "eft-pi-5b",
+    "temple"
+  ],
+  "lex-town-hall-c222c822": [
+    "eft-pi-5b",
+    "town-hall"
+  ],
+  "lex-body-2adbacb1": [
+    "eft-pi-5c",
+    "body"
+  ],
+  "lex-blood-798fb09b": [
+    "eft-pi-5c",
+    "blood"
+  ],
+  "lex-bone-4652352b": [
+    "eft-pi-5c",
+    "bone"
+  ],
+  "lex-heart-309922c0": [
+    "eft-pi-5c",
+    "heart"
+  ],
+  "lex-tooth-d0258aef": [
+    "eft-pi-5c",
+    "tooth"
+  ],
+  "lex-heart-attack-bdadbc6a": [
+    "eft-pi-5c",
+    "heart-attack"
+  ],
+  "lex-high-blood-pressure-a0bc477a": [
+    "eft-pi-5c",
+    "high-blood-pressure"
+  ],
+  "lex-heart-disease-38e61014": [
+    "eft-pi-5c",
+    "heart-disease"
+  ],
+  "lex-liver-disease-1c45ca38": [
+    "eft-pi-5c",
+    "liver-disease"
+  ],
+  "lex-cancer-3abe5584": [
+    "eft-pi-5c",
+    "cancer"
+  ],
+  "lex-arthritis-3647316a": [
+    "eft-pi-5c",
+    "arthritis"
+  ],
+  "lex-diabetes-3dea793d": [
+    "eft-pi-5c",
+    "diabetes"
+  ],
+  "lex-immune-system-2891ef9e": [
+    "eft-pi-5c",
+    "immune-system"
+  ],
+  "lex-risk-4ba38196": [
+    "eft-pi-5c",
+    "risk"
+  ],
+  "lex-reduce-stress-19b3437b": [
+    "eft-pi-5c",
+    "reduce-stress"
+  ],
+  "lex-keep-somebody-awake-d2080a78": [
+    "eft-pi-5c",
+    "keep-somebody-awake"
+  ],
+  "lex-prevent-6c1b115a": [
+    "eft-pi-5c",
+    "prevent"
+  ],
+  "lex-nutritionist-c281c1ab": [
+    "eft-pi-5c",
+    "nutritionist"
+  ],
+  "lex-liquid-5d5e795f": [
+    "eft-pi-5c",
+    "liquid"
+  ],
+  "lex-alcohol-101617c0": [
+    "eft-pi-5c",
+    "alcohol"
+  ],
+  "lex-caffeine-ef7e5700": [
+    "eft-pi-5c",
+    "caffeine"
+  ],
+  "lex-calcium-d1dc520b": [
+    "eft-pi-5c",
+    "calcium"
+  ],
+  "lex-acid-0d175b2e": [
+    "eft-pi-5c",
+    "acid"
+  ],
+  "lex-low-fat-milk-941b9a6e": [
+    "eft-pi-5c",
+    "low-fat-milk"
+  ],
+  "lex-full-fat-milk-98cc788c": [
+    "eft-pi-5c",
+    "full-fat-milk"
+  ],
+  "lex-fruit-juice-f6c10e24": [
+    "eft-pi-5c",
+    "fruit-juice"
+  ],
+  "lex-mineral-water-c4242f58": [
+    "eft-pi-5c",
+    "mineral-water"
+  ],
+  "lex-can-3c4d7404": [
+    "eft-pi-5c",
+    "can"
+  ],
+  "lex-bottle-aba5138e": [
+    "eft-pi-5c",
+    "bottle"
+  ],
+  "lex-carton-87971005": [
+    "eft-pi-5c",
+    "carton"
+  ],
+  "lex-cup-fbe14a58": [
+    "eft-pi-5c",
+    "cup"
+  ],
+  "lex-glass-32190c4b": [
+    "eft-pi-5c",
+    "glass"
+  ],
+  "lex-litre-1a186aaa": [
+    "eft-pi-5c",
+    "litre"
+  ],
+  "lex-enough-826cb945": [
+    "eft-pi-5c",
+    "enough"
+  ],
+  "lex-too-much-d636f5c6": [
+    "eft-pi-5c",
+    "too-much"
+  ],
+  "lex-too-many-490e77f3": [
+    "eft-pi-5c",
+    "too-many"
+  ],
+  "lex-sneakers-76970538": [
+    "eft-pi-pe3",
+    "sneakers"
+  ],
+  "lex-shop-0f25cf0a": [
+    "eft-pi-pe3",
+    "shop"
+  ],
+  "lex-store-92b267e0": [
+    "eft-pi-pe3",
+    "store"
+  ],
+  "lex-sales-tax-7a4c61b5": [
+    "eft-pi-pe3",
+    "sales-tax"
+  ],
+  "lex-same-price-2c5fbace": [
+    "eft-pi-pe3",
+    "same-price"
+  ],
+  "lex-refund-e4edc294": [
+    "eft-pi-pe3",
+    "refund"
+  ],
+  "lex-have-a-refund-5ede67db": [
+    "eft-pi-pe3",
+    "have-a-refund"
+  ],
+  "lex-they-re-too-small-4c99e9f6": [
+    "eft-pi-pe3",
+    "they-re-too-small"
+  ],
+  "lex-do-you-have-these-in-an-eight-f32908a0": [
+    "eft-pi-pe3",
+    "do-you-have-these-in-an-eight"
+  ],
+  "lex-do-you-take-mastercard-a3eeac92": [
+    "eft-pi-pe3",
+    "do-you-take-mastercard"
+  ],
+  "lex-i-ll-take-this-pair-35689a27": [
+    "eft-pi-pe3",
+    "i-ll-take-this-pair"
+  ],
+  "lex-do-you-have-the-receipt-a89871fe": [
+    "eft-pi-pe3",
+    "do-you-have-the-receipt"
+  ],
+  "lex-why-don-t-you-936d67e8": [
+    "eft-pi-pe3",
+    "why-don-t-you"
+  ],
+  "lex-have-you-had-a-good-day-2ad37411": [
+    "eft-pi-pe3",
+    "have-you-had-a-good-day"
+  ],
+  "lex-can-we-make-it-a-bit-later-c62e24e0": [
+    "eft-pi-pe3",
+    "can-we-make-it-a-bit-later"
+  ],
+  "lex-let-s-make-it-seven-fifteen-acb2d6aa": [
+    "eft-pi-pe3",
+    "let-s-make-it-seven-fifteen"
+  ],
+  "lex-keep-fit-d28ba235": [
+    "eft-pi-pe3",
+    "keep-fit"
+  ],
+  "lex-be-in-shape-0b863a1b": [
+    "eft-pi-pe3",
+    "be-in-shape"
+  ],
+  "lex-leave-d7f863a1": [
+    "eft-pi-6a",
+    "leave"
+  ],
+  "lex-break-something-627721ae": [
+    "eft-pi-6a",
+    "break-something"
+  ],
+  "lex-mend-something-6ff94e30": [
+    "eft-pi-6a",
+    "mend-something"
+  ],
+  "lex-sell-e32a1c75": [
+    "eft-pi-6a",
+    "sell"
+  ],
+  "lex-download-ff830b60": [
+    "eft-pi-6a",
+    "download"
+  ],
+  "lex-upload-ee83d791": [
+    "eft-pi-6a",
+    "upload"
+  ],
+  "lex-find-d5c86b2f": [
+    "eft-pi-6a",
+    "find"
+  ],
+  "lex-lose-393db7d9": [
+    "eft-pi-6a",
+    "lose"
+  ],
+  "lex-forget-55b1478a": [
+    "eft-pi-6a",
+    "forget"
+  ],
+  "lex-remember-c5dca2de": [
+    "eft-pi-6a",
+    "remember"
+  ],
+  "lex-lend-money-to-somebody-b080ac9d": [
+    "eft-pi-6a",
+    "lend-money-to-somebody"
+  ],
+  "lex-borrow-money-from-somebody-9eb85044": [
+    "eft-pi-6a",
+    "borrow-money-from-somebody"
+  ],
+  "lex-love-b5db8f78": [
+    "eft-pi-6a",
+    "love"
+  ],
+  "lex-hate-11faeee0": [
+    "eft-pi-6a",
+    "hate"
+  ],
+  "lex-miss-a-train-067f14d7": [
+    "eft-pi-6a",
+    "miss-a-train"
+  ],
+  "lex-catch-a-train-1f651d6f": [
+    "eft-pi-6a",
+    "catch-a-train"
+  ],
+  "lex-pass-an-exam-ce030e8f": [
+    "eft-pi-6a",
+    "pass-an-exam"
+  ],
+  "lex-fail-an-exam-26e0dcfa": [
+    "eft-pi-6a",
+    "fail-an-exam"
+  ],
+  "lex-push-the-door-7f9364a3": [
+    "eft-pi-6a",
+    "push-the-door"
+  ],
+  "lex-pull-the-door-e132ebfa": [
+    "eft-pi-6a",
+    "pull-the-door"
+  ],
+  "lex-receive-an-email-1515b4b9": [
+    "eft-pi-6a",
+    "receive-an-email"
+  ],
+  "lex-finish-0963bfac": [
+    "eft-pi-6a",
+    "finish"
+  ],
+  "lex-teach-d39784d1": [
+    "eft-pi-6a",
+    "teach"
+  ],
+  "lex-turn-on-01600324": [
+    "eft-pi-6a",
+    "turn-on"
+  ],
+  "lex-turn-off-59b555b9": [
+    "eft-pi-6a",
+    "turn-off"
+  ],
+  "lex-optimist-59be0fcd": [
+    "eft-pi-6a",
+    "optimist"
+  ],
+  "lex-pessimist-253a81db": [
+    "eft-pi-6a",
+    "pessimist"
+  ],
+  "lex-think-positively-94451b13": [
+    "eft-pi-6a",
+    "think-positively"
+  ],
+  "lex-i-m-sure-2951a075": [
+    "eft-pi-6a",
+    "i-m-sure"
+  ],
+  "lex-i-doubt-it-a98b5806": [
+    "eft-pi-6a",
+    "i-doubt-it"
+  ],
+  "lex-come-back-8927e8b9": [
+    "eft-pi-6b",
+    "come-back"
+  ],
+  "lex-go-back-8bea9d3d": [
+    "eft-pi-6b",
+    "go-back"
+  ],
+  "lex-call-back-179e1737": [
+    "eft-pi-6b",
+    "call-back"
+  ],
+  "lex-give-back-8abf2cdb": [
+    "eft-pi-6b",
+    "give-back"
+  ],
+  "lex-get-in-touch-a080244e": [
+    "eft-pi-6b",
+    "get-in-touch"
+  ],
+  "lex-long-distance-relationship-520914bf": [
+    "eft-pi-6b",
+    "long-distance-relationship"
+  ],
+  "lex-engagement-a01e465a": [
+    "eft-pi-6b",
+    "engagement"
+  ],
+  "lex-promise-2893531c": [
+    "eft-pi-6b",
+    "promise"
+  ],
+  "lex-agree-59275867": [
+    "eft-pi-6b",
+    "agree"
+  ],
+  "lex-complain-cd0f5937": [
+    "eft-pi-6b",
+    "complain"
+  ],
+  "lex-practise-5ed839cc": [
+    "eft-pi-6b",
+    "practise"
+  ],
+  "lex-for-instance-0e023fcd": [
+    "eft-pi-6b",
+    "for-instance"
+  ],
+  "lex-dream-about-something-6364b128": [
+    "eft-pi-6c",
+    "dream-about-something"
+  ],
+  "lex-mean-91d68a36": [
+    "eft-pi-6c",
+    "mean"
+  ],
+  "lex-meaning-c0c87465": [
+    "eft-pi-6c",
+    "meaning"
+  ],
+  "lex-interpret-a-dream-eb542561": [
+    "eft-pi-6c",
+    "interpret-a-dream"
+  ],
+  "lex-psychoanalyst-f5107a79": [
+    "eft-pi-6c",
+    "psychoanalyst"
+  ],
+  "lex-patient-5b010989": [
+    "eft-pi-6c",
+    "patient"
+  ],
+  "lex-owl-244fdad2": [
+    "eft-pi-6c",
+    "owl"
+  ],
+  "lex-violin-5adbe3e1": [
+    "eft-pi-6c",
+    "violin"
+  ],
+  "lex-champagne-4708000b": [
+    "eft-pi-6c",
+    "champagne"
+  ],
+  "lex-positive-a794ad2b": [
+    "eft-pi-6c",
+    "positive"
+  ],
+  "lex-bit-afa2bfc3": [
+    "eft-pi-6c",
+    "bit"
+  ],
+  "lex-not-very-188dc030": [
+    "eft-pi-6c",
+    "not-very"
+  ],
+  "lex-quite-difficult-00c4de0a": [
+    "eft-pi-6c",
+    "quite-difficult"
+  ],
+  "lex-incredibly-stressful-69c15174": [
+    "eft-pi-6c",
+    "incredibly-stressful"
+  ],
+  "lex-really-interesting-62d77705": [
+    "eft-pi-6c",
+    "really-interesting"
+  ],
+  "lex-bit-boring-bab6ef95": [
+    "eft-pi-6c",
+    "bit-boring"
+  ],
+  "lex-bit-better-2baa6ae8": [
+    "eft-pi-6c",
+    "bit-better"
+  ],
+  "lex-feel-in-control-39b47fc1": [
+    "eft-pi-6c",
+    "feel-in-control"
+  ],
+  "lex-out-of-control-71e8b1ca": [
+    "eft-pi-6c",
+    "out-of-control"
+  ],
+  "lex-in-public-e33fab91": [
+    "eft-pi-6c",
+    "in-public"
+  ],
+  "lex-decide-to-do-something-a26a19cc": [
+    "eft-pi-7a",
+    "decide-to-do-something"
+  ],
+  "lex-forget-to-do-something-1835f98c": [
+    "eft-pi-7a",
+    "forget-to-do-something"
+  ],
+  "lex-hope-to-do-something-caca02ea": [
+    "eft-pi-7a",
+    "hope-to-do-something"
+  ],
+  "lex-learn-to-do-something-5b69e0b1": [
+    "eft-pi-7a",
+    "learn-to-do-something"
+  ],
+  "lex-need-to-do-something-6ad84f67": [
+    "eft-pi-7a",
+    "need-to-do-something"
+  ],
+  "lex-offer-to-do-something-dfcb97c0": [
+    "eft-pi-7a",
+    "offer-to-do-something"
+  ],
+  "lex-plan-to-do-something-af2f9fbd": [
+    "eft-pi-7a",
+    "plan-to-do-something"
+  ],
+  "lex-pretend-to-do-something-d3092e24": [
+    "eft-pi-7a",
+    "pretend-to-do-something"
+  ],
+  "lex-promise-to-do-something-e256e528": [
+    "eft-pi-7a",
+    "promise-to-do-something"
+  ],
+  "lex-remember-to-do-something-5261e134": [
+    "eft-pi-7a",
+    "remember-to-do-something"
+  ],
+  "lex-start-to-do-something-0b6e6c16": [
+    "eft-pi-7a",
+    "start-to-do-something"
+  ],
+  "lex-try-to-do-something-13c1a06a": [
+    "eft-pi-7a",
+    "try-to-do-something"
+  ],
+  "lex-want-to-do-something-f7556838": [
+    "eft-pi-7a",
+    "want-to-do-something"
+  ],
+  "lex-would-like-to-do-something-d364fdae": [
+    "eft-pi-7a",
+    "would-like-to-do-something"
+  ],
+  "lex-try-to-find-a-job-9f220aa5": [
+    "eft-pi-7a",
+    "try-to-find-a-job"
+  ],
+  "lex-offer-to-help-e3e45032": [
+    "eft-pi-7a",
+    "offer-to-help"
+  ],
+  "lex-promise-to-pay-somebody-back-088f2b2e": [
+    "eft-pi-7a",
+    "promise-to-pay-somebody-back"
+  ],
+  "lex-pretend-to-be-ill-d4aea47e": [
+    "eft-pi-7a",
+    "pretend-to-be-ill"
+  ],
+  "lex-job-interview-58466add": [
+    "eft-pi-7a",
+    "job-interview"
+  ],
+  "lex-apply-for-a-job-c13e1749": [
+    "eft-pi-7a",
+    "apply-for-a-job"
+  ],
+  "lex-boss-963d274b": [
+    "eft-pi-7a",
+    "boss"
+  ],
+  "lex-feel-nervous-106ebeb4": [
+    "eft-pi-7a",
+    "feel-nervous"
+  ],
+  "lex-first-day-nerves-7ad22d46": [
+    "eft-pi-7a",
+    "first-day-nerves"
+  ],
+  "lex-improve-your-english-a32fc5a5": [
+    "eft-pi-7a",
+    "improve-your-english"
+  ],
+  "lex-go-to-university-cc7110c4": [
+    "eft-pi-7a",
+    "go-to-university"
+  ],
+  "lex-enjoy-doing-something-178e7810": [
+    "eft-pi-7b",
+    "enjoy-doing-something"
+  ],
+  "lex-finish-doing-something-31597277": [
+    "eft-pi-7b",
+    "finish-doing-something"
+  ],
+  "lex-go-on-doing-something-fc98b66f": [
+    "eft-pi-7b",
+    "go-on-doing-something"
+  ],
+  "lex-hate-doing-something-be206fb6": [
+    "eft-pi-7b",
+    "hate-doing-something"
+  ],
+  "lex-like-doing-something-ef8eea62": [
+    "eft-pi-7b",
+    "like-doing-something"
+  ],
+  "lex-love-doing-something-e5bbd43b": [
+    "eft-pi-7b",
+    "love-doing-something"
+  ],
+  "lex-mind-doing-something-7977a936": [
+    "eft-pi-7b",
+    "mind-doing-something"
+  ],
+  "lex-don-t-mind-doing-something-1cb2770d": [
+    "eft-pi-7b",
+    "don-t-mind-doing-something"
+  ],
+  "lex-spend-time-doing-something-c9de71fe": [
+    "eft-pi-7b",
+    "spend-time-doing-something"
+  ],
+  "lex-start-doing-something-0eb19b15": [
+    "eft-pi-7b",
+    "start-doing-something"
+  ],
+  "lex-stop-doing-something-9248e0c4": [
+    "eft-pi-7b",
+    "stop-doing-something"
+  ],
+  "lex-feel-like-doing-something-40eb96ec": [
+    "eft-pi-7b",
+    "feel-like-doing-something"
+  ],
+  "lex-don-t-feel-like-doing-something-006d9e06": [
+    "eft-pi-7b",
+    "don-t-feel-like-doing-something"
+  ],
+  "lex-read-in-bed-7b4b9cca": [
+    "eft-pi-7b",
+    "read-in-bed"
+  ],
+  "lex-have-breakfast-in-a-caf-1394ef11": [
+    "eft-pi-7b",
+    "have-breakfast-in-a-caf"
+  ],
+  "lex-wake-up-early-f2a6ba66": [
+    "eft-pi-7b",
+    "wake-up-early"
+  ],
+  "lex-talk-on-the-phone-dd080f75": [
+    "eft-pi-7b",
+    "talk-on-the-phone"
+  ],
+  "lex-go-out-for-lunch-c8a26bb4": [
+    "eft-pi-7b",
+    "go-out-for-lunch"
+  ],
+  "lex-unhappy-6154ff01": [
+    "eft-pi-7b",
+    "unhappy"
+  ],
+  "lex-illustration-b09efe21": [
+    "eft-pi-7b",
+    "illustration"
+  ],
+  "lex-feeling-f962148d": [
+    "eft-pi-7b",
+    "feeling"
+  ],
+  "lex-share-something-a1349725": [
+    "eft-pi-7b",
+    "share-something"
+  ],
+  "lex-good-at-something-3a7f8025": [
+    "eft-pi-7c",
+    "good-at-something"
+  ],
+  "lex-bad-at-something-fc37c4c9": [
+    "eft-pi-7c",
+    "bad-at-something"
+  ],
+  "lex-good-for-somebody-01b8e88d": [
+    "eft-pi-7c",
+    "good-for-somebody"
+  ],
+  "lex-bad-for-somebody-759434b6": [
+    "eft-pi-7c",
+    "bad-for-somebody"
+  ],
+  "lex-afraid-of-something-0ae07f2e": [
+    "eft-pi-7c",
+    "afraid-of-something"
+  ],
+  "lex-interested-in-something-6734d669": [
+    "eft-pi-7c",
+    "interested-in-something"
+  ],
+  "lex-full-of-something-3464885a": [
+    "eft-pi-7c",
+    "full-of-something"
+  ],
+  "lex-famous-for-something-7def8a3e": [
+    "eft-pi-7c",
+    "famous-for-something"
+  ],
+  "lex-nice-to-somebody-21ce07de": [
+    "eft-pi-7c",
+    "nice-to-somebody"
+  ],
+  "lex-angry-with-somebody-057ba941": [
+    "eft-pi-7c",
+    "angry-with-somebody"
+  ],
+  "lex-different-from-something-49706fed": [
+    "eft-pi-7c",
+    "different-from-something"
+  ],
+  "lex-good-at-learning-languages-63fc7890": [
+    "eft-pi-7c",
+    "good-at-learning-languages"
+  ],
+  "lex-intensive-course-5479626c": [
+    "eft-pi-7c",
+    "intensive-course"
+  ],
+  "lex-language-school-cc2a2a37": [
+    "eft-pi-7c",
+    "language-school"
+  ],
+  "lex-local-language-4b112478": [
+    "eft-pi-7c",
+    "local-language"
+  ],
+  "lex-official-language-850ff424": [
+    "eft-pi-7c",
+    "official-language"
+  ],
+  "lex-communication-264e14cb": [
+    "eft-pi-7c",
+    "communication"
+  ],
+  "lex-find-out-721aadac": [
+    "eft-pi-7c",
+    "find-out"
+  ],
+  "lex-survive-0a6511cf": [
+    "eft-pi-7c",
+    "survive"
+  ],
+  "lex-give-somebody-a-mark-5191a2a8": [
+    "eft-pi-7c",
+    "give-somebody-a-mark"
+  ],
+  "lex-final-mark-99362c5e": [
+    "eft-pi-7c",
+    "final-mark"
+  ],
+  "lex-ask-for-directions-405f46fe": [
+    "eft-pi-7c",
+    "ask-for-directions"
+  ],
+  "lex-leave-a-voicemail-message-6e4ff5d5": [
+    "eft-pi-7c",
+    "leave-a-voicemail-message"
+  ],
+  "lex-phrase-book-6be347b1": [
+    "eft-pi-7c",
+    "phrase-book"
+  ],
+  "lex-mime-bd1bd0e3": [
+    "eft-pi-7c",
+    "mime"
+  ],
+  "lex-pharmacy-11c48a8d": [
+    "eft-pi-pe4",
+    "pharmacy"
+  ],
+  "lex-chemist-s-fea76778": [
+    "eft-pi-pe4",
+    "chemist-s"
+  ],
+  "lex-pharmacist-f0834711": [
+    "eft-pi-pe4",
+    "pharmacist"
+  ],
+  "lex-medicine-9cc11ddb": [
+    "eft-pi-pe4",
+    "medicine"
+  ],
+  "lex-drug-3e0bab4c": [
+    "eft-pi-pe4",
+    "drug"
+  ],
+  "lex-drug-b178f604": [
+    "eft-pi-pe4-b178f604",
+    "drug"
+  ],
+  "lex-headache-529a38e5": [
+    "eft-pi-pe4",
+    "headache"
+  ],
+  "lex-cough-4e93cd41": [
+    "eft-pi-pe4",
+    "cough"
+  ],
+  "lex-flu-3ad80e94": [
+    "eft-pi-pe4",
+    "flu"
+  ],
+  "lex-bad-stomach-218e5121": [
+    "eft-pi-pe4",
+    "bad-stomach"
+  ],
+  "lex-cold-eba0a243": [
+    "eft-pi-pe4",
+    "cold"
+  ],
+  "lex-cough-sweets-02668b45": [
+    "eft-pi-pe4",
+    "cough-sweets"
+  ],
+  "lex-aspirin-a1f4d08a": [
+    "eft-pi-pe4",
+    "aspirin"
+  ],
+  "lex-ibuprofen-cbb12ed7": [
+    "eft-pi-pe4",
+    "ibuprofen"
+  ],
+  "lex-penicillin-8c8ffee2": [
+    "eft-pi-pe4",
+    "penicillin"
+  ],
+  "lex-be-allergic-to-something-cf23be29": [
+    "eft-pi-pe4",
+    "be-allergic-to-something"
+  ],
+  "lex-take-medicine-91a037d3": [
+    "eft-pi-pe4",
+    "take-medicine"
+  ],
+  "lex-see-a-doctor-f225868f": [
+    "eft-pi-pe4",
+    "see-a-doctor"
+  ],
+  "lex-every-four-hours-9e15669b": [
+    "eft-pi-pe4",
+    "every-four-hours"
+  ],
+  "lex-what-s-the-matter-0276b285": [
+    "eft-pi-pe4",
+    "what-s-the-matter"
+  ],
+  "lex-i-m-not-feeling-very-well-cdc88cce": [
+    "eft-pi-pe4",
+    "i-m-not-feeling-very-well"
+  ],
+  "lex-what-are-your-symptoms-15cd7c48": [
+    "eft-pi-pe4",
+    "what-are-your-symptoms"
+  ],
+  "lex-how-many-do-i-have-to-take-7cdb3b07": [
+    "eft-pi-pe4",
+    "how-many-do-i-have-to-take"
+  ],
+  "lex-it-ll-make-you-feel-better-90fd8d2d": [
+    "eft-pi-pe4",
+    "it-ll-make-you-feel-better"
+  ],
+  "lex-i-m-glad-you-re-feeling-better-22061454": [
+    "eft-pi-pe4",
+    "i-m-glad-you-re-feeling-better"
+  ],
+  "lex-i-m-sure-i-ll-be-fine-8d6c7927": [
+    "eft-pi-pe4",
+    "i-m-sure-i-ll-be-fine"
+  ],
+  "lex-thanks-again-for-a-great-evening-12ad3325": [
+    "eft-pi-pe4",
+    "thanks-again-for-a-great-evening"
+  ],
+  "lex-get-angry-5fc18e65": [
+    "eft-pi-8a",
+    "get-angry"
+  ],
+  "lex-get-fit-65f3f4aa": [
+    "eft-pi-8a",
+    "get-fit"
+  ],
+  "lex-get-nervous-e5d1087a": [
+    "eft-pi-8a",
+    "get-nervous"
+  ],
+  "lex-get-ready-42a6ee4a": [
+    "eft-pi-8a",
+    "get-ready"
+  ],
+  "lex-get-better-fe8594ce": [
+    "eft-pi-8a",
+    "get-better"
+  ],
+  "lex-get-worse-f215efd1": [
+    "eft-pi-8a",
+    "get-worse"
+  ],
+  "lex-get-colder-2718b348": [
+    "eft-pi-8a",
+    "get-colder"
+  ],
+  "lex-get-a-job-7bbd14d4": [
+    "eft-pi-8a",
+    "get-a-job"
+  ],
+  "lex-get-a-ticket-2a3bc4e2": [
+    "eft-pi-8a",
+    "get-a-ticket"
+  ],
+  "lex-get-into-a-car-96ddc024": [
+    "eft-pi-8a",
+    "get-into-a-car"
+  ],
+  "lex-get-out-of-a-car-e9603276": [
+    "eft-pi-8a",
+    "get-out-of-a-car"
+  ],
+  "lex-get-on-30450ebf": [
+    "eft-pi-8a",
+    "get-on"
+  ],
+  "lex-get-off-abfe7286": [
+    "eft-pi-8a",
+    "get-off"
+  ],
+  "lex-get-on-with-somebody-bde00117": [
+    "eft-pi-8a",
+    "get-on-with-somebody"
+  ],
+  "lex-get-to-school-ac5deb70": [
+    "eft-pi-8a",
+    "get-to-school"
+  ],
+  "lex-get-a-text-message-72bdd2af": [
+    "eft-pi-8a",
+    "get-a-text-message"
+  ],
+  "lex-get-a-present-b6623657": [
+    "eft-pi-8a",
+    "get-a-present"
+  ],
+  "lex-get-a-prize-845402c8": [
+    "eft-pi-8a",
+    "get-a-prize"
+  ],
+  "lex-get-stressed-02f25cef": [
+    "eft-pi-8a",
+    "get-stressed"
+  ],
+  "lex-get-the-bus-e8c6a72b": [
+    "eft-pi-8a",
+    "get-the-bus"
+  ],
+  "lex-give-advice-cce293a5": [
+    "eft-pi-8a",
+    "give-advice"
+  ],
+  "lex-ask-for-advice-aafdc013": [
+    "eft-pi-8a",
+    "ask-for-advice"
+  ],
+  "lex-take-somebody-s-advice-aad253d4": [
+    "eft-pi-8a",
+    "take-somebody-s-advice"
+  ],
+  "lex-wear-jewellery-ede7d02b": [
+    "eft-pi-8b",
+    "wear-jewellery"
+  ],
+  "lex-know-da68ea55": [
+    "eft-pi-8b",
+    "know"
+  ],
+  "lex-meet-somebody-for-the-first-time-2d35f168": [
+    "eft-pi-8b",
+    "meet-somebody-for-the-first-time"
+  ],
+  "lex-meet-at-eleven-8e9b58dd": [
+    "eft-pi-8b",
+    "meet-at-eleven"
+  ],
+  "lex-look-c9ace75a": [
+    "eft-pi-8b",
+    "look"
+  ],
+  "lex-look-like-your-mother-6bea5c7b": [
+    "eft-pi-8b",
+    "look-like-your-mother"
+  ],
+  "lex-look-like-a-model-d5209ed9": [
+    "eft-pi-8b",
+    "look-like-a-model"
+  ],
+  "lex-miss-a-bus-c4985c9b": [
+    "eft-pi-8b",
+    "miss-a-bus"
+  ],
+  "lex-miss-a-class-9a6e64d1": [
+    "eft-pi-8b",
+    "miss-a-class"
+  ],
+  "lex-lose-your-glasses-c52a0d0c": [
+    "eft-pi-8b",
+    "lose-your-glasses"
+  ],
+  "lex-bring-your-dictionary-to-class-6fc3be54": [
+    "eft-pi-8b",
+    "bring-your-dictionary-to-class"
+  ],
+  "lex-take-an-umbrella-with-you-1fb35b9f": [
+    "eft-pi-8b",
+    "take-an-umbrella-with-you"
+  ],
+  "lex-take-your-children-to-school-8b5f74c8": [
+    "eft-pi-8b",
+    "take-your-children-to-school"
+  ],
+  "lex-look-for-a-job-9891bc07": [
+    "eft-pi-8b",
+    "look-for-a-job"
+  ],
+  "lex-find-a-job-df2e2a8b": [
+    "eft-pi-8b",
+    "find-a-job"
+  ],
+  "lex-say-hello-884f761d": [
+    "eft-pi-8b",
+    "say-hello"
+  ],
+  "lex-say-something-to-somebody-b23c9a2f": [
+    "eft-pi-8b",
+    "say-something-to-somebody"
+  ],
+  "lex-tell-a-joke-5fd15605": [
+    "eft-pi-8b",
+    "tell-a-joke"
+  ],
+  "lex-tell-a-lie-1631fc65": [
+    "eft-pi-8b",
+    "tell-a-lie"
+  ],
+  "lex-tell-somebody-something-3d7d7aa9": [
+    "eft-pi-8b",
+    "tell-somebody-something"
+  ],
+  "lex-angrily-3860ea7f": [
+    "eft-pi-8c",
+    "angrily"
+  ],
+  "lex-lazily-7c855883": [
+    "eft-pi-8c",
+    "lazily"
+  ],
+  "lex-quietly-8543c1b8": [
+    "eft-pi-8c",
+    "quietly"
+  ],
+  "lex-sadly-995bcdab": [
+    "eft-pi-8c",
+    "sadly"
+  ],
+  "lex-seriously-bcdd8790": [
+    "eft-pi-8c",
+    "seriously"
+  ],
+  "lex-slowly-8fa7d804": [
+    "eft-pi-8c",
+    "slowly"
+  ],
+  "lex-calm-d5ff0a25": [
+    "eft-pi-8c",
+    "calm"
+  ],
+  "lex-calmly-ab978317": [
+    "eft-pi-8c",
+    "calmly"
+  ],
+  "lex-complete-5979cce6": [
+    "eft-pi-8c",
+    "complete"
+  ],
+  "lex-dreamily-c0b34abd": [
+    "eft-pi-8c",
+    "dreamily"
+  ],
+  "lex-masterfully-763aa7f1": [
+    "eft-pi-8c",
+    "masterfully"
+  ],
+  "lex-well-9436f381": [
+    "eft-pi-8c",
+    "well"
+  ],
+  "lex-badly-e7dfe524": [
+    "eft-pi-8c",
+    "badly"
+  ],
+  "lex-quickly-10d65805": [
+    "eft-pi-8c",
+    "quickly"
+  ],
+  "lex-carefully-8d3479a7": [
+    "eft-pi-8c",
+    "carefully"
+  ],
+  "lex-fluently-5ac913c1": [
+    "eft-pi-8c",
+    "fluently"
+  ],
+  "lex-clearly-8bc59295": [
+    "eft-pi-8c",
+    "clearly"
+  ],
+  "lex-read-aloud-b7e5d4a8": [
+    "eft-pi-8c",
+    "read-aloud"
+  ],
+  "lex-detective-b7837eb1": [
+    "eft-pi-8c",
+    "detective"
+  ],
+  "lex-offer-ea3e4054": [
+    "eft-pi-8c",
+    "offer"
+  ],
+  "lex-advantage-43fc9d21": [
+    "eft-pi-8c",
+    "advantage"
+  ],
+  "lex-suburb-8852b530": [
+    "eft-pi-8c",
+    "suburb"
+  ],
+  "lex-trust-somebody-47a902ab": [
+    "eft-pi-8c",
+    "trust-somebody"
+  ],
+  "lex-suspicious-a0cbe4ee": [
+    "eft-pi-8c",
+    "suspicious"
+  ],
+  "lex-persuade-somebody-0778cfcd": [
+    "eft-pi-8c",
+    "persuade-somebody"
+  ],
+  "lex-accept-an-offer-e85b73d7": [
+    "eft-pi-8c",
+    "accept-an-offer"
+  ],
+  "lex-fly-b165dbd4": [
+    "eft-pi-9a",
+    "fly"
+  ],
+  "lex-spider-d60372dc": [
+    "eft-pi-9a",
+    "spider"
+  ],
+  "lex-wasp-6c51c9c1": [
+    "eft-pi-9a",
+    "wasp"
+  ],
+  "lex-bull-abb107f6": [
+    "eft-pi-9a",
+    "bull"
+  ],
+  "lex-cow-d7724897": [
+    "eft-pi-9a",
+    "cow"
+  ],
+  "lex-goat-602cc9be": [
+    "eft-pi-9a",
+    "goat"
+  ],
+  "lex-horse-fd32f152": [
+    "eft-pi-9a",
+    "horse"
+  ],
+  "lex-pig-dead01e5": [
+    "eft-pi-9a",
+    "pig"
+  ],
+  "lex-sheep-b2d6f784": [
+    "eft-pi-9a",
+    "sheep"
+  ],
+  "lex-bat-3ee4a16e": [
+    "eft-pi-9a",
+    "bat"
+  ],
+  "lex-bear-05025c33": [
+    "eft-pi-9a",
+    "bear"
+  ],
+  "lex-bird-f3062b6c": [
+    "eft-pi-9a",
+    "bird"
+  ],
+  "lex-camel-7b30b53f": [
+    "eft-pi-9a",
+    "camel"
+  ],
+  "lex-crocodile-5f233c12": [
+    "eft-pi-9a",
+    "crocodile"
+  ],
+  "lex-deer-c70319f9": [
+    "eft-pi-9a",
+    "deer"
+  ],
+  "lex-elephant-0df58c08": [
+    "eft-pi-9a",
+    "elephant"
+  ],
+  "lex-giraffe-76b3be57": [
+    "eft-pi-9a",
+    "giraffe"
+  ],
+  "lex-kangaroo-dfb1bac3": [
+    "eft-pi-9a",
+    "kangaroo"
+  ],
+  "lex-lion-da3e5bac": [
+    "eft-pi-9a",
+    "lion"
+  ],
+  "lex-monkey-8f221d03": [
+    "eft-pi-9a",
+    "monkey"
+  ],
+  "lex-mouse-b6e9c4bd": [
+    "eft-pi-9a",
+    "mouse"
+  ],
+  "lex-rabbit-490b7fbc": [
+    "eft-pi-9a",
+    "rabbit"
+  ],
+  "lex-rat-9294c624": [
+    "eft-pi-9a",
+    "rat"
+  ],
+  "lex-snake-bb558a74": [
+    "eft-pi-9a",
+    "snake"
+  ],
+  "lex-tiger-f23ed678": [
+    "eft-pi-9a",
+    "tiger"
+  ],
+  "lex-dolphin-d9144b7f": [
+    "eft-pi-9a",
+    "dolphin"
+  ],
+  "lex-jellyfish-14ea437a": [
+    "eft-pi-9a",
+    "jellyfish"
+  ],
+  "lex-shark-2d1edd2e": [
+    "eft-pi-9a",
+    "shark"
+  ],
+  "lex-whale-ec242432": [
+    "eft-pi-9a",
+    "whale"
+  ],
+  "lex-sting-6f30a17c": [
+    "eft-pi-9a",
+    "sting"
+  ],
+  "lex-sting-14f2cd81": [
+    "eft-pi-9a-14f2cd81",
+    "sting"
+  ],
+  "lex-venom-0eab2f5d": [
+    "eft-pi-9a",
+    "venom"
+  ],
+  "lex-beware-of-the-dog-e6e25e3f": [
+    "eft-pi-9a",
+    "beware-of-the-dog"
+  ],
+  "lex-fear-ca805b90": [
+    "eft-pi-9b",
+    "fear"
+  ],
+  "lex-phobia-20333c33": [
+    "eft-pi-9b",
+    "phobia"
+  ],
+  "lex-afraid-2a9b5855": [
+    "eft-pi-9b",
+    "afraid"
+  ],
+  "lex-scared-d983759d": [
+    "eft-pi-9b",
+    "scared"
+  ],
+  "lex-dizzy-3d598949": [
+    "eft-pi-9b",
+    "dizzy"
+  ],
+  "lex-panic-2ca8ec3b": [
+    "eft-pi-9b",
+    "panic"
+  ],
+  "lex-suffer-from-a-phobia-d5a2a76b": [
+    "eft-pi-9b",
+    "suffer-from-a-phobia"
+  ],
+  "lex-avoid-something-156fa650": [
+    "eft-pi-9b",
+    "avoid-something"
+  ],
+  "lex-heights-05ae98ad": [
+    "eft-pi-9b",
+    "heights"
+  ],
+  "lex-crowds-ac2fb488": [
+    "eft-pi-9b",
+    "crowds"
+  ],
+  "lex-vaccination-1fd67d7b": [
+    "eft-pi-9b",
+    "vaccination"
+  ],
+  "lex-blood-test-4c44f407": [
+    "eft-pi-9b",
+    "blood-test"
+  ],
+  "lex-passenger-1e31c0f3": [
+    "eft-pi-9b",
+    "passenger"
+  ],
+  "lex-vehicle-2e164c13": [
+    "eft-pi-9b",
+    "vehicle"
+  ],
+  "lex-little-by-little-7fceb010": [
+    "eft-pi-9b",
+    "little-by-little"
+  ],
+  "lex-since-i-was-a-child-6aea7008": [
+    "eft-pi-9b",
+    "since-i-was-a-child"
+  ],
+  "lex-since-then-2b0ef962": [
+    "eft-pi-9b",
+    "since-then"
+  ],
+  "lex-for-a-long-time-a1d8dd54": [
+    "eft-pi-9b",
+    "for-a-long-time"
+  ],
+  "lex-for-six-months-e5433cff": [
+    "eft-pi-9b",
+    "for-six-months"
+  ],
+  "lex-for-a-few-weeks-30775857": [
+    "eft-pi-9b",
+    "for-a-few-weeks"
+  ],
+  "lex-how-long-516767ae": [
+    "eft-pi-9b",
+    "how-long"
+  ],
+  "lex-go-to-primary-school-51d8d5dd": [
+    "eft-pi-9c",
+    "go-to-primary-school"
+  ],
+  "lex-go-to-secondary-school-6ddc38eb": [
+    "eft-pi-9c",
+    "go-to-secondary-school"
+  ],
+  "lex-leave-school-7abfe756": [
+    "eft-pi-9c",
+    "leave-school"
+  ],
+  "lex-marry-somebody-834368df": [
+    "eft-pi-9c",
+    "marry-somebody"
+  ],
+  "lex-have-children-e80e1fc1": [
+    "eft-pi-9c",
+    "have-children"
+  ],
+  "lex-separate-e4d7edb0": [
+    "eft-pi-9c",
+    "separate"
+  ],
+  "lex-divorce-somebody-3d007a75": [
+    "eft-pi-9c",
+    "divorce-somebody"
+  ],
+  "lex-die-ee4ca596": [
+    "eft-pi-9c",
+    "die"
+  ],
+  "lex-at-the-age-of-bf562639": [
+    "eft-pi-9c",
+    "at-the-age-of"
+  ],
+  "lex-actress-e7d2c208": [
+    "eft-pi-9c",
+    "actress"
+  ],
+  "lex-actor-159d42a2": [
+    "eft-pi-9c",
+    "actor"
+  ],
+  "lex-take-the-second-turning-on-the-right-a8e72e75": [
+    "eft-pi-pe5",
+    "take-the-second-turning-on-the-right"
+  ],
+  "lex-turn-right-at-the-traffic-lights-4e26055a": [
+    "eft-pi-pe5",
+    "turn-right-at-the-traffic-lights"
+  ],
+  "lex-go-round-the-roundabout-5b8d4ba9": [
+    "eft-pi-pe5",
+    "go-round-the-roundabout"
+  ],
+  "lex-take-the-third-exit-b8b0df46": [
+    "eft-pi-pe5",
+    "take-the-third-exit"
+  ],
+  "lex-roundabout-18aeb4aa": [
+    "eft-pi-pe5",
+    "roundabout"
+  ],
+  "lex-turning-96f172ed": [
+    "eft-pi-pe5",
+    "turning"
+  ],
+  "lex-subway-station-e264e639": [
+    "eft-pi-pe5",
+    "subway-station"
+  ],
+  "lex-underground-station-9776ba91": [
+    "eft-pi-pe5",
+    "underground-station"
+  ],
+  "lex-line-6edfd563": [
+    "eft-pi-pe5",
+    "line"
+  ],
+  "lex-stop-62154aee": [
+    "eft-pi-pe5",
+    "stop"
+  ],
+  "lex-how-do-i-get-to-aabb6f17": [
+    "eft-pi-pe5",
+    "how-do-i-get-to"
+  ],
+  "lex-could-you-say-that-again-3d81f546": [
+    "eft-pi-pe5",
+    "could-you-say-that-again"
+  ],
+  "lex-how-many-stops-is-that-5bb229de": [
+    "eft-pi-pe5",
+    "how-many-stops-is-that"
+  ],
+  "lex-and-then-47023e76": [
+    "eft-pi-pe5",
+    "and-then"
+  ],
+  "lex-i-don-t-feel-like-a-walk-e7a66040": [
+    "eft-pi-pe5",
+    "i-don-t-feel-like-a-walk"
+  ],
+  "lex-it-s-been-a-long-day-91dc820b": [
+    "eft-pi-pe5",
+    "it-s-been-a-long-day"
+  ],
+  "lex-i-didn-t-mean-to-say-that-ab3fc8ea": [
+    "eft-pi-pe5",
+    "i-didn-t-mean-to-say-that"
+  ],
+  "lex-athletics-11406769": [
+    "eft-pi-10a",
+    "athletics"
+  ],
+  "lex-baseball-6333ab6f": [
+    "eft-pi-10a",
+    "baseball"
+  ],
+  "lex-basketball-2b36f819": [
+    "eft-pi-10a",
+    "basketball"
+  ],
+  "lex-football-92100cb9": [
+    "eft-pi-10a",
+    "football"
+  ],
+  "lex-gymnastics-66874732": [
+    "eft-pi-10a",
+    "gymnastics"
+  ],
+  "lex-handball-fdb6c93f": [
+    "eft-pi-10a",
+    "handball"
+  ],
+  "lex-karate-35f4ab4e": [
+    "eft-pi-10a",
+    "karate"
+  ],
+  "lex-rugby-47fe208c": [
+    "eft-pi-10a",
+    "rugby"
+  ],
+  "lex-skiing-ff7ea611": [
+    "eft-pi-10a",
+    "skiing"
+  ],
+  "lex-tennis-0fab95e8": [
+    "eft-pi-10a",
+    "tennis"
+  ],
+  "lex-volleyball-78c88429": [
+    "eft-pi-10a",
+    "volleyball"
+  ],
+  "lex-windsurfing-c2ade584": [
+    "eft-pi-10a",
+    "windsurfing"
+  ],
+  "lex-yoga-afd5e62f": [
+    "eft-pi-10a",
+    "yoga"
+  ],
+  "lex-do-gymnastics-0c5f91d9": [
+    "eft-pi-10a",
+    "do-gymnastics"
+  ],
+  "lex-do-athletics-0f0faa68": [
+    "eft-pi-10a",
+    "do-athletics"
+  ],
+  "lex-goalkeeper-ca1e7f05": [
+    "eft-pi-10a",
+    "goalkeeper"
+  ],
+  "lex-defender-9a670bc0": [
+    "eft-pi-10a",
+    "defender"
+  ],
+  "lex-net-69ef41c7": [
+    "eft-pi-10a",
+    "net"
+  ],
+  "lex-goal-1989e77e": [
+    "eft-pi-10a",
+    "goal"
+  ],
+  "lex-under-the-bridge-f3c938c1": [
+    "eft-pi-10a",
+    "under-the-bridge"
+  ],
+  "lex-along-the-street-68c6c27f": [
+    "eft-pi-10a",
+    "along-the-street"
+  ],
+  "lex-round-the-lake-5911bbf7": [
+    "eft-pi-10a",
+    "round-the-lake"
+  ],
+  "lex-around-the-lake-308c2c4f": [
+    "eft-pi-10a",
+    "around-the-lake"
+  ],
+  "lex-through-the-tunnel-7c598876": [
+    "eft-pi-10a",
+    "through-the-tunnel"
+  ],
+  "lex-into-the-shop-3bc1c8a9": [
+    "eft-pi-10a",
+    "into-the-shop"
+  ],
+  "lex-across-the-road-bf6a7e27": [
+    "eft-pi-10a",
+    "across-the-road"
+  ],
+  "lex-over-the-bridge-fc7cff58": [
+    "eft-pi-10a",
+    "over-the-bridge"
+  ],
+  "lex-up-the-steps-fe4ebc2f": [
+    "eft-pi-10a",
+    "up-the-steps"
+  ],
+  "lex-past-the-church-dad1ea58": [
+    "eft-pi-10a",
+    "past-the-church"
+  ],
+  "lex-towards-the-lake-faf3d65f": [
+    "eft-pi-10a",
+    "towards-the-lake"
+  ],
+  "lex-down-the-steps-d0f908a3": [
+    "eft-pi-10a",
+    "down-the-steps"
+  ],
+  "lex-out-of-the-shop-5af11213": [
+    "eft-pi-10a",
+    "out-of-the-shop"
+  ],
+  "lex-away-febf2934": [
+    "eft-pi-10a",
+    "away"
+  ],
+  "lex-back-e34c65e5": [
+    "eft-pi-10a",
+    "back"
+  ],
+  "lex-run-away-ae3af7c9": [
+    "eft-pi-10a",
+    "run-away"
+  ],
+  "lex-be-over-b7af192a": [
+    "eft-pi-10b",
+    "be-over"
+  ],
+  "lex-turn-down-6c39c667": [
+    "eft-pi-10b",
+    "turn-down"
+  ],
+  "lex-turn-up-a0af2a58": [
+    "eft-pi-10b",
+    "turn-up"
+  ],
+  "lex-look-up-a-word-2a05322a": [
+    "eft-pi-10b",
+    "look-up-a-word"
+  ],
+  "lex-fill-in-a-form-6daaba44": [
+    "eft-pi-10b",
+    "fill-in-a-form"
+  ],
+  "lex-put-on-clothes-00e16f7a": [
+    "eft-pi-10b",
+    "put-on-clothes"
+  ],
+  "lex-take-off-clothes-6b67f6e4": [
+    "eft-pi-10b",
+    "take-off-clothes"
+  ],
+  "lex-go-away-d7d9b410": [
+    "eft-pi-10b",
+    "go-away"
+  ],
+  "lex-pick-something-up-63202a5c": [
+    "eft-pi-10b",
+    "pick-something-up"
+  ],
+  "lex-try-on-90aec9fa": [
+    "eft-pi-10b",
+    "try-on"
+  ],
+  "lex-write-down-eb048526": [
+    "eft-pi-10b",
+    "write-down"
+  ],
+  "lex-look-for-something-fa860140": [
+    "eft-pi-10b",
+    "look-for-something"
+  ],
+  "lex-look-round-fedfecd6": [
+    "eft-pi-10b",
+    "look-round"
+  ],
+  "lex-run-out-of-petrol-e4dd154c": [
+    "eft-pi-10b",
+    "run-out-of-petrol"
+  ],
+  "lex-run-out-of-printer-ink-d96cbfae": [
+    "eft-pi-10b",
+    "run-out-of-printer-ink"
+  ],
+  "lex-alarm-10ea332c": [
+    "eft-pi-10b",
+    "alarm"
+  ],
+  "lex-early-bird-2cb460c8": [
+    "eft-pi-10b",
+    "early-bird"
+  ],
+  "lex-baker-bd8fd019": [
+    "eft-pi-10b",
+    "baker"
+  ],
+  "lex-breakfast-show-fbf9f1b8": [
+    "eft-pi-10b",
+    "breakfast-show"
+  ],
+  "lex-invention-31bd8b31": [
+    "eft-pi-10c",
+    "invention"
+  ],
+  "lex-inventor-9ff0c878": [
+    "eft-pi-10c",
+    "inventor"
+  ],
+  "lex-invent-83d618ce": [
+    "eft-pi-10c",
+    "invent"
+  ],
+  "lex-be-invented-by-somebody-f3c2639f": [
+    "eft-pi-10c",
+    "be-invented-by-somebody"
+  ],
+  "lex-be-named-after-somebody-237208c0": [
+    "eft-pi-10c",
+    "be-named-after-somebody"
+  ],
+  "lex-saxophone-54c2b298": [
+    "eft-pi-10c",
+    "saxophone"
+  ],
+  "lex-dynamite-31846da8": [
+    "eft-pi-10c",
+    "dynamite"
+  ],
+  "lex-gun-51f85270": [
+    "eft-pi-10c",
+    "gun"
+  ],
+  "lex-hot-air-balloon-275b067c": [
+    "eft-pi-10c",
+    "hot-air-balloon"
+  ],
+  "lex-mobile-phone-08e1f588": [
+    "eft-pi-10c",
+    "mobile-phone"
+  ],
+  "lex-wristwatch-462c6a77": [
+    "eft-pi-10c",
+    "wristwatch"
+  ],
+  "lex-dishwasher-72c4dc77": [
+    "eft-pi-10c",
+    "dishwasher"
+  ],
+  "lex-nappies-e6621b4e": [
+    "eft-pi-10c",
+    "nappies"
+  ],
+  "lex-belgian-5e89b1b4": [
+    "eft-pi-10c",
+    "belgian"
+  ],
+  "lex-dutch-71e0b1a2": [
+    "eft-pi-10c",
+    "dutch"
+  ],
+  "lex-swedish-03b64b20": [
+    "eft-pi-10c",
+    "swedish"
+  ],
+  "lex-danish-1a37d563": [
+    "eft-pi-10c",
+    "danish"
+  ],
+  "lex-art-9cb7229d": [
+    "eft-pi-11a",
+    "art"
+  ],
+  "lex-foreign-languages-a07bd8c5": [
+    "eft-pi-11a",
+    "foreign-languages"
+  ],
+  "lex-geography-654f2de8": [
+    "eft-pi-11a",
+    "geography"
+  ],
+  "lex-history-5d123640": [
+    "eft-pi-11a",
+    "history"
+  ],
+  "lex-it-1260437b": [
+    "eft-pi-11a",
+    "it"
+  ],
+  "lex-information-technology-e016dfe4": [
+    "eft-pi-11a",
+    "information-technology"
+  ],
+  "lex-literature-dbec293c": [
+    "eft-pi-11a",
+    "literature"
+  ],
+  "lex-maths-a9f4a370": [
+    "eft-pi-11a",
+    "maths"
+  ],
+  "lex-pe-6c92d07f": [
+    "eft-pi-11a",
+    "pe"
+  ],
+  "lex-physical-education-26dc50b9": [
+    "eft-pi-11a",
+    "physical-education"
+  ],
+  "lex-science-64ce071b": [
+    "eft-pi-11a",
+    "science"
+  ],
+  "lex-physics-9d2d49ae": [
+    "eft-pi-11a",
+    "physics"
+  ],
+  "lex-chemistry-8346772c": [
+    "eft-pi-11a",
+    "chemistry"
+  ],
+  "lex-biology-f10ec1c4": [
+    "eft-pi-11a",
+    "biology"
+  ],
+  "lex-subject-cb2c32ec": [
+    "eft-pi-11a",
+    "subject"
+  ],
+  "lex-lesson-55ae0c3b": [
+    "eft-pi-11a",
+    "lesson"
+  ],
+  "lex-pupil-7a992f21": [
+    "eft-pi-11a",
+    "pupil"
+  ],
+  "lex-teacher-1fb961e3": [
+    "eft-pi-11a",
+    "teacher"
+  ],
+  "lex-be-good-at-maths-05646818": [
+    "eft-pi-11a",
+    "be-good-at-maths"
+  ],
+  "lex-be-bad-at-history-256f2759": [
+    "eft-pi-11a",
+    "be-bad-at-history"
+  ],
+  "lex-drawing-fe395f37": [
+    "eft-pi-11a",
+    "drawing"
+  ],
+  "lex-programming-2b56525b": [
+    "eft-pi-11a",
+    "programming"
+  ],
+  "lex-chemical-symbol-3a6f9ebf": [
+    "eft-pi-11a",
+    "chemical-symbol"
+  ],
+  "lex-capital-96b1b78b": [
+    "eft-pi-11a",
+    "capital"
+  ],
+  "lex-warm-blooded-cbd8db76": [
+    "eft-pi-11a",
+    "warm-blooded"
+  ],
+  "lex-cold-blooded-2d465913": [
+    "eft-pi-11a",
+    "cold-blooded"
+  ],
+  "lex-revision-4650993c": [
+    "eft-pi-11b",
+    "revision"
+  ],
+  "lex-confuse-687bb147": [
+    "eft-pi-11b",
+    "confuse"
+  ],
+  "lex-confusion-ade386a8": [
+    "eft-pi-11b",
+    "confusion"
+  ],
+  "lex-compete-0255f202": [
+    "eft-pi-11b",
+    "compete"
+  ],
+  "lex-competition-af90311e": [
+    "eft-pi-11b",
+    "competition"
+  ],
+  "lex-educate-2e37c4b2": [
+    "eft-pi-11b",
+    "educate"
+  ],
+  "lex-education-621de866": [
+    "eft-pi-11b",
+    "education"
+  ],
+  "lex-invitation-8e13f763": [
+    "eft-pi-11b",
+    "invitation"
+  ],
+  "lex-pronounce-cf056758": [
+    "eft-pi-11b",
+    "pronounce"
+  ],
+  "lex-pronunciation-1e5713ef": [
+    "eft-pi-11b",
+    "pronunciation"
+  ],
+  "lex-choose-42b6bd03": [
+    "eft-pi-11b",
+    "choose"
+  ],
+  "lex-advise-0e476fee": [
+    "eft-pi-11b",
+    "advise"
+  ],
+  "lex-fly-b56e5529": [
+    "eft-pi-11b",
+    "fly"
+  ],
+  "lex-live-aaa4d454": [
+    "eft-pi-11b",
+    "live"
+  ],
+  "lex-life-a5b84fd8": [
+    "eft-pi-11b",
+    "life"
+  ],
+  "lex-death-513bcafd": [
+    "eft-pi-11b",
+    "death"
+  ],
+  "lex-succeed-220603b1": [
+    "eft-pi-11b",
+    "succeed"
+  ],
+  "lex-option-cb9c47c2": [
+    "eft-pi-11b",
+    "option"
+  ],
+  "lex-confusing-situation-4a760088": [
+    "eft-pi-11b",
+    "confusing-situation"
+  ],
+  "lex-give-somebody-advice-42f03f49": [
+    "eft-pi-11b",
+    "give-somebody-advice"
+  ],
+  "lex-get-an-invitation-c364f39a": [
+    "eft-pi-11b",
+    "get-an-invitation"
+  ],
+  "lex-same-as-bf0b89ec": [
+    "eft-pi-11c",
+    "same-as"
+  ],
+  "lex-look-like-somebody-043c696a": [
+    "eft-pi-11c",
+    "look-like-somebody"
+  ],
+  "lex-look-just-like-somebody-0f32ca49": [
+    "eft-pi-11c",
+    "look-just-like-somebody"
+  ],
+  "lex-identical-6c980999": [
+    "eft-pi-11c",
+    "identical"
+  ],
+  "lex-both-27c2803c": [
+    "eft-pi-11c",
+    "both"
+  ],
+  "lex-twin-078cd06f": [
+    "eft-pi-11c",
+    "twin"
+  ],
+  "lex-lookalike-fa99e08e": [
+    "eft-pi-11c",
+    "lookalike"
+  ],
+  "lex-stranger-a853ccc9": [
+    "eft-pi-11c",
+    "stranger"
+  ],
+  "lex-set-up-a-website-ed0ccb42": [
+    "eft-pi-11c",
+    "set-up-a-website"
+  ],
+  "lex-have-the-same-colour-eyes-9ad1ae58": [
+    "eft-pi-11c",
+    "have-the-same-colour-eyes"
+  ],
+  "lex-look-very-similar-a861fe00": [
+    "eft-pi-11c",
+    "look-very-similar"
+  ],
+  "lex-totally-different-06ae3132": [
+    "eft-pi-11c",
+    "totally-different"
+  ],
+  "lex-phone-call-3321b1c7": [
+    "eft-pi-pe6",
+    "phone-call"
+  ],
+  "lex-cell-phone-5715add7": [
+    "eft-pi-pe6",
+    "cell-phone"
+  ],
+  "lex-message-1c48eb3f": [
+    "eft-pi-pe6",
+    "message"
+  ],
+  "lex-beep-f15d646f": [
+    "eft-pi-pe6",
+    "beep"
+  ],
+  "lex-wrong-number-d4101717": [
+    "eft-pi-pe6",
+    "wrong-number"
+  ],
+  "lex-line-s-busy-d9685dd9": [
+    "eft-pi-pe6",
+    "line-s-busy"
+  ],
+  "lex-hold-1ead2d3d": [
+    "eft-pi-pe6",
+    "hold"
+  ],
+  "lex-put-somebody-through-98cf769b": [
+    "eft-pi-pe6",
+    "put-somebody-through"
+  ],
+  "lex-return-a-call-01c6ab47": [
+    "eft-pi-pe6",
+    "return-a-call"
+  ],
+  "lex-take-a-message-a83c94bf": [
+    "eft-pi-pe6",
+    "take-a-message"
+  ],
+  "lex-can-i-speak-to-7cad2bfa": [
+    "eft-pi-pe6",
+    "can-i-speak-to"
+  ],
+  "lex-is-that-barbara-5872da2f": [
+    "eft-pi-pe6",
+    "is-that-barbara"
+  ],
+  "lex-can-i-leave-a-message-ed372002": [
+    "eft-pi-pe6",
+    "can-i-leave-a-message"
+  ],
+  "lex-can-you-tell-her-called-98c5c798": [
+    "eft-pi-pe6",
+    "can-you-tell-her-called"
+  ],
+  "lex-i-ll-call-back-later-a572fa0e": [
+    "eft-pi-pe6",
+    "i-ll-call-back-later"
+  ],
+  "lex-i-ll-hold-07c62df5": [
+    "eft-pi-pe6",
+    "i-ll-hold"
+  ],
+  "lex-i-can-t-take-your-call-at-the-moment-f8b9407c": [
+    "eft-pi-pe6",
+    "i-can-t-take-your-call-at-the-moment"
+  ],
+  "lex-please-leave-a-message-after-the-beep-70390124": [
+    "eft-pi-pe6",
+    "please-leave-a-message-after-the-beep"
+  ],
+  "lex-you-go-first-8fa72cb7": [
+    "eft-pi-pe6",
+    "you-go-first"
+  ],
+  "lex-that-s-great-news-2964783c": [
+    "eft-pi-pe6",
+    "that-s-great-news"
+  ],
+  "lex-i-ll-explain-later-f731519e": [
+    "eft-pi-pe6",
+    "i-ll-explain-later"
+  ],
+  "lex-is-everything-all-right-600f4b6f": [
+    "eft-pi-pe6",
+    "is-everything-all-right"
+  ],
+  "lex-i-ve-got-some-news-2772e384": [
+    "eft-pi-pe6",
+    "i-ve-got-some-news"
+  ],
+  "lex-straight-away-26805653": [
+    "eft-pi-12a",
+    "straight-away"
+  ],
+  "lex-earlier-4f8cd025": [
+    "eft-pi-12a",
+    "earlier"
+  ],
+  "lex-after-a-long-time-57d2face": [
+    "eft-pi-12a",
+    "after-a-long-time"
+  ],
+  "lex-without-delay-002a3817": [
+    "eft-pi-12a",
+    "without-delay"
+  ],
+  "lex-unbelievable-story-d4d1465d": [
+    "eft-pi-12a",
+    "unbelievable-story"
+  ],
+  "lex-false-alarm-ae1b2197": [
+    "eft-pi-12a",
+    "false-alarm"
+  ],
+  "lex-leave-somebody-behind-215bde2d": [
+    "eft-pi-12a",
+    "leave-somebody-behind"
+  ],
+  "lex-realize-8f294144": [
+    "eft-pi-12a",
+    "realize"
+  ],
+  "lex-alive-a7053867": [
+    "eft-pi-12a",
+    "alive"
+  ],
+  "lex-hurt-18c8e532": [
+    "eft-pi-12a",
+    "hurt"
+  ],
+  "lex-miracle-83614349": [
+    "eft-pi-12a",
+    "miracle"
+  ],
+  "lex-vet-a7452b2e": [
+    "eft-pi-12a",
+    "vet"
+  ],
+  "lex-owner-8640faa2": [
+    "eft-pi-12a",
+    "owner"
+  ],
+  "lex-microchip-f80ba4a4": [
+    "eft-pi-12a",
+    "microchip"
+  ],
+  "lex-put-up-posters-9732a591": [
+    "eft-pi-12a",
+    "put-up-posters"
+  ],
+  "lex-petrol-station-3f2ff3c5": [
+    "eft-pi-12a",
+    "petrol-station"
+  ],
+  "lex-fill-up-a-car-79c5a893": [
+    "eft-pi-12a",
+    "fill-up-a-car"
+  ],
+  "lex-drive-off-30147c17": [
+    "eft-pi-12a",
+    "drive-off"
+  ],
+  "lex-get-a-signal-5590e3d2": [
+    "eft-pi-12a",
+    "get-a-signal"
+  ],
+  "lex-contact-somebody-6f0cbcbd": [
+    "eft-pi-12a",
+    "contact-somebody"
+  ],
+  "lex-shout-07235b92": [
+    "eft-pi-12a",
+    "shout"
+  ],
+  "lex-kick-d92625d4": [
+    "eft-pi-12a",
+    "kick"
+  ],
+  "lex-say-something-07f5eb2e": [
+    "eft-pi-12b",
+    "say-something"
+  ],
+  "lex-say-that-b91e5823": [
+    "eft-pi-12b",
+    "say-that"
+  ],
+  "lex-tell-somebody-that-87a1129e": [
+    "eft-pi-12b",
+    "tell-somebody-that"
+  ],
+  "lex-tell-somebody-to-do-something-b3dad154": [
+    "eft-pi-12b",
+    "tell-somebody-to-do-something"
+  ],
+  "lex-tell-somebody-not-to-do-something-b0eab9c4": [
+    "eft-pi-12b",
+    "tell-somebody-not-to-do-something"
+  ],
+  "lex-say-goodbye-86893c9b": [
+    "eft-pi-12b",
+    "say-goodbye"
+  ],
+  "lex-tell-a-story-14378a21": [
+    "eft-pi-12b",
+    "tell-a-story"
+  ],
+  "lex-argument-0d64b3e1": [
+    "eft-pi-12b",
+    "argument"
+  ],
+  "lex-neighbour-0ebadf00": [
+    "eft-pi-12b",
+    "neighbour"
+  ],
+  "lex-have-a-conversation-e64790c0": [
+    "eft-pi-12b",
+    "have-a-conversation"
+  ],
+  "lex-direct-speech-c735deec": [
+    "eft-pi-12b",
+    "direct-speech"
+  ],
+  "lex-reported-speech-fddc45c4": [
+    "eft-pi-12b",
+    "reported-speech"
+  ],
+  "lex-according-to-somebody-937d6ba2": [
+    "eft-pi-12b",
+    "according-to-somebody"
+  ],
+  "lex-whose-fc9aceab": [
+    "eft-pi-12c",
+    "whose"
+  ],
+  "lex-by-car-f118e067": [
+    "eft-pi-12c",
+    "by-car"
+  ],
+  "lex-on-public-transport-f62e5890": [
+    "eft-pi-12c",
+    "on-public-transport"
+  ],
+  "lex-sit-next-to-somebody-d0d8c28d": [
+    "eft-pi-12c",
+    "sit-next-to-somebody"
+  ],
+  "lex-english-speaking-country-45ceec03": [
+    "eft-pi-12c",
+    "english-speaking-country"
+  ],
+  "lex-carry-on-with-english-98f4cdd2": [
+    "eft-pi-12c",
+    "carry-on-with-english"
+  ],
+  "lex-quiz-b5051a07": [
+    "eft-pi-12c",
+    "quiz"
+  ],
+  "lex-question-99badd17": [
+    "eft-pi-12c",
+    "question"
+  ],
+  "lex-answer-612a650e": [
+    "eft-pi-12c",
+    "answer"
+  ],
+  "lex-crab-f6bbc774": [
+    "eft-int-1a",
+    "crab"
+  ],
+  "lex-lobster-164e131c": [
+    "eft-int-1a",
+    "lobster"
+  ],
+  "lex-mussel-d53d866b": [
+    "eft-int-1a",
+    "mussel"
+  ],
+  "lex-prawn-12d17be8": [
+    "eft-int-1a",
+    "prawn"
+  ],
+  "lex-squid-ac8f0c97": [
+    "eft-int-1a",
+    "squid"
+  ],
+  "lex-beef-691d73ca": [
+    "eft-int-1a",
+    "beef"
+  ],
+  "lex-chicken-3600a1cd": [
+    "eft-int-1a",
+    "chicken"
+  ],
+  "lex-duck-4f4deb72": [
+    "eft-int-1a",
+    "duck"
+  ],
+  "lex-lamb-cc66c6f5": [
+    "eft-int-1a",
+    "lamb"
+  ],
+  "lex-pork-993196ea": [
+    "eft-int-1a",
+    "pork"
+  ],
+  "lex-aubergine-7c2a7e82": [
+    "eft-int-1a",
+    "aubergine"
+  ],
+  "lex-eggplant-ac2f2f45": [
+    "eft-int-1a",
+    "eggplant"
+  ],
+  "lex-avocado-b383e6e3": [
+    "eft-int-1a",
+    "avocado"
+  ],
+  "lex-beetroot-b88dfb73": [
+    "eft-int-1a",
+    "beetroot"
+  ],
+  "lex-cherry-75208015": [
+    "eft-int-1a",
+    "cherry"
+  ],
+  "lex-courgette-3d6bdcdf": [
+    "eft-int-1a",
+    "courgette"
+  ],
+  "lex-zucchini-13194cf5": [
+    "eft-int-1a",
+    "zucchini"
+  ],
+  "lex-grape-7276d768": [
+    "eft-int-1a",
+    "grape"
+  ],
+  "lex-green-bean-8d30f4f1": [
+    "eft-int-1a",
+    "green-bean"
+  ],
+  "lex-lemon-4e6d1cb5": [
+    "eft-int-1a",
+    "lemon"
+  ],
+  "lex-mango-9bf65246": [
+    "eft-int-1a",
+    "mango"
+  ],
+  "lex-melon-da8b74b6": [
+    "eft-int-1a",
+    "melon"
+  ],
+  "lex-peach-75470156": [
+    "eft-int-1a",
+    "peach"
+  ],
+  "lex-pear-6ec90517": [
+    "eft-int-1a",
+    "pear"
+  ],
+  "lex-raspberry-21d9554e": [
+    "eft-int-1a",
+    "raspberry"
+  ],
+  "lex-red-pepper-34734058": [
+    "eft-int-1a",
+    "red-pepper"
+  ],
+  "lex-roast-21d2147e": [
+    "eft-int-1a",
+    "roast"
+  ],
+  "lex-ready-made-food-a96d99ba": [
+    "eft-int-1a",
+    "ready-made-food"
+  ],
+  "lex-topping-0ce5d861": [
+    "eft-int-1a",
+    "topping"
+  ],
+  "lex-filling-1f0e4c3e": [
+    "eft-int-1a",
+    "filling"
+  ],
+  "lex-diet-bf38b3aa": [
+    "eft-int-1a",
+    "diet"
+  ],
+  "lex-eat-out-e0aaa8f2": [
+    "eft-int-1a",
+    "eat-out"
+  ],
+  "lex-cut-down-on-something-746dd098": [
+    "eft-int-1a",
+    "cut-down-on-something"
+  ],
+  "lex-cut-out-something-13c255c3": [
+    "eft-int-1a",
+    "cut-out-something"
+  ],
+  "lex-cheer-somebody-up-d725dbf0": [
+    "eft-int-1a",
+    "cheer-somebody-up"
+  ],
+  "lex-miss-something-30c6e02c": [
+    "eft-int-1a",
+    "miss-something"
+  ],
+  "lex-tap-water-faa4e0af": [
+    "eft-int-1a",
+    "tap-water"
+  ],
+  "lex-stepsister-a7f32abf": [
+    "eft-int-1b",
+    "stepsister"
+  ],
+  "lex-half-sister-eecbf691": [
+    "eft-int-1b",
+    "half-sister"
+  ],
+  "lex-brother-in-law-18ece895": [
+    "eft-int-1b",
+    "brother-in-law"
+  ],
+  "lex-great-grandfather-1c5e77f2": [
+    "eft-int-1b",
+    "great-grandfather"
+  ],
+  "lex-adopted-child-9be2cb80": [
+    "eft-int-1b",
+    "adopted-child"
+  ],
+  "lex-only-child-7cb85904": [
+    "eft-int-1b",
+    "only-child"
+  ],
+  "lex-siblings-d41340f9": [
+    "eft-int-1b",
+    "siblings"
+  ],
+  "lex-immediate-family-a3107672": [
+    "eft-int-1b",
+    "immediate-family"
+  ],
+  "lex-single-parent-family-1c13c9c0": [
+    "eft-int-1b",
+    "single-parent-family"
+  ],
+  "lex-stepchildren-0374d22b": [
+    "eft-int-1b",
+    "stepchildren"
+  ],
+  "lex-family-member-412c5177": [
+    "eft-int-1b",
+    "family-member"
+  ],
+  "lex-have-a-row-0111c896": [
+    "eft-int-1b",
+    "have-a-row"
+  ],
+  "lex-affectionate-62ea3d3e": [
+    "eft-int-1b",
+    "affectionate"
+  ],
+  "lex-honest-7edaa9d1": [
+    "eft-int-1b",
+    "honest"
+  ],
+  "lex-imaginative-d7c4ea91": [
+    "eft-int-1b",
+    "imaginative"
+  ],
+  "lex-selfish-2469eda5": [
+    "eft-int-1b",
+    "selfish"
+  ],
+  "lex-sociable-fa668cf5": [
+    "eft-int-1b",
+    "sociable"
+  ],
+  "lex-spoilt-53ad721a": [
+    "eft-int-1b",
+    "spoilt"
+  ],
+  "lex-sympathetic-829401e3": [
+    "eft-int-1b",
+    "sympathetic"
+  ],
+  "lex-change-your-mind-c13dd710": [
+    "eft-int-1b",
+    "change-your-mind"
+  ],
+  "lex-unambitious-c3f67a87": [
+    "eft-int-1b",
+    "unambitious"
+  ],
+  "lex-dishonest-1d8dce5f": [
+    "eft-int-1b",
+    "dishonest"
+  ],
+  "lex-unimaginative-1ba05d40": [
+    "eft-int-1b",
+    "unimaginative"
+  ],
+  "lex-immature-cd341eed": [
+    "eft-int-1b",
+    "immature"
+  ],
+  "lex-disorganized-4c9129fc": [
+    "eft-int-1b",
+    "disorganized"
+  ],
+  "lex-unselfish-5d6cd2a5": [
+    "eft-int-1b",
+    "unselfish"
+  ],
+  "lex-insensitive-8ff21be0": [
+    "eft-int-1b",
+    "insensitive"
+  ],
+  "lex-unsociable-c9aab8f1": [
+    "eft-int-1b",
+    "unsociable"
+  ],
+  "lex-untidy-cfc74a8f": [
+    "eft-int-1b",
+    "untidy"
+  ],
+  "lex-i-d-rather-not-talk-about-that-143c9beb": [
+    "eft-int-1b",
+    "i-d-rather-not-talk-about-that"
+  ],
+  "lex-you-re-kidding-33064ade": [
+    "eft-int-pe1",
+    "you-re-kidding"
+  ],
+  "lex-really-63ff7e89": [
+    "eft-int-pe1",
+    "really"
+  ],
+  "lex-how-fantastic-f2d5c29a": [
+    "eft-int-pe1",
+    "how-fantastic"
+  ],
+  "lex-what-a-great-idea-6ce5697c": [
+    "eft-int-pe1",
+    "what-a-great-idea"
+  ],
+  "lex-never-mind-0b2635ef": [
+    "eft-int-pe1",
+    "never-mind"
+  ],
+  "lex-how-interesting-bc26a573": [
+    "eft-int-pe1",
+    "how-interesting"
+  ],
+  "lex-how-amazing-0cc0c770": [
+    "eft-int-pe1",
+    "how-amazing"
+  ],
+  "lex-what-terrible-news-eaf2a81e": [
+    "eft-int-pe1",
+    "what-terrible-news"
+  ],
+  "lex-of-course-not-dde9958f": [
+    "eft-int-pe1",
+    "of-course-not"
+  ],
+  "lex-lucky-you-9c865803": [
+    "eft-int-pe1",
+    "lucky-you"
+  ],
+  "lex-you-know-6b2c176d": [
+    "eft-int-pe1",
+    "you-know"
+  ],
+  "lex-things-like-that-32a8aea7": [
+    "eft-int-pe1",
+    "things-like-that"
+  ],
+  "lex-get-a-promotion-cdacf68d": [
+    "eft-int-pe1",
+    "get-a-promotion"
+  ],
+  "lex-be-worth-cfccdf26": [
+    "eft-int-2a",
+    "be-worth"
+  ],
+  "lex-can-afford-something-3f678cf7": [
+    "eft-int-2a",
+    "can-afford-something"
+  ],
+  "lex-can-t-afford-to-do-something-ca616a2e": [
+    "eft-int-2a",
+    "can-t-afford-to-do-something"
+  ],
+  "lex-charge-somebody-for-something-86674434": [
+    "eft-int-2a",
+    "charge-somebody-for-something"
+  ],
+  "lex-inherit-money-b38d2768": [
+    "eft-int-2a",
+    "inherit-money"
+  ],
+  "lex-invest-money-in-something-2dca2c6a": [
+    "eft-int-2a",
+    "invest-money-in-something"
+  ],
+  "lex-owe-somebody-money-411917ca": [
+    "eft-int-2a",
+    "owe-somebody-money"
+  ],
+  "lex-raise-money-0d9bb9ef": [
+    "eft-int-2a",
+    "raise-money"
+  ],
+  "lex-save-money-b23b6bdd": [
+    "eft-int-2a",
+    "save-money"
+  ],
+  "lex-waste-money-6424cdcb": [
+    "eft-int-2a",
+    "waste-money"
+  ],
+  "lex-pay-for-something-ed0bd07b": [
+    "eft-int-2a",
+    "pay-for-something"
+  ],
+  "lex-pay-in-cash-2d97e291": [
+    "eft-int-2a",
+    "pay-in-cash"
+  ],
+  "lex-get-into-debt-f967682f": [
+    "eft-int-2a",
+    "get-into-debt"
+  ],
+  "lex-take-money-out-4d3f691d": [
+    "eft-int-2a",
+    "take-money-out"
+  ],
+  "lex-live-off-somebody-0256b6bc": [
+    "eft-int-2a",
+    "live-off-somebody"
+  ],
+  "lex-live-on-one-salary-277291d8": [
+    "eft-int-2a",
+    "live-on-one-salary"
+  ],
+  "lex-put-money-aside-3025bf02": [
+    "eft-int-2a",
+    "put-money-aside"
+  ],
+  "lex-contactless-payment-64cbde23": [
+    "eft-int-2a",
+    "contactless-payment"
+  ],
+  "lex-fortune-a18c56bc": [
+    "eft-int-2a",
+    "fortune"
+  ],
+  "lex-beauty-treatments-5865c222": [
+    "eft-int-2a",
+    "beauty-treatments"
+  ],
+  "lex-environmentally-friendly-a51fa3d5": [
+    "eft-int-2a",
+    "environmentally-friendly"
+  ],
+  "lex-amazed-f0126634": [
+    "eft-int-2b",
+    "amazed"
+  ],
+  "lex-sure-1a6f8d55": [
+    "eft-int-2b",
+    "sure"
+  ],
+  "lex-positive-e6209d33": [
+    "eft-int-2b",
+    "positive"
+  ],
+  "lex-absolutely-dedcf1f0": [
+    "eft-int-2b",
+    "absolutely"
+  ],
+  "lex-totally-3961dad6": [
+    "eft-int-2b",
+    "totally"
+  ],
+  "lex-adventure-2417bb6a": [
+    "eft-int-2b",
+    "adventure"
+  ],
+  "lex-adventure-sport-0cfb5057": [
+    "eft-int-2b",
+    "adventure-sport"
+  ],
+  "lex-emotional-5aa0ddbd": [
+    "eft-int-2b",
+    "emotional"
+  ],
+  "lex-blog-7fc1033f": [
+    "eft-int-2b",
+    "blog"
+  ],
+  "lex-charity-event-f5977f0a": [
+    "eft-int-2b",
+    "charity-event"
+  ],
+  "lex-bike-a506c7a6": [
+    "eft-int-3a",
+    "bike"
+  ],
+  "lex-bus-5bde657f": [
+    "eft-int-3a",
+    "bus"
+  ],
+  "lex-coach-549df344": [
+    "eft-int-3a",
+    "coach"
+  ],
+  "lex-ferry-482e44e1": [
+    "eft-int-3a",
+    "ferry"
+  ],
+  "lex-lorry-b1f5bbab": [
+    "eft-int-3a",
+    "lorry"
+  ],
+  "lex-truck-d15def40": [
+    "eft-int-3a",
+    "truck"
+  ],
+  "lex-motorbike-c27f877c": [
+    "eft-int-3a",
+    "motorbike"
+  ],
+  "lex-scooter-96ace22e": [
+    "eft-int-3a",
+    "scooter"
+  ],
+  "lex-tram-24789d69": [
+    "eft-int-3a",
+    "tram"
+  ],
+  "lex-underground-6dac3b0e": [
+    "eft-int-3a",
+    "underground"
+  ],
+  "lex-subway-1fb3f479": [
+    "eft-int-3a",
+    "subway"
+  ],
+  "lex-van-fc0369df": [
+    "eft-int-3a",
+    "van"
+  ],
+  "lex-freeway-df2bc881": [
+    "eft-int-3a",
+    "freeway"
+  ],
+  "lex-car-crash-5af09fa1": [
+    "eft-int-3a",
+    "car-crash"
+  ],
+  "lex-parking-fine-f694d5ad": [
+    "eft-int-3a",
+    "parking-fine"
+  ],
+  "lex-pedestrian-zone-3f77898f": [
+    "eft-int-3a",
+    "pedestrian-zone"
+  ],
+  "lex-road-works-48d85ce5": [
+    "eft-int-3a",
+    "road-works"
+  ],
+  "lex-seat-belt-3d4bfd7f": [
+    "eft-int-3a",
+    "seat-belt"
+  ],
+  "lex-speed-camera-f430287e": [
+    "eft-int-3a",
+    "speed-camera"
+  ],
+  "lex-zebra-crossing-de234f0d": [
+    "eft-int-3a",
+    "zebra-crossing"
+  ],
+  "lex-pedestrian-crossing-222f673f": [
+    "eft-int-3a",
+    "pedestrian-crossing"
+  ],
+  "lex-pavement-b501d45f": [
+    "eft-int-3a",
+    "pavement"
+  ],
+  "lex-satnav-e26cdd23": [
+    "eft-int-3a",
+    "satnav"
+  ],
+  "lex-end-up-somewhere-f686fd7f": [
+    "eft-int-3a",
+    "end-up-somewhere"
+  ],
+  "lex-look-out-3ef07bdd": [
+    "eft-int-3a",
+    "look-out"
+  ],
+  "lex-watch-out-f6724af9": [
+    "eft-int-3a",
+    "watch-out"
+  ],
+  "lex-how-long-does-it-take-c8c7f6b1": [
+    "eft-int-3a",
+    "how-long-does-it-take"
+  ],
+  "lex-it-takes-an-hour-to-get-there-69410c44": [
+    "eft-int-3a",
+    "it-takes-an-hour-to-get-there"
+  ],
+  "lex-fill-up-833e2e69": [
+    "eft-int-3a",
+    "fill-up"
+  ],
+  "lex-apologize-to-somebody-d6a843d9": [
+    "eft-int-3b",
+    "apologize-to-somebody"
+  ],
+  "lex-apologize-for-something-8895e064": [
+    "eft-int-3b",
+    "apologize-for-something"
+  ],
+  "lex-argue-with-somebody-ca974a2e": [
+    "eft-int-3b",
+    "argue-with-somebody"
+  ],
+  "lex-argue-about-something-ea325b99": [
+    "eft-int-3b",
+    "argue-about-something"
+  ],
+  "lex-arrive-at-an-airport-707167cf": [
+    "eft-int-3b",
+    "arrive-at-an-airport"
+  ],
+  "lex-believe-in-something-9654e999": [
+    "eft-int-3b",
+    "believe-in-something"
+  ],
+  "lex-choose-between-things-2f40a0f8": [
+    "eft-int-3b",
+    "choose-between-things"
+  ],
+  "lex-laugh-at-somebody-e415491a": [
+    "eft-int-3b",
+    "laugh-at-somebody"
+  ],
+  "lex-remind-somebody-of-something-d739d860": [
+    "eft-int-3b",
+    "remind-somebody-of-something"
+  ],
+  "lex-talk-to-somebody-7c2d8242": [
+    "eft-int-3b",
+    "talk-to-somebody"
+  ],
+  "lex-talk-about-something-2ddc6369": [
+    "eft-int-3b",
+    "talk-about-something"
+  ],
+  "lex-scared-of-something-5309dd41": [
+    "eft-int-3b",
+    "scared-of-something"
+  ],
+  "lex-frightened-of-something-c4b191fb": [
+    "eft-int-3b",
+    "frightened-of-something"
+  ],
+  "lex-close-to-somebody-603d4f65": [
+    "eft-int-3b",
+    "close-to-somebody"
+  ],
+  "lex-excited-about-something-d4e30f42": [
+    "eft-int-3b",
+    "excited-about-something"
+  ],
+  "lex-fed-up-with-something-d1bbd042": [
+    "eft-int-3b",
+    "fed-up-with-something"
+  ],
+  "lex-fond-of-somebody-ea87a60a": [
+    "eft-int-3b",
+    "fond-of-somebody"
+  ],
+  "lex-keen-on-something-8a4d9c92": [
+    "eft-int-3b",
+    "keen-on-something"
+  ],
+  "lex-kind-to-somebody-32c321d2": [
+    "eft-int-3b",
+    "kind-to-somebody"
+  ],
+  "lex-married-to-somebody-e2a70cb6": [
+    "eft-int-3b",
+    "married-to-somebody"
+  ],
+  "lex-pleased-with-something-9d760320": [
+    "eft-int-3b",
+    "pleased-with-something"
+  ],
+  "lex-proud-of-somebody-cc4bc69b": [
+    "eft-int-3b",
+    "proud-of-somebody"
+  ],
+  "lex-rude-to-somebody-6546470e": [
+    "eft-int-3b",
+    "rude-to-somebody"
+  ],
+  "lex-worried-about-something-f4f7208a": [
+    "eft-int-3b",
+    "worried-about-something"
+  ],
+  "lex-tired-of-something-ae0e5321": [
+    "eft-int-3b",
+    "tired-of-something"
+  ],
+  "lex-superstition-86b822c8": [
+    "eft-int-3b",
+    "superstition"
+  ],
+  "lex-attitude-915072c7": [
+    "eft-int-3b",
+    "attitude"
+  ],
+  "lex-i-think-cf35c840": [
+    "eft-int-pe2",
+    "i-think"
+  ],
+  "lex-if-you-ask-me-bb3a3cd4": [
+    "eft-int-pe2",
+    "if-you-ask-me"
+  ],
+  "lex-what-do-you-think-f0667315": [
+    "eft-int-pe2",
+    "what-do-you-think"
+  ],
+  "lex-don-t-you-agree-5272358e": [
+    "eft-int-pe2",
+    "don-t-you-agree"
+  ],
+  "lex-i-agree-f1596716": [
+    "eft-int-pe2",
+    "i-agree"
+  ],
+  "lex-i-don-t-think-that-s-true-5b3eb951": [
+    "eft-int-pe2",
+    "i-don-t-think-that-s-true"
+  ],
+  "lex-oh-come-on-ff35eb77": [
+    "eft-int-pe2",
+    "oh-come-on"
+  ],
+  "lex-hold-on-a-minute-f6d0e428": [
+    "eft-int-pe2",
+    "hold-on-a-minute"
+  ],
+  "lex-did-you-mean-what-you-said-6c97737d": [
+    "eft-int-pe2",
+    "did-you-mean-what-you-said"
+  ],
+  "lex-it-s-just-that-ca11f316": [
+    "eft-int-pe2",
+    "it-s-just-that"
+  ],
+  "lex-peace-and-quiet-0efab18d": [
+    "eft-int-pe2",
+    "peace-and-quiet"
+  ],
+  "lex-celebrity-4037a9bf": [
+    "eft-int-pe2",
+    "celebrity"
+  ],
+  "lex-tour-15c2457f": [
+    "eft-int-pe2",
+    "tour"
+  ],
+  "lex-peculiar-charm-bf2a6acd": [
+    "eft-int-pe2",
+    "peculiar-charm"
+  ],
+  "lex-that-was-so-kind-of-him-70c927fc": [
+    "eft-int-pe2",
+    "that-was-so-kind-of-him"
+  ],
+  "lex-dial-a-number-7d192679": [
+    "eft-int-4a",
+    "dial-a-number"
+  ],
+  "lex-text-somebody-41dc63c5": [
+    "eft-int-4a",
+    "text-somebody"
+  ],
+  "lex-message-somebody-43663ab1": [
+    "eft-int-4a",
+    "message-somebody"
+  ],
+  "lex-hang-up-ed625a19": [
+    "eft-int-4a",
+    "hang-up"
+  ],
+  "lex-hang-up-on-somebody-103a992e": [
+    "eft-int-4a",
+    "hang-up-on-somebody"
+  ],
+  "lex-ringtone-1307fd5e": [
+    "eft-int-4a",
+    "ringtone"
+  ],
+  "lex-line-is-engaged-5976049b": [
+    "eft-int-4a",
+    "line-is-engaged"
+  ],
+  "lex-line-is-busy-7161ee98": [
+    "eft-int-4a",
+    "line-is-busy"
+  ],
+  "lex-swipe-through-photos-a83ca08e": [
+    "eft-int-4a",
+    "swipe-through-photos"
+  ],
+  "lex-helpline-e8dbefe3": [
+    "eft-int-4a",
+    "helpline"
+  ],
+  "lex-put-somebody-on-hold-480c2e0f": [
+    "eft-int-4a",
+    "put-somebody-on-hold"
+  ],
+  "lex-be-on-hold-df28b1ab": [
+    "eft-int-4a",
+    "be-on-hold"
+  ],
+  "lex-cut-somebody-off-8b183555": [
+    "eft-int-4a",
+    "cut-somebody-off"
+  ],
+  "lex-be-cut-off-d5101fe1": [
+    "eft-int-4a",
+    "be-cut-off"
+  ],
+  "lex-phone-network-bbdbf917": [
+    "eft-int-4a",
+    "phone-network"
+  ],
+  "lex-monthly-contract-6d5da47c": [
+    "eft-int-4a",
+    "monthly-contract"
+  ],
+  "lex-pay-as-you-go-feea6f07": [
+    "eft-int-4a",
+    "pay-as-you-go"
+  ],
+  "lex-make-a-call-6be76636": [
+    "eft-int-4a",
+    "make-a-call"
+  ],
+  "lex-text-message-b3952cc8": [
+    "eft-int-4a",
+    "text-message"
+  ],
+  "lex-contacts-8057032d": [
+    "eft-int-4a",
+    "contacts"
+  ],
+  "lex-manners-89037ae7": [
+    "eft-int-4a",
+    "manners"
+  ],
+  "lex-good-manners-16eeecc6": [
+    "eft-int-4a",
+    "good-manners"
+  ],
+  "lex-bad-manners-5d63da9f": [
+    "eft-int-4a",
+    "bad-manners"
+  ],
+  "lex-polite-2644518f": [
+    "eft-int-4a",
+    "polite"
+  ],
+  "lex-appropriate-0eb0a588": [
+    "eft-int-4a",
+    "appropriate"
+  ],
+  "lex-inappropriate-c14ca2d1": [
+    "eft-int-4a",
+    "inappropriate"
+  ],
+  "lex-in-the-middle-of-a-conversation-3b16725b": [
+    "eft-int-4a",
+    "in-the-middle-of-a-conversation"
+  ],
+  "lex-put-your-phone-on-silent-4d31538a": [
+    "eft-int-4a",
+    "put-your-phone-on-silent"
+  ],
+  "lex-annoyed-9694f412": [
+    "eft-int-4b",
+    "annoyed"
+  ],
+  "lex-annoying-28d53ffd": [
+    "eft-int-4b",
+    "annoying"
+  ],
+  "lex-disappointed-a96b0214": [
+    "eft-int-4b",
+    "disappointed"
+  ],
+  "lex-disappointing-515f13e5": [
+    "eft-int-4b",
+    "disappointing"
+  ],
+  "lex-tiring-68e07165": [
+    "eft-int-4b",
+    "tiring"
+  ],
+  "lex-embarrassing-2a38db7d": [
+    "eft-int-4b",
+    "embarrassing"
+  ],
+  "lex-frustrated-20c07a44": [
+    "eft-int-4b",
+    "frustrated"
+  ],
+  "lex-frustrating-a26264c0": [
+    "eft-int-4b",
+    "frustrating"
+  ],
+  "lex-learn-a-new-skill-77203e05": [
+    "eft-int-4b",
+    "learn-a-new-skill"
+  ],
+  "lex-be-able-to-do-something-f4de29e2": [
+    "eft-int-4b",
+    "be-able-to-do-something"
+  ],
+  "lex-manage-to-do-something-257e6459": [
+    "eft-int-4b",
+    "manage-to-do-something"
+  ],
+  "lex-trumpet-7b73313a": [
+    "eft-int-4b",
+    "trumpet"
+  ],
+  "lex-tip-ce401d50": [
+    "eft-int-4b",
+    "tip"
+  ],
+  "lex-in-your-head-ca39bbb3": [
+    "eft-int-4b",
+    "in-your-head"
+  ],
+  "lex-test-yourself-9b139179": [
+    "eft-int-4b",
+    "test-yourself"
+  ],
+  "lex-captain-a8a68ee3": [
+    "eft-int-5a",
+    "captain"
+  ],
+  "lex-coach-eca3739b": [
+    "eft-int-5a",
+    "coach"
+  ],
+  "lex-fan-76f82131": [
+    "eft-int-5a",
+    "fan"
+  ],
+  "lex-player-7c537d8e": [
+    "eft-int-5a",
+    "player"
+  ],
+  "lex-referee-ebfdea0a": [
+    "eft-int-5a",
+    "referee"
+  ],
+  "lex-team-dd24174c": [
+    "eft-int-5a",
+    "team"
+  ],
+  "lex-striker-b5d614bf": [
+    "eft-int-5a",
+    "striker"
+  ],
+  "lex-sports-hall-60eeebf5": [
+    "eft-int-5a",
+    "sports-hall"
+  ],
+  "lex-stadium-bc7088b5": [
+    "eft-int-5a",
+    "stadium"
+  ],
+  "lex-arena-2f561121": [
+    "eft-int-5a",
+    "arena"
+  ],
+  "lex-tennis-court-f87ed3d8": [
+    "eft-int-5a",
+    "tennis-court"
+  ],
+  "lex-basketball-court-556c9125": [
+    "eft-int-5a",
+    "basketball-court"
+  ],
+  "lex-football-pitch-806481ac": [
+    "eft-int-5a",
+    "football-pitch"
+  ],
+  "lex-rugby-pitch-db4850c8": [
+    "eft-int-5a",
+    "rugby-pitch"
+  ],
+  "lex-swimming-pool-532056e7": [
+    "eft-int-5a",
+    "swimming-pool"
+  ],
+  "lex-athletics-track-86cc6c39": [
+    "eft-int-5a",
+    "athletics-track"
+  ],
+  "lex-racing-circuit-ece8021b": [
+    "eft-int-5a",
+    "racing-circuit"
+  ],
+  "lex-golf-course-2e3b321d": [
+    "eft-int-5a",
+    "golf-course"
+  ],
+  "lex-ski-slope-5240d347": [
+    "eft-int-5a",
+    "ski-slope"
+  ],
+  "lex-gym-ad56ccdb": [
+    "eft-int-5a",
+    "gym"
+  ],
+  "lex-beat-another-team-023e9127": [
+    "eft-int-5a",
+    "beat-another-team"
+  ],
+  "lex-draw-324f95e4": [
+    "eft-int-5a",
+    "draw"
+  ],
+  "lex-train-4d3352f4": [
+    "eft-int-5a",
+    "train"
+  ],
+  "lex-get-injured-a8d0ba0e": [
+    "eft-int-5a",
+    "get-injured"
+  ],
+  "lex-kick-a-ball-837404f5": [
+    "eft-int-5a",
+    "kick-a-ball"
+  ],
+  "lex-throw-a-ball-b9d7717a": [
+    "eft-int-5a",
+    "throw-a-ball"
+  ],
+  "lex-be-sent-off-caf10907": [
+    "eft-int-5a",
+    "be-sent-off"
+  ],
+  "lex-be-knocked-out-29fff9d0": [
+    "eft-int-5a",
+    "be-knocked-out"
+  ],
+  "lex-semi-final-94dc4094": [
+    "eft-int-5a",
+    "semi-final"
+  ],
+  "lex-final-42be1889": [
+    "eft-int-5a",
+    "final"
+  ],
+  "lex-red-card-52e5de77": [
+    "eft-int-5a",
+    "red-card"
+  ],
+  "lex-lucky-e1d30f7e": [
+    "eft-int-5a",
+    "lucky"
+  ],
+  "lex-unlucky-2bbfe0bc": [
+    "eft-int-5a",
+    "unlucky"
+  ],
+  "lex-ritual-f24b707e": [
+    "eft-int-5a",
+    "ritual"
+  ],
+  "lex-classmate-4b69562d": [
+    "eft-int-5b",
+    "classmate"
+  ],
+  "lex-fianc-7a559819": [
+    "eft-int-5b",
+    "fianc"
+  ],
+  "lex-fiance-5bfad588": [
+    "eft-int-5b",
+    "fianc-e"
+  ],
+  "lex-engaged-b6467365": [
+    "eft-int-5b",
+    "engaged"
+  ],
+  "lex-wedding-7a55a43a": [
+    "eft-int-5b",
+    "wedding"
+  ],
+  "lex-relationship-002ad5a8": [
+    "eft-int-5b",
+    "relationship"
+  ],
+  "lex-meet-somebody-8956bec6": [
+    "eft-int-5b",
+    "meet-somebody"
+  ],
+  "lex-get-to-know-somebody-26e0683e": [
+    "eft-int-5b",
+    "get-to-know-somebody"
+  ],
+  "lex-become-friends-c67b97ed": [
+    "eft-int-5b",
+    "become-friends"
+  ],
+  "lex-have-something-in-common-669ebd61": [
+    "eft-int-5b",
+    "have-something-in-common"
+  ],
+  "lex-go-out-together-7fff5673": [
+    "eft-int-5b",
+    "go-out-together"
+  ],
+  "lex-be-together-c706ad01": [
+    "eft-int-5b",
+    "be-together"
+  ],
+  "lex-propose-to-somebody-b51fe58e": [
+    "eft-int-5b",
+    "propose-to-somebody"
+  ],
+  "lex-accept-a-proposal-5445e251": [
+    "eft-int-5b",
+    "accept-a-proposal"
+  ],
+  "lex-discuss-something-with-somebody-cd2e582c": [
+    "eft-int-5b",
+    "discuss-something-with-somebody"
+  ],
+  "lex-be-good-company-3de9b956": [
+    "eft-int-5b",
+    "be-good-company"
+  ],
+  "lex-do-you-mind-if-i-87e8744d": [
+    "eft-int-pe3",
+    "do-you-mind-if-i"
+  ],
+  "lex-is-it-ok-if-we-540ae9f9": [
+    "eft-int-pe3",
+    "is-it-ok-if-we"
+  ],
+  "lex-could-you-cab7b83d": [
+    "eft-int-pe3",
+    "could-you"
+  ],
+  "lex-could-you-do-me-a-big-favour-c263847b": [
+    "eft-int-pe3",
+    "could-you-do-me-a-big-favour"
+  ],
+  "lex-would-you-mind-doing-8933fc1e": [
+    "eft-int-pe3",
+    "would-you-mind-doing"
+  ],
+  "lex-do-you-think-you-could-c6e653d0": [
+    "eft-int-pe3",
+    "do-you-think-you-could"
+  ],
+  "lex-not-at-all-68cd7e20": [
+    "eft-int-pe3",
+    "not-at-all"
+  ],
+  "lex-come-on-sit-down-ff1b74b1": [
+    "eft-int-pe3",
+    "come-on-sit-down"
+  ],
+  "lex-pass-the-sugar-461bf572": [
+    "eft-int-pe3",
+    "pass-the-sugar"
+  ],
+  "lex-change-our-plans-11949061": [
+    "eft-int-pe3",
+    "change-our-plans"
+  ],
+  "lex-do-somebody-a-favour-04207883": [
+    "eft-int-pe3",
+    "do-somebody-a-favour"
+  ],
+  "lex-meet-somebody-at-the-airport-14ed88f2": [
+    "eft-int-pe3",
+    "meet-somebody-at-the-airport"
+  ],
+  "lex-it-s-great-to-see-you-e0d8a842": [
+    "eft-int-pe3",
+    "it-s-great-to-see-you"
+  ],
+  "lex-how-come-you-re-so-late-ffcb68e3": [
+    "eft-int-pe3",
+    "how-come-you-re-so-late"
+  ],
+  "lex-just-like-the-old-days-0cb13991": [
+    "eft-int-pe3",
+    "just-like-the-old-days"
+  ],
+  "lex-we-ve-got-a-lot-to-talk-about-ff2f9838": [
+    "eft-int-pe3",
+    "we-ve-got-a-lot-to-talk-about"
+  ],
+  "lex-action-film-b48a0e13": [
+    "eft-int-6a",
+    "action-film"
+  ],
+  "lex-animation-6b0a849c": [
+    "eft-int-6a",
+    "animation"
+  ],
+  "lex-comedy-76f3faa5": [
+    "eft-int-6a",
+    "comedy"
+  ],
+  "lex-drama-d649d729": [
+    "eft-int-6a",
+    "drama"
+  ],
+  "lex-historical-film-4dd6101a": [
+    "eft-int-6a",
+    "historical-film"
+  ],
+  "lex-horror-film-301624b0": [
+    "eft-int-6a",
+    "horror-film"
+  ],
+  "lex-musical-412c5b9d": [
+    "eft-int-6a",
+    "musical"
+  ],
+  "lex-rom-com-2a9510d2": [
+    "eft-int-6a",
+    "rom-com"
+  ],
+  "lex-romantic-comedy-83425c3a": [
+    "eft-int-6a",
+    "romantic-comedy"
+  ],
+  "lex-science-fiction-film-b2e4e061": [
+    "eft-int-6a",
+    "science-fiction-film"
+  ],
+  "lex-thriller-edd09128": [
+    "eft-int-6a",
+    "thriller"
+  ],
+  "lex-war-film-cd851993": [
+    "eft-int-6a",
+    "war-film"
+  ],
+  "lex-western-386224a5": [
+    "eft-int-6a",
+    "western"
+  ],
+  "lex-extra-7ccd17dd": [
+    "eft-int-6a",
+    "extra"
+  ],
+  "lex-script-1840b5da": [
+    "eft-int-6a",
+    "script"
+  ],
+  "lex-set-2195a6a3": [
+    "eft-int-6a",
+    "set"
+  ],
+  "lex-star-a114db58": [
+    "eft-int-6a",
+    "star"
+  ],
+  "lex-trailer-20eab5fe": [
+    "eft-int-6a",
+    "trailer"
+  ],
+  "lex-role-e129b564": [
+    "eft-int-6a",
+    "role"
+  ],
+  "lex-adaptation-473e5339": [
+    "eft-int-6a",
+    "adaptation"
+  ],
+  "lex-studio-d906f9c3": [
+    "eft-int-6a",
+    "studio"
+  ],
+  "lex-on-screen-398ab466": [
+    "eft-int-6a",
+    "on-screen"
+  ],
+  "lex-be-based-on-a-true-story-ea4c5884": [
+    "eft-int-6a",
+    "be-based-on-a-true-story"
+  ],
+  "lex-be-set-in-a-place-685a029d": [
+    "eft-int-6a",
+    "be-set-in-a-place"
+  ],
+  "lex-be-set-in-the-1940s-dadea119": [
+    "eft-int-6a",
+    "be-set-in-the-1940s"
+  ],
+  "lex-be-directed-by-somebody-f9aeda0f": [
+    "eft-int-6a",
+    "be-directed-by-somebody"
+  ],
+  "lex-play-the-part-of-somebody-f7efb337": [
+    "eft-int-6a",
+    "play-the-part-of-somebody"
+  ],
+  "lex-shoot-a-film-e7ea3bb2": [
+    "eft-int-6a",
+    "shoot-a-film"
+  ],
+  "lex-film-on-location-caa7b2b7": [
+    "eft-int-6a",
+    "film-on-location"
+  ],
+  "lex-dub-a-film-into-another-language-58230eff": [
+    "eft-int-6a",
+    "dub-a-film-into-another-language"
+  ],
+  "lex-star-in-a-film-ec2814a8": [
+    "eft-int-6a",
+    "star-in-a-film"
+  ],
+  "lex-behind-the-scenes-8ef241fb": [
+    "eft-int-6a",
+    "behind-the-scenes"
+  ],
+  "lex-thing-of-the-past-a100cf16": [
+    "eft-int-6a",
+    "thing-of-the-past"
+  ],
+  "lex-arm-760e6eab": [
+    "eft-int-6b",
+    "arm"
+  ],
+  "lex-back-948b9b77": [
+    "eft-int-6b",
+    "back"
+  ],
+  "lex-ear-065896cc": [
+    "eft-int-6b",
+    "ear"
+  ],
+  "lex-face-f766f6a1": [
+    "eft-int-6b",
+    "face"
+  ],
+  "lex-foot-c904d803": [
+    "eft-int-6b",
+    "foot"
+  ],
+  "lex-finger-341257b0": [
+    "eft-int-6b",
+    "finger"
+  ],
+  "lex-hand-820692c8": [
+    "eft-int-6b",
+    "hand"
+  ],
+  "lex-head-56ec1569": [
+    "eft-int-6b",
+    "head"
+  ],
+  "lex-knee-e5b02b51": [
+    "eft-int-6b",
+    "knee"
+  ],
+  "lex-leg-30a851fa": [
+    "eft-int-6b",
+    "leg"
+  ],
+  "lex-lip-b43ff73e": [
+    "eft-int-6b",
+    "lip"
+  ],
+  "lex-mouth-29010fa9": [
+    "eft-int-6b",
+    "mouth"
+  ],
+  "lex-neck-97a29a7a": [
+    "eft-int-6b",
+    "neck"
+  ],
+  "lex-nose-c6f741ab": [
+    "eft-int-6b",
+    "nose"
+  ],
+  "lex-shoulder-5658935c": [
+    "eft-int-6b",
+    "shoulder"
+  ],
+  "lex-stomach-3ab90c43": [
+    "eft-int-6b",
+    "stomach"
+  ],
+  "lex-thumb-9aec1e5c": [
+    "eft-int-6b",
+    "thumb"
+  ],
+  "lex-toe-a5d61abf": [
+    "eft-int-6b",
+    "toe"
+  ],
+  "lex-tongue-761e1d62": [
+    "eft-int-6b",
+    "tongue"
+  ],
+  "lex-clap-f0a2667c": [
+    "eft-int-6b",
+    "clap"
+  ],
+  "lex-point-at-somebody-791b50fa": [
+    "eft-int-6b",
+    "point-at-somebody"
+  ],
+  "lex-smile-04481512": [
+    "eft-int-6b",
+    "smile"
+  ],
+  "lex-stare-at-somebody-93e3a252": [
+    "eft-int-6b",
+    "stare-at-somebody"
+  ],
+  "lex-nod-in-agreement-e8e1ea91": [
+    "eft-int-6b",
+    "nod-in-agreement"
+  ],
+  "lex-fold-your-arms-b3d22341": [
+    "eft-int-6b",
+    "fold-your-arms"
+  ],
+  "lex-slightly-overweight-0f1d334c": [
+    "eft-int-6b",
+    "slightly-overweight"
+  ],
+  "lex-nursery-school-79a6c9e5": [
+    "eft-int-7a",
+    "nursery-school"
+  ],
+  "lex-private-school-960e8b76": [
+    "eft-int-7a",
+    "private-school"
+  ],
+  "lex-boarding-school-d865866f": [
+    "eft-int-7a",
+    "boarding-school"
+  ],
+  "lex-student-3525bdd8": [
+    "eft-int-7a",
+    "student"
+  ],
+  "lex-head-teacher-f6eddc30": [
+    "eft-int-7a",
+    "head-teacher"
+  ],
+  "lex-term-f5414902": [
+    "eft-int-7a",
+    "term"
+  ],
+  "lex-levels-296aafb4": [
+    "eft-int-7a",
+    "levels"
+  ],
+  "lex-graduate-f7682045": [
+    "eft-int-7a",
+    "graduate"
+  ],
+  "lex-kindergarten-8609390b": [
+    "eft-int-7a",
+    "kindergarten"
+  ],
+  "lex-elementary-school-0067d126": [
+    "eft-int-7a",
+    "elementary-school"
+  ],
+  "lex-middle-school-3ec4e6b7": [
+    "eft-int-7a",
+    "middle-school"
+  ],
+  "lex-junior-high-school-ed0b6992": [
+    "eft-int-7a",
+    "junior-high-school"
+  ],
+  "lex-high-school-8985a5e0": [
+    "eft-int-7a",
+    "high-school"
+  ],
+  "lex-twelfth-grade-ac517906": [
+    "eft-int-7a",
+    "twelfth-grade"
+  ],
+  "lex-semester-5d7313c9": [
+    "eft-int-7a",
+    "semester"
+  ],
+  "lex-college-4486b08c": [
+    "eft-int-7a",
+    "college"
+  ],
+  "lex-higher-education-4a6d4989": [
+    "eft-int-7a",
+    "higher-education"
+  ],
+  "lex-compulsory-a19568f3": [
+    "eft-int-7a",
+    "compulsory"
+  ],
+  "lex-free-education-c2e3ae90": [
+    "eft-int-7a",
+    "free-education"
+  ],
+  "lex-strict-1d69c39f": [
+    "eft-int-7a",
+    "strict"
+  ],
+  "lex-behave-well-b6810441": [
+    "eft-int-7a",
+    "behave-well"
+  ],
+  "lex-be-allowed-to-do-something-d6806cf7": [
+    "eft-int-7a",
+    "be-allowed-to-do-something"
+  ],
+  "lex-be-punished-e87d2313": [
+    "eft-int-7a",
+    "be-punished"
+  ],
+  "lex-be-expelled-0cbac0a5": [
+    "eft-int-7a",
+    "be-expelled"
+  ],
+  "lex-cheat-in-an-exam-41a8be67": [
+    "eft-int-7a",
+    "cheat-in-an-exam"
+  ],
+  "lex-let-somebody-do-something-eb2ccbac": [
+    "eft-int-7a",
+    "let-somebody-do-something"
+  ],
+  "lex-make-somebody-do-something-daf58168": [
+    "eft-int-7a",
+    "make-somebody-do-something"
+  ],
+  "lex-allow-somebody-to-do-something-e4aa03fe": [
+    "eft-int-7a",
+    "allow-somebody-to-do-something"
+  ],
+  "lex-stay-behind-after-class-118d7963": [
+    "eft-int-7a",
+    "stay-behind-after-class"
+  ],
+  "lex-revise-for-an-exam-f00e3661": [
+    "eft-int-7a",
+    "revise-for-an-exam"
+  ],
+  "lex-exam-result-95b435ff": [
+    "eft-int-7a",
+    "exam-result"
+  ],
+  "lex-get-a-place-at-university-04426c4c": [
+    "eft-int-7a",
+    "get-a-place-at-university"
+  ],
+  "lex-mathematics-a6c5da86": [
+    "eft-int-7a",
+    "mathematics"
+  ],
+  "lex-in-the-country-b1e520ef": [
+    "eft-int-7b",
+    "in-the-country"
+  ],
+  "lex-on-the-outskirts-585b29bc": [
+    "eft-int-7b",
+    "on-the-outskirts"
+  ],
+  "lex-in-a-village-20824f3a": [
+    "eft-int-7b",
+    "in-a-village"
+  ],
+  "lex-in-a-town-aad7019f": [
+    "eft-int-7b",
+    "in-a-town"
+  ],
+  "lex-in-a-city-d3801282": [
+    "eft-int-7b",
+    "in-a-city"
+  ],
+  "lex-block-of-flats-f2bbf853": [
+    "eft-int-7b",
+    "block-of-flats"
+  ],
+  "lex-cottage-3c2ffff0": [
+    "eft-int-7b",
+    "cottage"
+  ],
+  "lex-attic-5ef30fbc": [
+    "eft-int-7b",
+    "attic"
+  ],
+  "lex-balcony-aaa6b7ff": [
+    "eft-int-7b",
+    "balcony"
+  ],
+  "lex-basement-492ea815": [
+    "eft-int-7b",
+    "basement"
+  ],
+  "lex-gate-690ca0ce": [
+    "eft-int-7b",
+    "gate"
+  ],
+  "lex-ground-floor-04015872": [
+    "eft-int-7b",
+    "ground-floor"
+  ],
+  "lex-first-floor-55243756": [
+    "eft-int-7b",
+    "first-floor"
+  ],
+  "lex-top-floor-abd9f97f": [
+    "eft-int-7b",
+    "top-floor"
+  ],
+  "lex-path-fb0865a6": [
+    "eft-int-7b",
+    "path"
+  ],
+  "lex-roof-31402ccd": [
+    "eft-int-7b",
+    "roof"
+  ],
+  "lex-steps-3ed7e81c": [
+    "eft-int-7b",
+    "steps"
+  ],
+  "lex-terrace-7a14da17": [
+    "eft-int-7b",
+    "terrace"
+  ],
+  "lex-patio-5f7b4423": [
+    "eft-int-7b",
+    "patio"
+  ],
+  "lex-wall-7d22414b": [
+    "eft-int-7b",
+    "wall"
+  ],
+  "lex-ceiling-a44c6488": [
+    "eft-int-7b",
+    "ceiling"
+  ],
+  "lex-be-made-of-stone-ac67ba1f": [
+    "eft-int-7b",
+    "be-made-of-stone"
+  ],
+  "lex-low-ceiling-7522b4c4": [
+    "eft-int-7b",
+    "low-ceiling"
+  ],
+  "lex-open-fire-72f59046": [
+    "eft-int-7b",
+    "open-fire"
+  ],
+  "lex-cosy-7cc31bb4": [
+    "eft-int-7b",
+    "cosy"
+  ],
+  "lex-wooden-floors-a359a44c": [
+    "eft-int-7b",
+    "wooden-floors"
+  ],
+  "lex-wood-88949a0f": [
+    "eft-int-7b",
+    "wood"
+  ],
+  "lex-wooden-0cdfc5d1": [
+    "eft-int-7b",
+    "wooden"
+  ],
+  "lex-share-a-flat-9f88df1a": [
+    "eft-int-7b",
+    "share-a-flat"
+  ],
+  "lex-live-with-your-parents-d938fdb2": [
+    "eft-int-7b",
+    "live-with-your-parents"
+  ],
+  "lex-what-shall-we-do-927b7df5": [
+    "eft-int-pe4",
+    "what-shall-we-do"
+  ],
+  "lex-let-s-go-dancing-213ed215": [
+    "eft-int-pe4",
+    "let-s-go-dancing"
+  ],
+  "lex-why-don-t-you-join-me-43e03941": [
+    "eft-int-pe4",
+    "why-don-t-you-join-me"
+  ],
+  "lex-we-could-go-there-360e9c31": [
+    "eft-int-pe4",
+    "we-could-go-there"
+  ],
+  "lex-what-about-going-bc8bead5": [
+    "eft-int-pe4",
+    "what-about-going"
+  ],
+  "lex-how-about-staying-in-0ab5c6ec": [
+    "eft-int-pe4",
+    "how-about-staying-in"
+  ],
+  "lex-why-not-d179a29d": [
+    "eft-int-pe4",
+    "why-not"
+  ],
+  "lex-shall-we-go-there-eada86f2": [
+    "eft-int-pe4",
+    "shall-we-go-there"
+  ],
+  "lex-that-s-a-great-idea-fa87cd5f": [
+    "eft-int-pe4",
+    "that-s-a-great-idea"
+  ],
+  "lex-i-m-not-very-keen-on-running-a4c90a9d": [
+    "eft-int-pe4",
+    "i-m-not-very-keen-on-running"
+  ],
+  "lex-go-to-a-gig-dd830774": [
+    "eft-int-pe4",
+    "go-to-a-gig"
+  ],
+  "lex-dance-floor-f8e79e13": [
+    "eft-int-pe4",
+    "dance-floor"
+  ],
+  "lex-i-m-not-going-to-make-it-44143b1d": [
+    "eft-int-pe4",
+    "i-m-not-going-to-make-it"
+  ],
+  "lex-it-won-t-happen-again-ea7effc0": [
+    "eft-int-pe4",
+    "it-won-t-happen-again"
+  ],
+  "lex-have-a-word-with-somebody-6e28a731": [
+    "eft-int-pe4",
+    "have-a-word-with-somebody"
+  ],
+  "lex-head-off-to-26e491e0": [
+    "eft-int-pe4",
+    "head-off-to"
+  ],
+  "lex-be-such-a-professional-dd90c9ac": [
+    "eft-int-pe4",
+    "be-such-a-professional"
+  ],
+  "lex-send-in-a-cv-f84d2ed2": [
+    "eft-int-8a",
+    "send-in-a-cv"
+  ],
+  "lex-have-an-interview-dafdadb8": [
+    "eft-int-8a",
+    "have-an-interview"
+  ],
+  "lex-do-overtime-d677f520": [
+    "eft-int-8a",
+    "do-overtime"
+  ],
+  "lex-work-shifts-17241052": [
+    "eft-int-8a",
+    "work-shifts"
+  ],
+  "lex-be-sacked-18b7d708": [
+    "eft-int-8a",
+    "be-sacked"
+  ],
+  "lex-be-made-redundant-2744fe5f": [
+    "eft-int-8a",
+    "be-made-redundant"
+  ],
+  "lex-quit-111de8ce": [
+    "eft-int-8a",
+    "quit"
+  ],
+  "lex-set-up-a-business-71b265b7": [
+    "eft-int-8a",
+    "set-up-a-business"
+  ],
+  "lex-do-a-training-course-0695f331": [
+    "eft-int-8a",
+    "do-a-training-course"
+  ],
+  "lex-employ-somebody-893a1ada": [
+    "eft-int-8a",
+    "employ-somebody"
+  ],
+  "lex-work-for-a-company-dda3c238": [
+    "eft-int-8a",
+    "work-for-a-company"
+  ],
+  "lex-be-in-charge-of-something-3fd52495": [
+    "eft-int-8a",
+    "be-in-charge-of-something"
+  ],
+  "lex-be-responsible-for-something-451fff25": [
+    "eft-int-8a",
+    "be-responsible-for-something"
+  ],
+  "lex-contract-d1bcdc71": [
+    "eft-int-8a",
+    "contract"
+  ],
+  "lex-multinational-company-2a3ee3a9": [
+    "eft-int-8a",
+    "multinational-company"
+  ],
+  "lex-promote-c09566b1": [
+    "eft-int-8a",
+    "promote"
+  ],
+  "lex-apply-976f11c3": [
+    "eft-int-8a",
+    "apply"
+  ],
+  "lex-application-f5bd4fde": [
+    "eft-int-8a",
+    "application"
+  ],
+  "lex-retirement-473d9fad": [
+    "eft-int-8a",
+    "retirement"
+  ],
+  "lex-employment-6ad8b4e9": [
+    "eft-int-8a",
+    "employment"
+  ],
+  "lex-qualify-7f4cf3e0": [
+    "eft-int-8a",
+    "qualify"
+  ],
+  "lex-resignation-ad6aa635": [
+    "eft-int-8a",
+    "resignation"
+  ],
+  "lex-musician-29fa1d3b": [
+    "eft-int-8a",
+    "musician"
+  ],
+  "lex-farmer-770a0900": [
+    "eft-int-8a",
+    "farmer"
+  ],
+  "lex-translator-e23c2856": [
+    "eft-int-8a",
+    "translator"
+  ],
+  "lex-mechanic-6558a2ad": [
+    "eft-int-8a",
+    "mechanic"
+  ],
+  "lex-software-developer-d356166d": [
+    "eft-int-8a",
+    "software-developer"
+  ],
+  "lex-run-a-marathon-19902cb1": [
+    "eft-int-8a",
+    "run-a-marathon"
+  ],
+  "lex-fire-a-gun-b0880b4d": [
+    "eft-int-8a",
+    "fire-a-gun"
+  ],
+  "lex-my-laptop-doesn-t-work-288f040d": [
+    "eft-int-8a",
+    "my-laptop-doesn-t-work"
+  ],
+  "lex-good-company-eacce2d0": [
+    "eft-int-8a",
+    "good-company"
+  ],
+  "lex-market-for-a-product-76f08e6b": [
+    "eft-int-8a",
+    "market-for-a-product"
+  ],
+  "lex-degree-in-economics-5f23ef46": [
+    "eft-int-8a",
+    "degree-in-economics"
+  ],
+  "lex-four-degrees-fe84c7c9": [
+    "eft-int-8a",
+    "four-degrees"
+  ],
+  "lex-discount-f0b5eaf4": [
+    "eft-int-8b",
+    "discount"
+  ],
+  "lex-library-c82a93e1": [
+    "eft-int-8b",
+    "library"
+  ],
+  "lex-bookshop-61b196c0": [
+    "eft-int-8b",
+    "bookshop"
+  ],
+  "lex-put-on-a-shirt-e03341d5": [
+    "eft-int-8b",
+    "put-on-a-shirt"
+  ],
+  "lex-try-on-a-shirt-c6064e9d": [
+    "eft-int-8b",
+    "try-on-a-shirt"
+  ],
+  "lex-street-market-a0cc097a": [
+    "eft-int-8b",
+    "street-market"
+  ],
+  "lex-ask-for-a-refund-81441e01": [
+    "eft-int-8b",
+    "ask-for-a-refund"
+  ],
+  "lex-achievement-21607f94": [
+    "eft-int-8b",
+    "achievement"
+  ],
+  "lex-compensate-59a13cc3": [
+    "eft-int-8b",
+    "compensate"
+  ],
+  "lex-compensation-c2495929": [
+    "eft-int-8b",
+    "compensation"
+  ],
+  "lex-complaint-3da288e6": [
+    "eft-int-8b",
+    "complaint"
+  ],
+  "lex-consideration-0176dbe8": [
+    "eft-int-8b",
+    "consideration"
+  ],
+  "lex-deliver-2e762ffb": [
+    "eft-int-8b",
+    "deliver"
+  ],
+  "lex-delivery-b61c7934": [
+    "eft-int-8b",
+    "delivery"
+  ],
+  "lex-demonstrate-b4c5c2eb": [
+    "eft-int-8b",
+    "demonstrate"
+  ],
+  "lex-demonstration-a6b5019e": [
+    "eft-int-8b",
+    "demonstration"
+  ],
+  "lex-explain-6ec31485": [
+    "eft-int-8b",
+    "explain"
+  ],
+  "lex-explanation-ffefa8bb": [
+    "eft-int-8b",
+    "explanation"
+  ],
+  "lex-management-64f95487": [
+    "eft-int-8b",
+    "management"
+  ],
+  "lex-pay-e977831a": [
+    "eft-int-8b",
+    "pay"
+  ],
+  "lex-payment-26c26cb2": [
+    "eft-int-8b",
+    "payment"
+  ],
+  "lex-respond-5561cda0": [
+    "eft-int-8b",
+    "respond"
+  ],
+  "lex-response-a9d918a3": [
+    "eft-int-8b",
+    "response"
+  ],
+  "lex-sale-eeb7d02d": [
+    "eft-int-8b",
+    "sale"
+  ],
+  "lex-serve-98e9bc0a": [
+    "eft-int-8b",
+    "serve"
+  ],
+  "lex-service-7144cb36": [
+    "eft-int-8b",
+    "service"
+  ],
+  "lex-tempt-d54b9a01": [
+    "eft-int-8b",
+    "tempt"
+  ],
+  "lex-temptation-4ee3aa5d": [
+    "eft-int-8b",
+    "temptation"
+  ],
+  "lex-treat-43c974f0": [
+    "eft-int-8b",
+    "treat"
+  ],
+  "lex-value-dff7a303": [
+    "eft-int-8b",
+    "value"
+  ],
+  "lex-valuation-babd78a0": [
+    "eft-int-8b",
+    "valuation"
+  ],
+  "lex-luck-6cf8fc07": [
+    "eft-int-9a",
+    "luck"
+  ],
+  "lex-luckily-3b90bd97": [
+    "eft-int-9a",
+    "luckily"
+  ],
+  "lex-unluckily-82eaf5a3": [
+    "eft-int-9a",
+    "unluckily"
+  ],
+  "lex-fortune-03e11631": [
+    "eft-int-9a",
+    "fortune"
+  ],
+  "lex-fortunate-b0c17e35": [
+    "eft-int-9a",
+    "fortunate"
+  ],
+  "lex-unfortunate-00978808": [
+    "eft-int-9a",
+    "unfortunate"
+  ],
+  "lex-comfort-5201bf7a": [
+    "eft-int-9a",
+    "comfort"
+  ],
+  "lex-comfortably-74957802": [
+    "eft-int-9a",
+    "comfortably"
+  ],
+  "lex-uncomfortably-cbc53287": [
+    "eft-int-9a",
+    "uncomfortably"
+  ],
+  "lex-patiently-fe90a674": [
+    "eft-int-9a",
+    "patiently"
+  ],
+  "lex-impatiently-a4b3e33f": [
+    "eft-int-9a",
+    "impatiently"
+  ],
+  "lex-care-5f764ca2": [
+    "eft-int-9a",
+    "care"
+  ],
+  "lex-carelessly-128085c2": [
+    "eft-int-9a",
+    "carelessly"
+  ],
+  "lex-use-cc1ccf8b": [
+    "eft-int-9a",
+    "use"
+  ],
+  "lex-hope-deef14b8": [
+    "eft-int-9a",
+    "hope"
+  ],
+  "lex-hopeful-dbf9fb28": [
+    "eft-int-9a",
+    "hopeful"
+  ],
+  "lex-passion-37829679": [
+    "eft-int-9a",
+    "passion"
+  ],
+  "lex-passionate-cdc158de": [
+    "eft-int-9a",
+    "passionate"
+  ],
+  "lex-fashion-451911dd": [
+    "eft-int-9a",
+    "fashion"
+  ],
+  "lex-fashionable-9a7eb261": [
+    "eft-int-9a",
+    "fashionable"
+  ],
+  "lex-violence-d58132ca": [
+    "eft-int-9a",
+    "violence"
+  ],
+  "lex-violent-0f3a5cc1": [
+    "eft-int-9a",
+    "violent"
+  ],
+  "lex-successfully-a0ee8473": [
+    "eft-int-9a",
+    "successfully"
+  ],
+  "lex-selfishly-a4a4e58c": [
+    "eft-int-9a",
+    "selfishly"
+  ],
+  "lex-possible-0b08f1d2": [
+    "eft-int-9a",
+    "possible"
+  ],
+  "lex-impossible-1e8c1829": [
+    "eft-int-9a",
+    "impossible"
+  ],
+  "lex-encounter-09810c6b": [
+    "eft-int-9a",
+    "encounter"
+  ],
+  "lex-by-chance-1328336f": [
+    "eft-int-9a",
+    "by-chance"
+  ],
+  "lex-opportunity-ce6971ea": [
+    "eft-int-9a",
+    "opportunity"
+  ],
+  "lex-notice-something-50b07f57": [
+    "eft-int-9a",
+    "notice-something"
+  ],
+  "lex-make-the-most-of-something-9a6ee69b": [
+    "eft-int-9a",
+    "make-the-most-of-something"
+  ],
+  "lex-consider-yourself-lucky-94dcf276": [
+    "eft-int-9a",
+    "consider-yourself-lucky"
+  ],
+  "lex-have-an-accident-dbf3fa24": [
+    "eft-int-9a",
+    "have-an-accident"
+  ],
+  "lex-be-seriously-hurt-bebf401b": [
+    "eft-int-9a",
+    "be-seriously-hurt"
+  ],
+  "lex-resist-temptation-01fb21bd": [
+    "eft-int-9a",
+    "resist-temptation"
+  ],
+  "lex-adaptor-77da0b76": [
+    "eft-int-9b",
+    "adaptor"
+  ],
+  "lex-travel-adaptor-c88dda1c": [
+    "eft-int-9b",
+    "travel-adaptor"
+  ],
+  "lex-charger-234f99d5": [
+    "eft-int-9b",
+    "charger"
+  ],
+  "lex-keyboard-3b9811c5": [
+    "eft-int-9b",
+    "keyboard"
+  ],
+  "lex-memory-stick-2d12d5c8": [
+    "eft-int-9b",
+    "memory-stick"
+  ],
+  "lex-mouse-2269a376": [
+    "eft-int-9b",
+    "mouse"
+  ],
+  "lex-plug-0b856b8d": [
+    "eft-int-9b",
+    "plug"
+  ],
+  "lex-printer-a4e9d89d": [
+    "eft-int-9b",
+    "printer"
+  ],
+  "lex-router-81322ce2": [
+    "eft-int-9b",
+    "router"
+  ],
+  "lex-speaker-c5a5ec01": [
+    "eft-int-9b",
+    "speaker"
+  ],
+  "lex-usb-cable-da5b5991": [
+    "eft-int-9b",
+    "usb-cable"
+  ],
+  "lex-screen-23dffd5e": [
+    "eft-int-9b",
+    "screen"
+  ],
+  "lex-wireless-mouse-6a92a378": [
+    "eft-int-9b",
+    "wireless-mouse"
+  ],
+  "lex-pin-aba3a0e4": [
+    "eft-int-9b",
+    "pin"
+  ],
+  "lex-battery-bb370a00": [
+    "eft-int-9b",
+    "battery"
+  ],
+  "lex-electric-shock-cb3b1fe1": [
+    "eft-int-9b",
+    "electric-shock"
+  ],
+  "lex-set-an-alarm-06966462": [
+    "eft-int-9b",
+    "set-an-alarm"
+  ],
+  "lex-plug-something-in-b5bdf54c": [
+    "eft-int-9b",
+    "plug-something-in"
+  ],
+  "lex-unplug-something-89a9551a": [
+    "eft-int-9b",
+    "unplug-something"
+  ],
+  "lex-update-an-app-cfe6ce5e": [
+    "eft-int-9b",
+    "update-an-app"
+  ],
+  "lex-install-software-6608dd1f": [
+    "eft-int-9b",
+    "install-software"
+  ],
+  "lex-delete-a-photo-05dfb274": [
+    "eft-int-9b",
+    "delete-a-photo"
+  ],
+  "lex-change-channels-c2cad2f6": [
+    "eft-int-9b",
+    "change-channels"
+  ],
+  "lex-print-out-a-boarding-pass-3cba297b": [
+    "eft-int-9b",
+    "print-out-a-boarding-pass"
+  ],
+  "lex-connect-a-phone-to-a-laptop-4315781c": [
+    "eft-int-9b",
+    "connect-a-phone-to-a-laptop"
+  ],
+  "lex-disconnect-56467862": [
+    "eft-int-9b",
+    "disconnect"
+  ],
+  "lex-volume-9b8028aa": [
+    "eft-int-9b",
+    "volume"
+  ],
+  "lex-antivirus-software-f942ffa6": [
+    "eft-int-9b",
+    "antivirus-software"
+  ],
+  "lex-latest-version-c2e2fbc0": [
+    "eft-int-9b",
+    "latest-version"
+  ],
+  "lex-digital-detox-a05dac85": [
+    "eft-int-9b",
+    "digital-detox"
+  ],
+  "lex-take-a-break-from-technology-4b9c5c32": [
+    "eft-int-9b",
+    "take-a-break-from-technology"
+  ],
+  "lex-phone-stacking-d08710f8": [
+    "eft-int-9b",
+    "phone-stacking"
+  ],
+  "lex-phone-coverage-5e82cacb": [
+    "eft-int-9b",
+    "phone-coverage"
+  ],
+  "lex-email-account-672ac418": [
+    "eft-int-9b",
+    "email-account"
+  ],
+  "lex-hard-drive-19d9c147": [
+    "eft-int-9b",
+    "hard-drive"
+  ],
+  "lex-contact-information-56631b81": [
+    "eft-int-9b",
+    "contact-information"
+  ],
+  "lex-password-994bd3a1": [
+    "eft-int-9b",
+    "password"
+  ],
+  "lex-password-manager-e579786c": [
+    "eft-int-9b",
+    "password-manager"
+  ],
+  "lex-desktop-background-3bc7505f": [
+    "eft-int-9b",
+    "desktop-background"
+  ],
+  "lex-productivity-0bba7b7d": [
+    "eft-int-9b",
+    "productivity"
+  ],
+  "lex-attention-span-8d12e8bc": [
+    "eft-int-9b",
+    "attention-span"
+  ],
+  "lex-at-your-fingertips-5263e87f": [
+    "eft-int-9b",
+    "at-your-fingertips"
+  ],
+  "lex-recycle-old-devices-976cbf70": [
+    "eft-int-9b",
+    "recycle-old-devices"
+  ],
+  "lex-unopened-0b3a0ca8": [
+    "eft-int-9b",
+    "unopened"
+  ],
+  "lex-unanswered-eff15e7d": [
+    "eft-int-9b",
+    "unanswered"
+  ],
+  "lex-uninstall-5ccd8bdd": [
+    "eft-int-9b",
+    "uninstall"
+  ],
+  "lex-unfollow-2f2b78af": [
+    "eft-int-9b",
+    "unfollow"
+  ],
+  "lex-unsubscribe-bf88e177": [
+    "eft-int-9b",
+    "unsubscribe"
+  ],
+  "lex-unread-aa116f8a": [
+    "eft-int-9b",
+    "unread"
+  ],
+  "lex-undo-c597d808": [
+    "eft-int-9b",
+    "undo"
+  ],
+  "lex-unfriend-5bcb37c0": [
+    "eft-int-9b",
+    "unfriend"
+  ],
+  "lex-unknown-c12f7b6e": [
+    "eft-int-9b",
+    "unknown"
+  ],
+  "lex-unclear-17e05038": [
+    "eft-int-9b",
+    "unclear"
+  ],
+  "lex-could-you-tell-me-26a31ca2": [
+    "eft-int-pe5",
+    "could-you-tell-me"
+  ],
+  "lex-do-you-know-95f34cad": [
+    "eft-int-pe5",
+    "do-you-know"
+  ],
+  "lex-i-d-like-to-know-fa823a38": [
+    "eft-int-pe5",
+    "i-d-like-to-know"
+  ],
+  "lex-i-wonder-f6a43666": [
+    "eft-int-pe5",
+    "i-wonder"
+  ],
+  "lex-i-wonder-if-4c43fc4e": [
+    "eft-int-pe5",
+    "i-wonder-if"
+  ],
+  "lex-do-you-know-whether-83cbb2d1": [
+    "eft-int-pe5",
+    "do-you-know-whether"
+  ],
+  "lex-can-you-tell-me-what-you-decided-c889612c": [
+    "eft-int-pe5",
+    "can-you-tell-me-what-you-decided"
+  ],
+  "lex-i-need-a-word-5887aba6": [
+    "eft-int-pe5",
+    "i-need-a-word"
+  ],
+  "lex-right-away-2483ec31": [
+    "eft-int-pe5",
+    "right-away"
+  ],
+  "lex-of-course-i-miss-london-f3adad89": [
+    "eft-int-pe5",
+    "of-course-i-miss-london"
+  ],
+  "lex-that-s-a-start-i-suppose-a22c1b6b": [
+    "eft-int-pe5",
+    "that-s-a-start-i-suppose"
+  ],
+  "lex-what-if-a4ee34f9": [
+    "eft-int-pe5",
+    "what-if"
+  ],
+  "lex-stop-it-it-s-embarrassing-0957034a": [
+    "eft-int-pe5",
+    "stop-it-it-s-embarrassing"
+  ],
+  "lex-convince-somebody-036004a7": [
+    "eft-int-pe5",
+    "convince-somebody"
+  ],
+  "lex-be-serious-about-somebody-b3bb9a2c": [
+    "eft-int-pe5",
+    "be-serious-about-somebody"
+  ],
+  "lex-resolve-a-problem-8ebb4750": [
+    "eft-int-pe5",
+    "resolve-a-problem"
+  ],
+  "lex-behave-d1f1b872": [
+    "eft-int-pe5",
+    "behave"
+  ],
+  "lex-insist-30a4345d": [
+    "eft-int-pe5",
+    "insist"
+  ],
+  "lex-either-93a49ecd": [
+    "eft-int-pe5",
+    "either"
+  ],
+  "lex-book-cover-fd1a5a34": [
+    "eft-int-10a",
+    "book-cover"
+  ],
+  "lex-child-prodigy-f154ad92": [
+    "eft-int-10a",
+    "child-prodigy"
+  ],
+  "lex-car-manufacturer-2dd0bf7f": [
+    "eft-int-10a",
+    "car-manufacturer"
+  ],
+  "lex-desk-lamp-721420e7": [
+    "eft-int-10a",
+    "desk-lamp"
+  ],
+  "lex-songwriter-78620687": [
+    "eft-int-10a",
+    "songwriter"
+  ],
+  "lex-phone-box-6f403040": [
+    "eft-int-10a",
+    "phone-box"
+  ],
+  "lex-training-course-e6cd1db8": [
+    "eft-int-10a",
+    "training-course"
+  ],
+  "lex-film-poster-56d8fc9f": [
+    "eft-int-10a",
+    "film-poster"
+  ],
+  "lex-dvd-cover-92c373ae": [
+    "eft-int-10a",
+    "dvd-cover"
+  ],
+  "lex-idol-268e6f9f": [
+    "eft-int-10a",
+    "idol"
+  ],
+  "lex-icon-d833afa9": [
+    "eft-int-10a",
+    "icon"
+  ],
+  "lex-design-dee06249": [
+    "eft-int-10a",
+    "design"
+  ],
+  "lex-admire-somebody-0bd09a2f": [
+    "eft-int-10a",
+    "admire-somebody"
+  ],
+  "lex-crime-4a9e6ea6": [
+    "eft-int-10b",
+    "crime"
+  ],
+  "lex-murder-a749dce9": [
+    "eft-int-10b",
+    "murder"
+  ],
+  "lex-murderer-b0fd3619": [
+    "eft-int-10b",
+    "murderer"
+  ],
+  "lex-prove-3883786a": [
+    "eft-int-10b",
+    "prove"
+  ],
+  "lex-solve-a-crime-88ea6d80": [
+    "eft-int-10b",
+    "solve-a-crime"
+  ],
+  "lex-solve-a-mystery-8b45a133": [
+    "eft-int-10b",
+    "solve-a-mystery"
+  ],
+  "lex-investigation-bb3b7464": [
+    "eft-int-10b",
+    "investigation"
+  ],
+  "lex-be-guilty-ca695e47": [
+    "eft-int-10b",
+    "be-guilty"
+  ],
+  "lex-alibi-2f1a3e2f": [
+    "eft-int-10b",
+    "alibi"
+  ],
+  "lex-gunshot-1796d9c6": [
+    "eft-int-10b",
+    "gunshot"
+  ],
+  "lex-at-the-scene-daf79942": [
+    "eft-int-10b",
+    "at-the-scene"
+  ],
+  "lex-unsolved-crime-872f9aa5": [
+    "eft-int-10b",
+    "unsolved-crime"
+  ],
+  "lex-murder-mystery-935d395a": [
+    "eft-int-10b",
+    "murder-mystery"
+  ],
+  "lex-identity-86a5b6d9": [
+    "eft-int-10b",
+    "identity"
+  ],
+  "lex-illegally-08bf7027": [
+    "eft-int-10b",
+    "illegally"
+  ],
+  "lex-examine-evidence-be2ab748": [
+    "eft-int-10b",
+    "examine-evidence"
+  ],
+  "lex-theory-ec0cb410": [
+    "eft-int-10b",
+    "theory"
+  ],
+  "lex-be-convinced-4b131144": [
+    "eft-int-10b",
+    "be-convinced"
+  ],
+  "lex-interview-a-suspect-353c8879": [
+    "eft-int-10b",
+    "interview-a-suspect"
+  ],
+  "lex-appeal-for-witnesses-28a361fe": [
+    "eft-int-10b",
+    "appeal-for-witnesses"
+  ],
+  "lex-enquiry-eafd8333": [
+    "eft-int-10b",
+    "enquiry"
+  ],
+  "lex-police-inspector-6b699000": [
+    "eft-int-10b",
+    "police-inspector"
+  ],
+  "lex-credible-dbed65a3": [
+    "eft-int-10b",
+    "credible"
+  ],
+  "lex-funeral-68cfb8ff": [
+    "eft-int-10b",
+    "funeral"
+  ],
+  "lex-engagement-ring-4a566657": [
+    "eft-int-10b",
+    "engagement-ring"
+  ],
+  "lex-wedding-ring-d3d8df3b": [
+    "eft-int-10b",
+    "wedding-ring"
+  ],
+  "lex-passionately-8e170c97": [
+    "eft-int-10b",
+    "passionately"
+  ],
+  "lex-marriage-42fb52aa": [
+    "eft-int-10b",
+    "marriage"
+  ]
+}
