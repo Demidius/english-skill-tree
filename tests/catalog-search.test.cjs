@@ -75,3 +75,27 @@ test('accents, apostrophes and ё do not prevent a match; empty and unknown quer
   for(const q of ['cafe','CAFÉ','you’re welcome','youre welcome','елка','ёлка'])assert.ok(Search.find(fixture,q).groups.words.length,q);
   for(const q of ['', '   ', '!!', '<script>alert(1)</script>', 'несуществующееслово'])assert.equal(find(q).total,0,q);
 });
+
+test('lesson links keep textbook levels separate and match exact lesson codes',()=>{
+  const fixture=Search.createIndex({
+    wordBranches:[{name:'People',ru:'Люди',cells:{
+      A1:[['v1','Countries','Страны','country|страна|n','1A'],['v2','People','Люди','person|человек|n','1B'],['v3','Family','Семья','family|семья|n','2A'],['v4','Things','Вещи','thing|вещь|n','10A'],['v5','Hotel','Отель','hotel|отель|n','PE 3']],
+      A2:[['v6','Family A2','Семья A2','relative|родственник|n','1B']]
+    }}],
+    grammarBranches:[{name:'Present',ru:'Настоящее',cells:{
+      A1:[['g1','be','быть','','1A–2A']],
+      A2:[['g2','Present Simple','привычки','','1B']]
+    }}]
+  });
+  const before=JSON.stringify(fixture);
+  assert.deepEqual(Search.related(fixture,'1B','A1','rules').map(i=>i.topicId),['g1']);
+  assert.deepEqual(Search.related(fixture,'1B','A2','rules').map(i=>i.topicId),['g2']);
+  assert.deepEqual(Search.related(fixture,'1A','A1','words').map(i=>i.topicId),['v1']);
+  assert.deepEqual(Search.related(fixture,'1A–2A','A1','words').map(i=>i.topicId),['v1','v2','v3']);
+  assert.deepEqual(Search.related(fixture,'1B','A2','words').map(i=>i.topicId),['v6']);
+  assert.deepEqual(Search.related(fixture,'PE 3','A1','rules'),[]);
+  assert.deepEqual(Search.related(fixture,'','A1','words'),[]);
+  assert.deepEqual(Search.related(fixture,'1B','B2','words'),[]);
+  assert.deepEqual(Search.related(fixture,'1B','A1','unknown'),[]);
+  assert.equal(JSON.stringify(fixture),before);
+});
