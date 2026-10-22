@@ -88,7 +88,15 @@ const CatalogSearch = (() => {
     for (const group of Object.values(groups)) group.sort((a, b) => b.score - a.score);
     return {groups, total:Object.values(groups).reduce((n, g) => n + g.length, 0), query:q};
   }
-  return {createIndex, find};
+  function related(index, source, level, scope) {
+    if (!['words', 'rules'].includes(scope)) return [];
+    const entries = index.filter(item => item.level === level);
+    const letters = [...new Set(entries.flatMap(item => item.codes || []).filter(c => /^\d+[A-D]$/.test(c)).map(c => c.at(-1)))].join('');
+    const wanted = new Set(codes(source, true, letters));
+    return entries.filter(item => item.kind === (scope === 'rules' ? 'rules' : 'topics')
+      && (item.kind === 'rules' ? codes(item.label, true, letters) : item.codes).some(c => wanted.has(c)));
+  }
+  return {createIndex, find, related};
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSearch;
 
@@ -148,6 +156,60 @@ if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSea
       if (result) open(actions[+result.dataset.searchResult]);
     });
   }
+  function openRelatedItem(item) {
+    if (item.kind === 'rules') G.openTopic(item.topicId);
+    else if (item.courseId) W.openCourseList(item.courseId, item.sectionIndex, item.extra ? 'extra' : 'base');
+    else W.openTopic(item.topicId);
+  }
+  function openRelated(scope, level, source) {
+    const items = CatalogSearch.related(index, source, level, scope);
+    if (!items.length) return;
+    setMode(scope === 'rules' ? 'g' : 'w');
+    if (items.length === 1) { openRelatedItem(items[0]); return; }
+    const adapter = {
+      onClick(event) {
+        const button = event.target.closest('[data-related-item]');
+        if (button) openRelatedItem(items[Number(button.dataset.relatedItem)]);
+      },
+      onKey() {},
+      onClose() {}
+    };
+    openModal(adapter);
+    modal.innerHTML = mHead(level + ' · урок ' + source, scope === 'rules' ? 'Правила этого урока' : 'Лексика этого урока')
+      + '<div class="lesson-links">' + lessonRefHTML(scope === 'rules' ? 'words' : 'rules', level, source) + '</div>'
+      + '<div class="lesson-related-grid">' + items.map((item, i) =>
+        '<button type="button" class="study-search-item" data-related-item="' + i + '"><span class="study-search-meta">' + esc(item.level) + ' · ' + esc(source)
+        + '</span><strong>' + esc(item.title) + '</strong><span class="study-search-translation">' + esc(item.subtitle || '')
+        + '</span><span class="study-search-path">' + esc(item.path) + '</span></button>').join('') + '</div>';
+    modal.scrollTop = 0;
+    modal.querySelector('[data-related-item]')?.focus({preventScroll:true});
+  }
+  const linkedRefs = new WeakSet();
+  function decorateLessonRefs(root) {
+    root.querySelectorAll('[data-lesson-scope]').forEach(ref => {
+      if (linkedRefs.has(ref)) return;
+      linkedRefs.add(ref);
+      const {lessonScope:scope, lessonLevel:level, lessonSource:source} = ref.dataset;
+      if (!CatalogSearch.related(index, source, level, scope).length) return;
+      const name = scope === 'rules' ? 'Правила' : 'Лексика';
+      ref.textContent = name + ' · ' + source;
+      ref.setAttribute('role', 'button');
+      ref.tabIndex = 0;
+      ref.title = 'Открыть ' + name.toLowerCase() + ': ' + level + ', урок ' + source;
+      ref.setAttribute('aria-label', ref.title);
+      const go = event => {
+        event.preventDefault();
+        event.stopPropagation();
+        openRelated(scope, level, source);
+      };
+      ref.addEventListener('click', go);
+      ref.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') go(event);
+      });
+    });
+  }
+  decorateLessonRefs(document);
+  new MutationObserver(() => decorateLessonRefs(modal)).observe(modal, {childList:true, subtree:true});
   const words = document.getElementById('mode-w'), rules = document.getElementById('mode-g');
   mount('words', words, words.querySelector('.jumpnav'));
   mount('rules', rules, rules.querySelector('.jumpnav'));
