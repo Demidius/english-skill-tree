@@ -33,9 +33,9 @@ var WORD_EX_CARD = {};
 
   // ---- пачка 1 (слова 1–300, A1) ----
   const RU = `
-efa1-11a-1|miss|скучать; пропускать, опаздывать (на транспорт)
-efa1-11a-1|pick|выбирать; собирать, срывать (цветы, фрукты)
-efa1-11a-1|return|возвращаться; возвращать
+efa1-11a-1|miss|скучать, пропускать, опаздывать (на транспорт)
+efa1-11a-1|pick|выбирать, собирать, срывать (цветы, фрукты)
+efa1-11a-1|return|возвращаться, возвращать
 `;
   const EX = `
 efa1-10b-2|lock|Don't forget to lock the door.|Не забудь запереть дверь.
@@ -77,10 +77,12 @@ then|c|Tom is having dinner, and then he's going out.|Том ужинает, а 
   };
 
   // ---- применение ----
-  lines(RU).forEach(l => { const [id, en, ru] = l.split('|').map(s => s.trim()); if (ru) editRow(id, en, f => { f[1] = f[1].match(/^\s*/)[0] + ru; }); });
+  // «;» и «|» — разделители строк и полей в c[3], в тексте их быть не должно.
+  const safe = s => s.replace(/;/g, ',').replace(/\|/g, '/');
+  lines(RU).forEach(l => { const [id, en, ru0] = l.split('|').map(s => s.trim()); const ru = ru0 && safe(ru0); if (ru) editRow(id, en, f => { f[1] = f[1].match(/^\s*/)[0] + ru; }); });
   lines(EX).forEach(l => {
     const [id, en, ex, ru] = l.split('|').map(s => s.trim());
-    editRow(id, en, f => { f[3] = ex; });
+    editRow(id, en, f => { f[3] = safe(ex); });
     if (hasExRu && ru) EX_RU[ex] = ru;
   });
   if (hasExRu) {
