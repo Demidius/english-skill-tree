@@ -39,6 +39,7 @@ efa1-11a-1|return|возвращаться, возвращать
 `;
   const EX = `
 efa1-10b-2|lock|Don't forget to lock the door.|Не забудь запереть дверь.
+efa1-12a-1|saw|I saw a woodpecker in the park yesterday.|Вчера я увидел дятла в парке.
 `;
   const EXRU = `
 That's a great idea!|Отличная идея!
