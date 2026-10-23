@@ -132,13 +132,15 @@ test('a lesson range or list finds every included lesson instead of requiring al
   assert.deepEqual(matches('A1 1B'),['two']);
 });
 
-test('a vocabulary link switches mode and fills search even without related vocabulary',()=>{
+test('lesson links switch mode and fill the target search in both directions',()=>{
   const source=fs.readFileSync(path.join(__dirname,'..','catalog-search.js'),'utf8'),events=[];
-  const c=vm.createContext({CatalogSearch:Search,setMode:mode=>events.push(['mode',mode]),searches:{words:q=>events.push(['search',q])}});
+  const c=vm.createContext({CatalogSearch:Search,setMode:mode=>events.push(['mode',mode]),searches:{words:q=>events.push(['words',q]),rules:q=>events.push(['rules',q])}});
   vm.runInContext(source.slice(source.indexOf('  function openRelated(scope,'),source.indexOf('  const linkedRefs')),c);
   c.openRelated('words','A2','11A',undefined,'used to');
   c.openRelated('words','B2','',undefined,'Word order');
-  assert.deepEqual(events,[['mode','w'],['search','PI 11A'],['mode','w'],['search','Word order']]);
+  c.openRelated('rules','A2','11A','PI','Education');
+  c.openRelated('rules','B1','',undefined,'Phrasal verbs');
+  assert.deepEqual(events,[['mode','w'],['words','PI 11A'],['mode','w'],['words','Word order'],['mode','g'],['rules','PI 11A'],['mode','g'],['rules','Phrasal verbs']]);
 });
 
 test('rules without a lesson code retain a vocabulary link and a safely encoded title',()=>{
@@ -147,6 +149,9 @@ test('rules without a lesson code retain a vocabulary link and a safely encoded 
   const html=c.lessonRefHTML('words','A2','',null,'Words "&" phrases');
   assert.match(html,/data-lesson-title="Words &quot;&amp;&quot; phrases"/);
   assert.match(html,/>Лексика<\/span>/);
+  const reverse=c.lessonRefHTML('rules','A2','',null,'Family');
+  assert.match(reverse,/data-lesson-title="Family"/);
+  assert.match(reverse,/>Правила<\/span>/);
   assert.equal(c.lessonRefHTML('rules','A2',''), '');
 });
 
