@@ -4,8 +4,8 @@ const TESTS = window.TESTS || {};
 // ================= shared helpers =================
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function lessonRefHTML(scope, level, source, book, title){
-  if(!source && !(scope==='words' && title)) return '';
-  return '<span class="src lesson-ref" data-lesson-scope="'+esc(scope)+'" data-lesson-level="'+esc(level)+'" data-lesson-source="'+esc(source)+'"'+(book?' data-lesson-book="'+esc(book)+'"':'')+(title?' data-lesson-title="'+esc(title)+'"':'')+' title="Урок учебника">'+esc(source||'Лексика')+'</span>';
+  if(!source && !title) return '';
+  return '<span class="src lesson-ref" data-lesson-scope="'+esc(scope)+'" data-lesson-level="'+esc(level)+'" data-lesson-source="'+esc(source)+'"'+(book?' data-lesson-book="'+esc(book)+'"':'')+(title?' data-lesson-title="'+esc(title)+'"':'')+' title="Урок учебника">'+esc(source||(scope==='rules'?'Правила':'Лексика'))+'</span>';
 }
 function el(tag, cls, html){ const e=document.createElement(tag); if(cls) e.className=cls; if(html!=null) e.innerHTML=html; return e; }
 function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
@@ -998,7 +998,7 @@ const W = (function(){
       '<span class="wbar">'+card.words.map(()=>'<i data-l="0"></i>').join('')+'</span>'+
       '<span class="word-count"></span>'+
       '<span class="foot"><span class="status-chip">'+STATUS_LABEL.not_started+'</span>'+
-      lessonRefHTML('rules',card.level,card.src,card.book)+'</span>';
+      lessonRefHTML('rules',card.level,card.src,card.book,card.title)+'</span>';
     if(card.extra) btn.classList.add('xnode');
     btn.addEventListener('click',()=>openList(id));
     return btn;
@@ -1160,7 +1160,7 @@ const W = (function(){
     openModal(api);
     modal.innerHTML=head(id,'Слова')+
       '<div class="m-gloss">'+esc(c.gloss)+' · '+c.words.length+' слов</div>'+
-      '<div class="lesson-links">'+lessonRefHTML('rules',c.level,c.src,c.book)+'</div>'+cardSummary(id)+
+      '<div class="lesson-links">'+lessonRefHTML('rules',c.level,c.src,c.book,c.title)+'</div>'+cardSummary(id)+
       '<div class="wl">'+c.words.map(w=>
         '<div class="row" data-word-id="'+esc(id)+'" data-word-key="'+esc(w.k)+'"><span class="en">'+esc(w.en)+'</span><span class="ru">'+esc(w.ru)+'</span>'+
         (w.p?'<span class="tg '+w.p+'" title="'+esc(POS_RU[w.p])+'">'+POS_NAME[w.p]+'</span>':'')+lvlEdit(id,w)+sayBtn(w.en)+
@@ -1200,7 +1200,7 @@ const W = (function(){
     const partName=part==='base'?'Базовая лексика':part==='extra'?'Дополнительная лексика':'Все слова';
     modal.innerHTML=mHead((lesson.bookTitle||'Beginner')+' · '+lesson.label+' · '+partName,lesson.title)+
       '<div class="m-gloss">'+esc(lesson.ru)+'<br>'+esc(lesson.source)+'</div>'+
-      '<div class="lesson-links">'+lessonRefHTML('rules',lesson.ruleLevel||'A1',lesson.code||lesson.label,lesson.book)+'</div>'+courseSummary(courseWords(courseId,sectionIndex,part))+
+      '<div class="lesson-links">'+lessonRefHTML('rules',lesson.ruleLevel||'A1',lesson.code||lesson.label,lesson.book,lesson.title)+'</div>'+courseSummary(courseWords(courseId,sectionIndex,part))+
       sections.filter(Boolean).map(section=>{const refs=section.refs.filter(([id])=>part==='all'||(part==='extra')===CARDS[id].extra);if(!refs.length)return '';return '<section class="course-word-section"><h3>'+esc(section.title)+'</h3><div class="wl">'+refs.map(([id,k,en,ru])=>{
         const w=CARDS[id].words.find(w=>w.k===k);
         return '<div class="row" data-word-id="'+esc(id)+'" data-word-key="'+esc(k)+'"><span class="en">'+esc(en)+'</span><span class="ru">'+esc(ru)+'</span>'+

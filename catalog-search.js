@@ -198,38 +198,10 @@ if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSea
       });
     };
   }
-  function openRelatedItem(item) {
-    if (item.kind === 'rules') G.openTopic(item.topicId);
-    else if (item.courseId) W.openCourseList(item.courseId, item.sectionIndex, 'all');
-    else W.openTopic(item.topicId);
-  }
   function openRelated(scope, level, source, book, title) {
-    if (scope === 'words') {
-      setMode('w');
-      searches.words(CatalogSearch.lessonQuery(source, title, level, book));
-      return;
-    }
-    const items = CatalogSearch.related(index, source, level, scope, book);
-    if (!items.length) return;
+    if (!searches[scope]) return;
     setMode(scope === 'rules' ? 'g' : 'w');
-    if (items.length === 1) { openRelatedItem(items[0]); return; }
-    const adapter = {
-      onClick(event) {
-        const button = event.target.closest('[data-related-item]');
-        if (button) openRelatedItem(items[Number(button.dataset.relatedItem)]);
-      },
-      onKey() {},
-      onClose() {}
-    };
-    openModal(adapter);
-    modal.innerHTML = mHead(level + ' · урок ' + source, scope === 'rules' ? 'Правила этого урока' : 'Лексика этого урока')
-      + '<div class="lesson-links">' + lessonRefHTML(scope === 'rules' ? 'words' : 'rules', level, source, book) + '</div>'
-      + '<div class="lesson-related-grid">' + items.map((item, i) =>
-        '<button type="button" class="study-search-item" data-related-item="' + i + '"><span class="study-search-meta">' + esc(item.level) + ' · ' + esc(source)
-        + '</span><strong>' + esc(item.title) + '</strong><span class="study-search-translation">' + esc(item.subtitle || '')
-        + '</span><span class="study-search-path">' + esc(item.path) + '</span></button>').join('') + '</div>';
-    modal.scrollTop = 0;
-    modal.querySelector('[data-related-item]')?.focus({preventScroll:true});
+    searches[scope](CatalogSearch.lessonQuery(source, title, level, book));
   }
   const linkedRefs = new WeakSet();
   function decorateLessonRefs(root) {
@@ -237,7 +209,6 @@ if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSea
       if (linkedRefs.has(ref)) return;
       linkedRefs.add(ref);
       const {lessonScope:scope, lessonLevel:level, lessonSource:source, lessonBook:book, lessonTitle:title} = ref.dataset;
-      if (scope !== 'words' && !CatalogSearch.related(index, source, level, scope, book).length) return;
       const name = scope === 'rules' ? 'Правила' : 'Лексика';
       ref.textContent = name + (source ? ' · ' + source : '');
       ref.setAttribute('role', 'button');
