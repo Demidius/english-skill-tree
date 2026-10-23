@@ -23,7 +23,7 @@ const CatalogSearch = (() => {
   function query(value) {
     const books=[...String(value).matchAll(/\b(PI|INT)\b/gi)].map(m=>m[1].toUpperCase());
     value=String(value).replace(/\b(?:PI|INT)\b/gi,' ');
-    const lessonCodes = codes(value);
+    const lessonCodes = codes(value, true);
     let text = String(value || '').replace(codePattern(), ' ');
     const levels = [...text.matchAll(/(?<![\p{L}\p{N}])([AB][12])(?![\p{L}\p{N}])/giu)].map(m => m[1].toUpperCase());
     text = text.replace(/(?<![\p{L}\p{N}])[AB][12](?![\p{L}\p{N}])/giu, ' ');
@@ -82,7 +82,7 @@ const CatalogSearch = (() => {
     for (const item of index) {
       if ((scope === 'rules') !== (item.kind === 'rules')) continue;
       const contexts=[item,...(item.locations || [])];
-      const matches=contexts.filter(c=>(!q.levels.length||q.levels.includes(c.level))&&(!q.books.length||q.books.includes(c.book))&&(!q.codes.length||q.codes.every(code=>c.codes.includes(code))));
+      const matches=contexts.filter(c=>(!q.levels.length||q.levels.includes(c.level))&&(!q.books.length||q.books.includes(c.book))&&(!q.codes.length||q.codes.some(code=>c.codes.includes(code))));
       if(!matches.length) continue;
       if (!q.tokens.length && q.codes.length && item.kind === 'words') continue;
       if (!q.tokens.every(t => item.text.includes(t))) continue;
@@ -113,7 +113,14 @@ const CatalogSearch = (() => {
     const sections = item.sectionIndex == null ? lesson.sections : [lesson.sections[item.sectionIndex]];
     return [...new Set(sections.filter(Boolean).flatMap(section => section.refs.map(ref => ref[0])))];
   }
-  return {createIndex, find, related, topicIds};
+  function lessonQuery(source, title, level, book) {
+    const labels = String(source || '').match(new RegExp(codePattern().source + '(?:\\s*[-–—]\\s*' + codePattern().source + ')?', 'giu'));
+    if (!labels?.length) return String(title || source || '').trim();
+    book ||= {A1:'BEGINNER', A2:'PI', B1:'INT', B2:'UPPER'}[level];
+    const reference = labels.map(label => code(label).replace(/[–—]/g, '-')).join(', ');
+    return [book === 'PI' || book === 'INT' ? book : level, reference].filter(Boolean).join(' ');
+  }
+  return {createIndex, find, related, topicIds, lessonQuery};
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSearch;
 
@@ -121,6 +128,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSea
   if (typeof document === 'undefined') return;
   const index = CatalogSearch.createIndex({wordBranches:W_BRANCHES, course:BEGINNER_COURSE, grammarBranches:G_BRANCHES, topicBooks:typeof WORD_TOPIC_BOOKS==='undefined'?{}:WORD_TOPIC_BOOKS, entryMetadata:typeof WORD_ENTRY_METADATA==='undefined'?{}:WORD_ENTRY_METADATA});
   const headings = {lessons:'Уроки', topics:'Темы и подтемы', words:'Слова и фразы', rules:'Правила'};
+  const searches = {};
   function mount(scope, root, before) {
     const search = document.createElement('section'), inputId = 'catalog-search-' + scope;
     search.className = 'study-search';
@@ -180,13 +188,27 @@ if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSea
       const result = event.target.closest('[data-search-result]');
       if (result) focusTopic(actions[+result.dataset.searchResult]);
     });
+    searches[scope] = value => {
+      input.value = value.slice(0, input.maxLength);
+      visible = {};
+      render();
+      requestAnimationFrame(() => {
+        search.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block:'start'});
+        input.focus({preventScroll:true});
+      });
+    };
   }
   function openRelatedItem(item) {
     if (item.kind === 'rules') G.openTopic(item.topicId);
     else if (item.courseId) W.openCourseList(item.courseId, item.sectionIndex, 'all');
     else W.openTopic(item.topicId);
   }
-  function openRelated(scope, level, source, book) {
+  function openRelated(scope, level, source, book, title) {
+    if (scope === 'words') {
+      setMode('w');
+      searches.words(CatalogSearch.lessonQuery(source, title, level, book));
+      return;
+    }
     const items = CatalogSearch.related(index, source, level, scope, book);
     if (!items.length) return;
     setMode(scope === 'rules' ? 'g' : 'w');
@@ -214,18 +236,18 @@ if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSea
     root.querySelectorAll('[data-lesson-scope]').forEach(ref => {
       if (linkedRefs.has(ref)) return;
       linkedRefs.add(ref);
-      const {lessonScope:scope, lessonLevel:level, lessonSource:source, lessonBook:book} = ref.dataset;
-      if (!CatalogSearch.related(index, source, level, scope, book).length) return;
+      const {lessonScope:scope, lessonLevel:level, lessonSource:source, lessonBook:book, lessonTitle:title} = ref.dataset;
+      if (scope !== 'words' && !CatalogSearch.related(index, source, level, scope, book).length) return;
       const name = scope === 'rules' ? 'Правила' : 'Лексика';
-      ref.textContent = name + ' · ' + source;
+      ref.textContent = name + (source ? ' · ' + source : '');
       ref.setAttribute('role', 'button');
       ref.tabIndex = 0;
-      ref.title = 'Открыть ' + (scope === 'rules' ? 'правила' : 'лексику') + ': ' + level + ', урок ' + source;
+      ref.title = 'Открыть ' + (scope === 'rules' ? 'правила' : 'лексику') + ': ' + level + ', ' + (source ? 'урок ' + source : title);
       ref.setAttribute('aria-label', ref.title);
       const go = event => {
         event.preventDefault();
         event.stopPropagation();
-        openRelated(scope, level, source, book);
+        openRelated(scope, level, source, book, title);
       };
       ref.addEventListener('click', go);
       ref.addEventListener('keydown', event => {
@@ -239,4 +261,5 @@ if (typeof module !== 'undefined' && module.exports) module.exports = CatalogSea
   mount('words', words, words.querySelector('.jumpnav'));
   mount('rules', rules, rules.querySelector('.jumpnav'));
 })();
+
 
