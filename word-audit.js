@@ -10,7 +10,8 @@
 //   WORD_EX_CARD['id карточки|ключ'] — свой блок только для этой карточки (омонимы; null — скрыть блок);
 //     читается в app.js → extraHTML.
 //   WX    — правка общих примеров WORD_EX: ключ | поле | английский | русский
-//     поля: s (Present Simple), p (Past Simple), pf (Present Perfect), c (Present Continuous)
+//     поля: s (Present Simple), p (Past Simple), pf (Present Perfect), c (Present Continuous),
+//     syn / ant (синонимы / антонимы списком), f (формы глагола)
 var WORD_EX_CARD = {};
 (function () {
   if (typeof W_BRANCHES === 'undefined') return;
@@ -77,25 +78,81 @@ then|c|Tom is having dinner, and then he's going out.|Том ужинает, а 
     'Kate is parking the car now.': 'Кейт сейчас паркует машину.',
   };
 
+  // ---- пачка 2 (слова 301–600, A1) ----
+  const RU2 = `
+efa1-11a-1|stop|останавливать(ся), прекращать
+efa1-11b-1|get a flight|сесть на самолёт, полететь рейсом
+efa1-11b-2|enjoy|получать удовольствие, наслаждаться
+efa1-5a-2|toast|тост, поджаренный хлеб
+efa2-9a-1|toast|тост, поджаренный хлеб
+efa1-6a-3|dishes|посуда, блюда
+`;
+  const EX2 = `
+efa1-10a-1|a light|Turn on the light, please.|Включи, пожалуйста, свет.
+efa2-8b-2|a light|Turn on the light, please.|Включи, пожалуйста, свет.
+`;
+  const EXRU2 = `
+The baby is crying.|Ребёнок плачет.
+Her son is a soldier.|Её сын — солдат.
+He had to go to hospital.|Ему пришлось лечь в больницу.
+Please come in and sit down.|Входите, пожалуйста, и садитесь.
+We need a babysitter for Saturday.|Нам нужна няня на субботу.
+We had a traditional English breakfast.|У нас был традиционный английский завтрак.
+This is very important.|Это очень важно.
+Blue is my favourite colour.|Синий — мой любимый цвет.
+Your English is perfect.|У тебя прекрасный английский.
+He's a famous actor.|Он знаменитый актёр.
+I listen to classical music when I work.|Когда я работаю, я слушаю классическую музыку.
+The concert hall is full.|Концертный зал полон.
+Is this seat free?|Это место свободно?
+My wallet is in my bag.|Мой бумажник в сумке.
+My purse is in my bag.|Мой кошелёк в сумке.
+Write in pencil.|Пишите карандашом.
+This is a photo of my family.|Это фотография моей семьи.
+I have a new camera.|У меня новый фотоаппарат.
+Can I pay by credit card?|Можно заплатить кредитной картой?
+It's ninety-nine cents.|Это стоит девяносто девять центов.
+One dollar, please.|Один доллар, пожалуйста.
+It costs ten euros.|Это стоит десять евро.
+The ticket is five pounds.|Билет стоит пять фунтов.
+Look at the board, please.|Посмотрите на доску, пожалуйста.
+We went straight on at the lights.|На светофоре мы поехали прямо.
+`;
+  // syn / ant: список через «;», перевод в скобках; пусто — убрать список. f: формы через «;».
+  const WX2 = `
+pretty|pf|Your daughter has become so pretty!|Твоя дочь стала такой хорошенькой!
+different|pf|Ben has taken a different bus today.|Сегодня Бен поехал на другом автобусе.
+pass|c|More students are passing the exam every year.|С каждым годом экзамен сдаёт всё больше студентов.
+healthy|syn|fit (в форме); good for you (полезный)
+healthy|ant|unhealthy (нездоровый, вредный); ill (больной)
+potatoes|syn|
+learn|f|learn; learnt / learned; learnt / learned
+`;
+
   // ---- применение ----
   // «;» и «|» — разделители строк и полей в c[3], в тексте их быть не должно.
   const safe = s => s.replace(/;/g, ',').replace(/\|/g, '/');
-  lines(RU).forEach(l => { const [id, en, ru0] = l.split('|').map(s => s.trim()); const ru = ru0 && safe(ru0); if (ru) editRow(id, en, f => { f[1] = f[1].match(/^\s*/)[0] + ru; }); });
-  lines(EX).forEach(l => {
+  lines(RU + RU2).forEach(l => { const [id, en, ru0] = l.split('|').map(s => s.trim()); const ru = ru0 && safe(ru0); if (ru) editRow(id, en, f => { f[1] = f[1].match(/^\s*/)[0] + ru; }); });
+  lines(EX + EX2).forEach(l => {
     const [id, en, ex, ru] = l.split('|').map(s => s.trim());
     editRow(id, en, f => { f[3] = safe(ex); });
     if (hasExRu && ru) EX_RU[ex] = ru;
   });
   if (hasExRu) {
-    lines(EXRU).forEach(l => { const i = l.indexOf('|'); EX_RU[l.slice(0, i).trim()] = l.slice(i + 1).trim(); });
+    lines(EXRU + EXRU2).forEach(l => { const i = l.indexOf('|'); EX_RU[l.slice(0, i).trim()] = l.slice(i + 1).trim(); });
     Object.assign(EX_RU, ADD_EXRU);
   }
   if (typeof WORD_EX !== 'undefined') {
     Object.assign(WORD_EX, WX_SET);
     const F = {s: 2, p: 3, pf: 4, c: 5};
-    lines(WX).forEach(l => {
+    const list = s => (s || '').split(';').map(x => x.trim()).filter(Boolean)
+      .map(x => { const m = /^(.*?)\s*(?:\((.*)\))?$/.exec(x); return m[2] ? [m[1], m[2]] : [m[1]]; });
+    lines(WX + WX2).forEach(l => {
       const [k, field, en, ru] = l.split('|').map(s => s.trim());
-      const d = WORD_EX[k]; if (!d || !(field in F)) return;
+      const d = WORD_EX[k]; if (!d) return;
+      if (field === 'syn' || field === 'ant') { d[field === 'syn' ? 6 : 7] = list(en); return; }
+      if (field === 'f') { d[0] = en.split(';').map(x => x.trim()); return; }
+      if (!(field in F)) return;
       d[F[field]] = en;
       if (hasExRu && ru) EX_RU[en] = ru;
     });
