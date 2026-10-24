@@ -258,6 +258,56 @@ She's a famous pianist.|Она знаменитая пианистка.
 dry|c|The weather is getting drier.|Погода становится суше.
 `;
 
+  // ---- пачка 7 (слова 1801–2100, A2 и экстра A2) ----
+  // У экстра-тем (efx-…) часть речи не размечена, поэтому общий блок WORD_EX показывается целиком.
+  // Для омонимов — свой блок у карточки.
+  Object.assign(WORD_EX_CARD, {
+    'efx-pi-appearance-1|fat': [0, 0, 'Our dog is too fat.', '', 'Tom has got fat since he stopped running.', 'My cat is getting fat.',
+      [['overweight', 'вежливее'], ['big', 'разг., мягче']], [['thin', 'худой'], ['slim', 'стройный']], 'fat', null],
+    'efx-pi-personality-1|warm': [0, 0, 'Our new neighbours are very warm people.', '', 'She has always been warm and friendly to me.', 'The host is being very warm to his guests.',
+      [['friendly', 'дружелюбный'], ['kind', 'добрый']], [['cold', 'холодный'], ['unfriendly', 'недружелюбный']], 'warm', null],
+    'efx-pi-personality-1|mean': [0, 0, 'My boss is mean with money.', '', 'He has always been mean with money.', "You're being mean — share your sweets!",
+      [['stingy', 'жадный']], [['generous', 'щедрый']], 'mean', null],
+    'efx-pi-languages-1|mean': [['mean', 'meant', 'meant'], 1, 'What does this word mean?', "I didn't know what she meant.", '', '',
+      [], [], 'meant|mean', null],
+    'efx-pi-family-1|engagement': [0, 0, 'Their engagement was a big surprise.', '', 'They have announced their engagement.', 'Lots of couples are announcing their engagements online.',
+      [], [], 'engagement', ['engagements', 'C', '', ['sg', '', 'sg', 'pl']]],
+  });
+  const ADD_EXRU7 = {
+    'Our dog is too fat.': 'Наша собака слишком толстая.',
+    'Tom has got fat since he stopped running.': 'Том растолстел с тех пор, как перестал бегать.',
+    'My cat is getting fat.': 'Мой кот толстеет.',
+    'Our new neighbours are very warm people.': 'Наши новые соседи — очень сердечные люди.',
+    'She has always been warm and friendly to me.': 'Она всегда была ко мне тёплой и дружелюбной.',
+    'The host is being very warm to his guests.': 'Хозяин очень радушно принимает гостей.',
+    'My boss is mean with money.': 'Мой начальник скуп.',
+    'He has always been mean with money.': 'Он всегда был скупым.',
+    "You're being mean — share your sweets!": 'Не жадничай — поделись конфетами!',
+    'What does this word mean?': 'Что значит это слово?',
+    "I didn't know what she meant.": 'Я не поняла, что она имела в виду.',
+    'Their engagement was a big surprise.': 'Их помолвка стала большим сюрпризом.',
+  };
+  const EXRU7 = `
+long hair / short hair / straight hair / curly hair / blonde hair / red hair / dark hair|длинные / короткие / прямые / кудрявые / светлые / рыжие / тёмные волосы
+straight hair|прямые волосы
+curly hair|кудрявые волосы
+blonde hair|светлые волосы
+blue eyes / brown eyes|голубые / карие глаза
+carry a bag|нести сумку
+know somebody|знать кого-либо
+look happy / look about twenty-five|выглядеть счастливым / выглядеть лет на двадцать пять
+`;
+  const WX7 = `
+when|pf|Since when has Tom lived here?|С каких пор Том здесь живёт?
+how|pf|How have you been?|Как ты поживаешь?
+after-that|pf|We have had dinner. After that, let's go for a walk.|Мы поужинали. После этого давай прогуляемся.
+find|c|Scientists are finding new species every year.|Учёные каждый год находят новые виды.
+die|syn|pass away (мягко)
+know|ant|
+enough|ant|
+go-back|ant|
+`;
+
   // ---- применение ----
   // «;» и «|» — разделители строк и полей в c[3], в тексте их быть не должно.
   const safe = s => s.replace(/;/g, ',').replace(/\|/g, '/');
@@ -268,15 +318,15 @@ dry|c|The weather is getting drier.|Погода становится суше.
     if (hasExRu && ru) EX_RU[ex] = ru;
   });
   if (hasExRu) {
-    lines(EXRU + EXRU2 + EXRU3 + EXRU4 + EXRU5 + EXRU6).forEach(l => { const i = l.indexOf('|'); EX_RU[l.slice(0, i).trim()] = l.slice(i + 1).trim(); });
-    Object.assign(EX_RU, ADD_EXRU, ADD_EXRU3);
+    lines(EXRU + EXRU2 + EXRU3 + EXRU4 + EXRU5 + EXRU6 + EXRU7).forEach(l => { const i = l.indexOf('|'); EX_RU[l.slice(0, i).trim()] = l.slice(i + 1).trim(); });
+    Object.assign(EX_RU, ADD_EXRU, ADD_EXRU3, ADD_EXRU7);
   }
   if (typeof WORD_EX !== 'undefined') {
     Object.assign(WORD_EX, WX_SET);
     const F = {s: 2, p: 3, pf: 4, c: 5};
     const list = s => (s || '').split(';').map(x => x.trim()).filter(Boolean)
       .map(x => { const m = /^(.*?)\s*(?:\((.*)\))?$/.exec(x); return m[2] ? [m[1], m[2]] : [m[1]]; });
-    lines(WX + WX2 + WX3 + WX4 + WX6).forEach(l => {
+    lines(WX + WX2 + WX3 + WX4 + WX6 + WX7).forEach(l => {
       const [k, field, en, ru] = l.split('|').map(s => s.trim());
       const d = WORD_EX[k]; if (!d) return;
       if (field === 'syn' || field === 'ant') { d[field === 'syn' ? 6 : 7] = list(en); return; }
