@@ -35,7 +35,8 @@
     return [[v1, e, e], 0];
   }
   function baseHint(en, ru) {
-    const m = /\(([a-z]+)[):]/.exec(ru || '');
+    // «встал (get up)» → get: подсказка может быть фразовым глаголом
+    const m = /\(([a-z]+)(?: [a-z]+)*[):]/.exec(ru || '');
     const first = en.split(' ')[0].toLowerCase();
     if (!m || m[1] === first) return null;
     const h = m[1];
