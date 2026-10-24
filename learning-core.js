@@ -53,6 +53,15 @@ const SkillCore = (() => {
       stop(){stopped=true;topics.forEach(t=>cancel(t.timer));},
     };
   }
+  // Награда за занятие с нейросетью: только плюс, по числу верных применений правила.
+  // 0 верных → 0; 1+ → +1; 3+ и точность ≥75% → +2; 5+ без ошибок → +3.
+  function ruleGain(ok,no) {
+    ok=+ok||0; no=+no||0;
+    if(ok<=0) return 0;
+    if(ok>=5 && no===0) return 3;
+    if(ok>=3 && ok/(ok+no)>=0.75) return 2;
+    return 1;
+  }
   function parseRuleCode(text) {
     const found=String(text||'').match(/EFST1\s*\|[^\r\n\x60]+/i);
     if(!found) return null;
@@ -60,9 +69,12 @@ const SkillCore = (() => {
     if(!/^[a-z0-9]{3,32}$/i.test(parts[1]) || parts.length<3) return null;
     const items=[];
     for(const token of parts.slice(2)) {
-      const m=token.match(/^([a-z0-9-]+)\s*:\s*(\d{1,2})\s*:\s*(\+2|\+1|\+|[-−–—]|0|=)$/i);
+      // id:уровень:верно/ошибок (новый формат) или id:уровень:оценка (старые коды: +2, +, -, 0)
+      const m=token.match(/^([a-z0-9-]+)\s*:\s*(\d{1,2})\s*:\s*(?:(\d{1,3})\s*\/\s*(\d{1,3})|(\+2|\+1|\+|[-−–—]|0|=))$/i);
       if(!m || +m[2]>10) return null;
-      items.push({id:m[1].toLowerCase(),from:+m[2],sign:m[3]==='+2'?2:m[3][0]==='+'?1:/[0=]/.test(m[3])?0:-1});
+      if(m[3]!=null){ const ok=+m[3],no=+m[4]; items.push({id:m[1].toLowerCase(),from:+m[2],ok,no,gain:ruleGain(ok,no)}); continue; }
+      const sign=m[5]==='+2'?2:m[5][0]==='+'?1:/[0=]/.test(m[5])?0:-1;
+      items.push({id:m[1].toLowerCase(),from:+m[2],sign,gain:Math.max(0,sign)});
     }
     return {tag:parts[1].toUpperCase(),items};
   }
@@ -88,6 +100,6 @@ const SkillCore = (() => {
       return b[i]===(vowel?'an':'a');
     });
   }
-  return {createWriteQueue,parseRuleCode,contractionVariants,articleEquivalent};
+  return {createWriteQueue,parseRuleCode,ruleGain,contractionVariants,articleEquivalent};
 })();
 if(typeof module!=='undefined'&&module.exports) module.exports=SkillCore;
