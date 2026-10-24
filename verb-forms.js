@@ -17,18 +17,32 @@
     if (/[^aeiou]y$/.test(b)) return b.slice(0, -1) + 'ied';
     return b + 'ed';
   }
-  function forms(phrase) {
+  // base — инфинитив из подсказки в переводе: «сидел, сел (sit)» → sit.
+  // Карточка с прошедшей формой (sat, went, watched…) получает полную тройку от инфинитива.
+  function forms(phrase, base) {
     const words = phrase.split(' ');
-    const b = words[0].toLowerCase(), rest = words.slice(1).join(' ');
+    const b = base || words[0].toLowerCase(), rest = words.slice(1).join(' ');
     const tail = rest ? ' ' + rest : '';
+    const v1 = base ? base + tail : phrase;
+    if (b === 'can') return [['can', 'could', '—'], 1];
     const ir = irr[b];
     if (ir) {
       const p = ir[0].split('/').map(x => x + tail).join(' / ');
       const pp = ir[1].split('/').map(x => x + tail).join(' / ');
-      return [[phrase, p, pp], 1];
+      return [[v1, p, pp], 1];
     }
     const e = ed(b) + tail;
-    return [[phrase, e, e], 0];
+    return [[v1, e, e], 0];
+  }
+  function baseHint(en, ru) {
+    const m = /\(([a-z]+)[):]/.exec(ru || '');
+    const first = en.split(' ')[0].toLowerCase();
+    if (!m || m[1] === first) return null;
+    const h = m[1];
+    // подсказка засчитывается, только если слово на карточке и правда форма этого глагола
+    if (h === 'can') return first === 'could' ? h : null;
+    if (irr[h]) return (irr[h][0] + '/' + irr[h][1]).split('/').includes(first) ? h : null;
+    return ed(h) === first ? h : null;
   }
   // глагольные фразы без отметки «глагол»: первое слово — глагол
   const VERBISH = new Set(`accept add agree apologise argue ask be believe belong book borrow brush buy call care catch change check clean clear collect commit compare consist cook cross cut do drill drink eat empty extend fall feed feel fill find follow get give go grab grow hand have iron keep laugh leave lend listen live look lose make meet move mow pass pay pick plan plant play put raise reach read reduce register ride run save say see sell send set shake share sign sing sit skip sleep sort spare spend stay succeed support take talk tell think tone track travel try turn wait walk wash waste watch wear win work write`.split(' '));
@@ -38,7 +52,7 @@
     if (!c || typeof c[3] !== 'string') return;
     c[3].split(';').forEach(x => {
       const f = x.split('|').map(s => s.trim());
-      const en = f[0], pos = f[2];
+      const en = f[0], ru = f[1], pos = f[2];
       if (!en || /[?.!…\/]/.test(en) || /^[A-Z]/.test(en)) return;
       const first = en.split(' ')[0].toLowerCase();
       const isVerb = pos === 'v' || (pos === 'o' && en.includes(' ') && VERBISH.has(first));
@@ -46,9 +60,12 @@
       const k = slug(en);
       if (SKIP.has(k)) return;
       const d = WORD_EX[k];
-      if (d && d[0]) return;
-      const [fm, ir] = forms(en);
-      if (d) { d[0] = fm; d[1] = ir; d.vf = 1; } // vf: forms added here, the entry's examples are not verb examples
+      const base = baseHint(en, ru);
+      // у прошедших форм тройка всегда считается заново: старые данные бывали ошибочны (sat · sated · sated)
+      if (d && d[0] && !base) return;
+      const [fm, ir] = forms(en, base);
+      // vf: forms were added here to an entry without them, so its examples are not verb examples
+      if (d) { if (!d[0]) d.vf = 1; d[0] = fm; d[1] = ir; }
       else WORD_EX[k] = [fm, ir, '', '', '', '', [], [], ''];
     });
   }))));
