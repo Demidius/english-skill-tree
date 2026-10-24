@@ -135,7 +135,7 @@
       levelInstruction() + 'Do not give a set of sentences, a ready translation, or a hint about which rule is needed.\n' +
       '2. Stop and wait for my translation ' + (toEnglish ? 'into English' : 'into Russian') + '. Do not answer for me and do not analyse the sentence in advance.\n' +
       '3. After each of my translations, immediately give a short analysis in Russian. If the translation is correct, say so explicitly. ' +
-      'If there is a mistake, show my version → corrected version, explain why, and give the id of the rule from the list. ' +
+      'If there is a mistake, show my version and the corrected version in the correction format, explain why, and give the id of the rule from the list. ' +
       'Accept any correct translation: do not require a literal match with your model answer. Suggest a more natural wording separately, without counting a correct version as a mistake. ' +
       (toEnglish ? 'Check the meaning and the English grammar.' : 'Check that the Russian translation keeps the meaning of the English structure: tense, negation, condition, modality and other important nuances. Do not require English word order in Russian.') +
       ' Mark mistakes outside the selected rules separately: they do not affect the code for these rules.\n' +
@@ -149,6 +149,9 @@
       'Put these numbers into the code below; an unanswered sentence is not an incorrect use. ' +
       'Do not add rules outside the selected list to the result. Then output one final code for the site in the format below. Do not give the code before the session ends.\n';
   }
+  // Исправления — на отдельных строках: так проще сравнивать свой вариант с правильным.
+  const CORRECTION = 'Correction format: never put my version and the corrected version on one line with an arrow. ' +
+    'Write my version on its own line starting with "❌ ", the corrected version on the next line starting with "✅ ", and the explanation below them.\n\n';
   function buildPrompt() {
     const ids = orderedSel();
     if (!ids.length) return '';
@@ -156,7 +159,8 @@
     const head =
       'You are an experienced English teacher for Russian-speaking learners. I study with the English File textbooks ' +
       '(levels in this session: ' + lvls.join(', ') + ') and practise specific grammar rules. ' +
-      'Talk to me in Russian: all explanations, feedback and summaries must be in Russian; use English only in tasks, examples and corrections.\n\n' +
+      'Talk to me in Russian: all explanations, feedback and summaries must be in Russian; use English only in tasks, examples and corrections.\n' +
+      CORRECTION +
       'Rules to practise (id — name (textbook level, topic): gist in Russian. Example — my current level for this rule on a 0–10 scale):\n' +
       ruleLines(ids) + '\n\n' +
       'Rules at level 0–4 are weak for me — use them in simpler contexts and more often; rules at level 8–9 — in more complex contexts.\n\n';
@@ -170,7 +174,7 @@
         'Do not hint which rule is where, and do not give the translation.\n' +
         '2. Stop and wait for my translation. Do not analyse anything in advance.\n' +
         '3. When I send my translation, go through it sentence by sentence, in Russian:\n' +
-        '   — my version → correct version, if there is a mistake;\n' +
+        '   — if there is a mistake: my version and the correct version in the correction format;\n' +
         '   — briefly: what the mistake is and which rule (id) it belongs to;\n' +
         '   — if my version is correct but sounds unnatural, suggest a more natural one and say that it is not a mistake;\n' +
         '   — mark mistakes outside the listed rules (words, prepositions, articles, word order) separately — they do not affect the rule results.\n' +
@@ -182,7 +186,7 @@
         'Make the mistakes typical for Russian speakers. ' + levelInstruction() + 'Do not mark where the mistakes are or which rules are tested.\n' +
         '2. Stop and wait for my answer: I will write the numbers of the wrong sentences and my corrections.\n' +
         '3. Analyse my answer in Russian: which mistakes I found and fixed correctly, which I missed, and where I "fixed" a correct sentence. ' +
-        'For each mistake — the correct version and a short explanation with the rule id.\n' +
+        'For each mistake — my version and the correct version in the correction format, and a short explanation with the rule id.\n' +
         '4. Count correct fixes and correctly retained sentences as correct uses; count missed mistakes, wrong fixes and spoiled correct sentences as incorrect uses. Put the counts into the code below. Then briefly: what went well, which rules to review.\n',
       dialog:
         'Task: speaking practice.\n' +
@@ -190,7 +194,7 @@
         'Ask questions so that I have to answer using the listed rules (cover all of them in turn). ' +
         'One or two questions per message' + (TEXT_LEVELS[S.textLevel] ? '. ' + levelInstruction() + 'Talk to me at this level throughout the dialogue.' : ', keep it simple.') + '\n' +
         '2. During the dialogue, do not correct mistakes, just keep talking. Make 10–12 turns, or finish earlier if I write «итог».\n' +
-        '3. After the dialogue, go through my lines in Russian: my version → correct one, briefly, with the rule id. ' +
+        '3. After the dialogue, go through my lines in Russian: my version and the correct one in the correction format, briefly, with the rule id. ' +
         'Mark mistakes outside the listed rules separately — they do not affect the rule results.\n' +
         '4. Count correct and incorrect uses of each selected rule for the code below. Then briefly: what went well, which rules to review.\n',
       explain:
