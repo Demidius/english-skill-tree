@@ -197,17 +197,43 @@ wake-up|syn|
 get-to-work|syn|
 `;
 
+  // ---- пачка 5 (слова 1201–1500, A2) ----
+  const RU5 = `
+efa2-12a-1|I've read the book.|Я прочитал эту книгу.
+efa2-pe2-2|Here we are.|Вот мы и пришли (также: вот, пожалуйста)
+efa2-9b-1|none|нисколько, ни одного
+efa2-pe4-1|You can't miss it!|Вы точно не пройдёте мимо!
+`;
+  const EX5 = `
+efa2-8a-1|saw|I saw a woodpecker in the park yesterday.|Вчера я увидел дятла в парке.
+efa2-12b-1|broke|I broke my leg last winter.|Прошлой зимой я сломал ногу.
+efa2-8b-1|a study|My dad works in his study.|Папа работает у себя в кабинете.
+`;
+  const EXRU5 = `
+The secretary answers the phone.|Секретарь отвечает на звонки.
+Put your bag on the chair.|Поставь сумку на стул.
+The dog barks at strangers.|Собака лает на чужих.
+Where's the toilet, please?|Скажите, пожалуйста, где туалет?
+I have a lot of plants at home.|У меня дома много растений.
+Fish and chips, please.|Рыбу с картошкой фри, пожалуйста.
+Wash the lettuce first.|Сначала помой салат.
+I love pineapple on pizza.|Обожаю пиццу с ананасами.
+I have a sandwich for lunch.|На обед я ем сэндвич.
+Children love sweets.|Дети обожают конфеты.
+The books are in that box.|Книги в той коробке.
+`;
+
   // ---- применение ----
   // «;» и «|» — разделители строк и полей в c[3], в тексте их быть не должно.
   const safe = s => s.replace(/;/g, ',').replace(/\|/g, '/');
-  lines(RU + RU2 + RU3 + RU4).forEach(l => { const [id, en, ru0] = l.split('|').map(s => s.trim()); const ru = ru0 && safe(ru0); if (ru) editRow(id, en, f => { f[1] = f[1].match(/^\s*/)[0] + ru; }); });
-  lines(EX + EX2 + EX3).forEach(l => {
+  lines(RU + RU2 + RU3 + RU4 + RU5).forEach(l => { const [id, en, ru0] = l.split('|').map(s => s.trim()); const ru = ru0 && safe(ru0); if (ru) editRow(id, en, f => { f[1] = f[1].match(/^\s*/)[0] + ru; }); });
+  lines(EX + EX2 + EX3 + EX5).forEach(l => {
     const [id, en, ex, ru] = l.split('|').map(s => s.trim());
     editRow(id, en, f => { f[3] = safe(ex); });
     if (hasExRu && ru) EX_RU[ex] = ru;
   });
   if (hasExRu) {
-    lines(EXRU + EXRU2 + EXRU3 + EXRU4).forEach(l => { const i = l.indexOf('|'); EX_RU[l.slice(0, i).trim()] = l.slice(i + 1).trim(); });
+    lines(EXRU + EXRU2 + EXRU3 + EXRU4 + EXRU5).forEach(l => { const i = l.indexOf('|'); EX_RU[l.slice(0, i).trim()] = l.slice(i + 1).trim(); });
     Object.assign(EX_RU, ADD_EXRU, ADD_EXRU3);
   }
   if (typeof WORD_EX !== 'undefined') {
