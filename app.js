@@ -16,8 +16,8 @@ const phoneMQ = window.matchMedia('(max-width: 720px)');
 // shared persistence state (filled in at the bottom)
 let db=null, local=false, profiles=[], current=null;
 // level coefficients (shared by all students, edited on the «Настройки» tab)
-const COEF_DEFAULT={rulesPractice:{ok:1, wrong:-2}, review:{newPerSession:20, hardPct:120, easyPct:130, maxIvl:365}};
-const COEF_RANGE={'review.newPerSession':[0,200], 'review.hardPct':[100,200], 'review.easyPct':[100,300], 'review.maxIvl':[180,3650]};
+const COEF_DEFAULT={rulesPractice:{ok:1}, review:{newPerSession:20, hardPct:120, easyPct:130, maxIvl:365}};
+const COEF_RANGE={'rulesPractice.ok':[0,3], 'review.newPerSession':[0,200], 'review.hardPct':[100,200], 'review.easyPct':[100,300], 'review.maxIvl':[180,3650]};
 const COEF_STEP={'review.newPerSession':5, 'review.hardPct':5, 'review.easyPct':5, 'review.maxIvl':30};
 const COEF=JSON.parse(JSON.stringify(COEF_DEFAULT));
 function applyCoef(src){
@@ -485,7 +485,7 @@ const G = (function(){
       '<li>Фильтр «Уровень от … до …» оставляет яркими только правила в этом диапазоне.</li>'+
       '<li>Кнопка внизу карточки: ‹ понижает уровень на 1, › повышает, в середине — текущий уровень. На странице правила уровень можно поставить сразу, кликом по шкале.</li>'+
       '<li>После теста на 9–10 можно сразу поставить уровень 10.</li>'+
-      '<li>Кнопка «Промт» рядом с отработкой даёт задание для любой нейросети: перевод, поиск ошибок, диалог. В конце нейросеть выдаёт код — введи его там же, и уровни правил изменятся по коэффициентам со вкладки «Настройки».</li>'+
+      '<li>Кнопка «Промт» рядом с отработкой даёт задание для любой нейросети: перевод, поиск ошибок, диалог. В конце нейросеть выдаёт код — введи его там же, и уровни правил вырастут по числу верных применений (до +3 за занятие). Ошибки уровень не снижают.</li>'+
       '</ul></section>'+
       '<section><h3>Прогресс</h3><ul>'+
       '<li>Прогресс хранится в артефакте и виден на любом устройстве, если войти в аккаунт Claude. Без входа он хранится только в этом браузере.</li>'+
@@ -759,7 +759,7 @@ const G = (function(){
     if(!T || T.finished || T.answers[T.i]!=null) return;
     const q=T.qs[T.i]; T.answers[T.i]=q.opts[k];
     if(T.mix){
-      const d=T.answers[T.i]===q.a?COEF.rulesPractice.ok:COEF.rulesPractice.wrong;
+      const d=T.answers[T.i]===q.a?COEF.rulesPractice.ok:0; // ошибка уровень не снижает
       if(!(q.rid in T.delta)) T.delta[q.rid]={from:glv[q.rid], ok:0, no:0};
       T.delta[q.rid][T.answers[T.i]===q.a?'ok':'no']++;
       setLevelG(q.rid, glv[q.rid]+d);
@@ -948,8 +948,19 @@ const W = (function(){
     return '<div class="trn"><span class="ipa">/'+esc(t[0])+'/</span><span class="rus">'+esc(t[1])+'</span></div>';
   }
   function extraHTML(w){
-    const d=(typeof WORD_EX!=='undefined')&&WORD_EX[w.k]; if(!d) return '';
-    const [forms,irr,s,p,pf,c,syn,ant,rx,nn]=d;
+    const ck=w.tid+'|'+w.k, own=typeof WORD_EX_CARD!=='undefined'&&Object.prototype.hasOwnProperty.call(WORD_EX_CARD,ck);
+    const d=own?WORD_EX_CARD[ck]:(typeof WORD_EX!=='undefined')&&WORD_EX[w.k]; if(!d) return '';
+    let [forms,irr,s,p,pf,c,syn,ant,rx,nn]=d;
+    if(!own && w.p){
+      // WORD_EX is keyed by spelling, so homographs share one entry (park n/v, orange n/adj).
+      // Show only the parts that belong to this word's part of speech.
+      const K=nn?'n':(forms&&!d.vf)?'v':'x';
+      const R=(w.p==='o'&&/\s/.test(w.en)&&forms)?'v':w.p;
+      const hide=R==='v'?K!=='v':R==='n'?K!=='n':R==='a'?K!=='x':K==='v';
+      if(R!=='v') forms=null;
+      if(R==='v'||R==='a') nn=null;
+      if(hide){ s=p=pf=c=''; syn=ant=null; if(K==='n') nn=null; }
+    }
     const re=rx?new RegExp('\\b(?:'+rx+')\\w*','gi'):null;
     const hl=t=>{ const e=esc(t); return re?e.replace(re,m=>'<b>'+m+'</b>'):e; };
     let h='<div class="wx">';
@@ -1676,15 +1687,14 @@ const SETTINGS = (function(){
   const root=document.getElementById('mode-s');
   const SKEY='ef_coef';
   const GROUPS=[
-    {key:'rulesPractice', h:'Правила · практические работы', note:'Как меняется уровень правила: по коду из «Изучать с AI» (оценка нейросети после перевода, поиска ошибок или диалога) и при ответах в «Быстром тесте».',
-     f:[['ok','Правило применено верно'],['wrong','С правилом ошибка']]},
+    {key:'rulesPractice', h:'Правила · быстрый тест', note:'Насколько растёт уровень правила за верный ответ в «Быстром тесте». Ошибка уровень не снижает. Код из «Изучать с AI» начисляет 0…+3 по числу верных применений, тоже без минусов.',
+     f:[['ok','Верный ответ']]},
     {key:'review', h:'Лексика · интервальное повторение', note:'Как в Anki: «Хорошо» умножает интервал на лёгкость слова (≈2,5), «Трудно» и «Легко» — на свои множители. Переводы: верно = «Хорошо», с ошибкой = «Трудно», неверно = «Забыл».',
      f:[['hardPct','«Трудно»: интервал ×, %'],['easyPct','«Легко»: бонус к «Хорошо», %'],['maxIvl','Максимальный интервал, дней']]},
   ];
   let msg='';
   function render(){
-    root.innerHTML='<div class="set-wrap"><p class="set-intro">Настройки повторения слов и коэффициенты для уровней правил. Они общие для всех учеников. '+
-      'По ним же применяется код из «Изучать с AI».</p>'+
+    root.innerHTML='<div class="set-wrap"><p class="set-intro">Настройки повторения слов и коэффициенты для уровней правил. Они общие для всех учеников.</p>'+
       '<form id="coefForm" class="set-grid" autocomplete="off">'+GROUPS.map(g=>'<fieldset class="set-card"><legend>'+esc(g.h)+'</legend><p class="set-note">'+esc(g.note)+'</p>'+
         g.f.map(([k,l])=>'<label class="set-row" for="c-'+g.key+'-'+k+'"><span>'+esc(l)+'</span>'+
           '<span class="set-step"><button type="button" class="lvb" data-step="-1" data-for="c-'+g.key+'-'+k+'" aria-label="меньше">−</button>'+
