@@ -2,10 +2,11 @@
 // Кнопка «Изучать с AI» в блоке отработки. Окно: вкладка «Промт» (тип задания,
 // выбор правил, готовый текст для копирования) и вкладка «Ввести код» (превью и применение).
 //
-// Код от нейросети: EFST1|TAG|id:уровень:оценка|…  (оценка: + верно, - ошибка, 0 не встретилось)
+// Код от нейросети: EFST1|TAG|id:уровень:верно/ошибок|…  (например pres-simple:7:5/0)
 // Уровень в коде — тот, что был в промте. Сайт сравнивает его с текущим: так один и тот же код
-// не применится дважды даже на другом устройстве. Шаг изменения берётся из «Настроек»
-// (COEF.rulesPractice: верно / ошибка).
+// не применится дважды даже на другом устройстве. Начисление — SkillCore.ruleGain, без минусов:
+// 0 верных → 0, 1+ → +1, 3+ и точность ≥75% → +2, 5+ без ошибок → +3.
+// Старые коды с оценками (+2, +, -, 0) тоже принимаются; «-» теперь даёт 0.
 (function () {
   if (typeof G === 'undefined' || !G.rulesData) return;
 
@@ -143,7 +144,7 @@
       'An unanswered sentence is not a mistake. After the end command, give no new tasks.\n' +
       '6. Only after the end, summarise the whole session in Russian: how many translations were done, what went well, which mistakes repeated and what to review. ' +
       'For each selected rule, give the number of correct and incorrect uses. Assess my answers, not your own corrections. ' +
-      'Use the scoring policy below for each rule; an unanswered sentence is not an incorrect use. ' +
+      'Put these numbers into the code below; an unanswered sentence is not an incorrect use. ' +
       'Do not add rules outside the selected list to the result. Then output one final code for the site in the format below. Do not give the code before the session ends.\n';
   }
   function buildPrompt() {
@@ -171,7 +172,7 @@
         '   — briefly: what the mistake is and which rule (id) it belongs to;\n' +
         '   — if my version is correct but sounds unnatural, suggest a more natural one and say that it is not a mistake;\n' +
         '   — mark mistakes outside the listed rules (words, prepositions, articles, word order) separately — they do not affect the rule results.\n' +
-        '4. Count correct and incorrect uses of each selected rule and use the scoring policy below. Then briefly: which rules can go up, which to review and what exactly to review.\n',
+        '4. Count correct and incorrect uses of each selected rule for the code below. Then briefly: what went well, which rules to review and what exactly to review.\n',
       fix:
         'Task: find and correct mistakes.\n' +
         '1. Write 12 numbered sentences in English. About half of them must contain a mistake in exactly the listed rules ' +
@@ -180,7 +181,7 @@
         '2. Stop and wait for my answer: I will write the numbers of the wrong sentences and my corrections.\n' +
         '3. Analyse my answer in Russian: which mistakes I found and fixed correctly, which I missed, and where I "fixed" a correct sentence. ' +
         'For each mistake — the correct version and a short explanation with the rule id.\n' +
-        '4. Count correct fixes and correctly retained sentences as correct uses; count missed mistakes, wrong fixes and spoiled correct sentences as incorrect uses. Use the scoring policy below. Then briefly: which rules can go up, which to review.\n',
+        '4. Count correct fixes and correctly retained sentences as correct uses; count missed mistakes, wrong fixes and spoiled correct sentences as incorrect uses. Put the counts into the code below. Then briefly: what went well, which rules to review.\n',
       dialog:
         'Task: speaking practice.\n' +
         '1. Offer 3 everyday situations for a dialogue, wait for my choice and start the conversation in English. ' +
@@ -189,7 +190,7 @@
         '2. During the dialogue, do not correct mistakes, just keep talking. Make 10–12 turns, or finish earlier if I write «итог».\n' +
         '3. After the dialogue, go through my lines in Russian: my version → correct one, briefly, with the rule id. ' +
         'Mark mistakes outside the listed rules separately — they do not affect the rule results.\n' +
-        '4. Count correct and incorrect uses of each selected rule and use the scoring policy below. Then briefly: which rules can go up, which to review.\n',
+        '4. Count correct and incorrect uses of each selected rule for the code below. Then briefly: what went well, which rules to review.\n',
       explain:
         'Task: explain these rules, starting with the one where my level is lowest. For each rule:\n' +
         '1. A simple explanation in Russian: when it is used and how it is formed (positive, negative, question).\n' +
@@ -198,16 +199,14 @@
         '4. A mini-test of 5 tasks (fill the gap or translate a phrase). Put the answers at the very end under the heading «Ответы».\n',
     }[S.type];
     const code = !TYPES[S.type].code ? '' :
-      'Scoring policy for EACH selected rule: count correct and incorrect uses across the whole session. ' +
-      'Use +2 when correct uses > 3 and incorrect uses = 0; otherwise use + when correct uses > incorrect uses; ' +
-      'use 0 when there were no uses; otherwise use - (including a tie). Count only my answers, not your corrections.\n' +
+      'Results for EACH selected rule: count my correct and incorrect uses across the whole session. Count only my answers, not your corrections.\n' +
       'Code for my site at the end of the final analysis — one line in a code block, strictly in this format:\n' +
-      PREFIX + '|' + S.tag + '|id:level:mark|id:level:mark|…\n' +
+      PREFIX + '|' + S.tag + '|id:level:correct/incorrect|id:level:correct/incorrect|…\n' +
       '— list all rules from the list;\n' +
       '— take id and level exactly from the list (level = my current level, do not change it);\n' +
-      '— mark: +2 excellent, + successful, - needs review, 0 not tested.\n' +
-      'Format example: ' + PREFIX + '|' + S.tag + '|id1:7:+2|id2:3:-|id3:5:0\n' +
-      'Do not raise or lower the levels yourself — the site will recalculate them from these marks.\n';
+      '— correct/incorrect: two whole numbers, for example 4/1; write 0/0 if the rule was not used.\n' +
+      'Format example: ' + PREFIX + '|' + S.tag + '|id1:7:5/0|id2:3:2/3|id3:5:0/0\n' +
+      'Do not calculate new levels yourself — the site will do it from these numbers.\n';
     return head + body + code;
   }
 
@@ -240,8 +239,8 @@
     return parsed.items.filter(it => !seen.has(it.id) && seen.add(it.id)).map(it => {
       const r = byId[it.id];
       if (!r) return Object.assign({}, it, { kind: 'unknown', on: false });
-      if (it.sign === 0) return Object.assign({}, it, { r, kind: 'skip', to: r.lv, on: false });
-      const d = it.sign > 0 ? COEF.rulesPractice.ok * it.sign : COEF.rulesPractice.wrong;
+      const d = it.gain;
+      if (!d) return Object.assign({}, it, { r, d: 0, kind: 'skip', to: r.lv, on: false });
       const exp = clamp(it.from + d);
       if (r.lv === it.from) return Object.assign({}, it, { r, d, kind: 'ok', to: exp, on: exp !== r.lv });
       if (r.lv === exp) return Object.assign({}, it, { r, d, kind: 'done', to: r.lv, on: false });
@@ -397,8 +396,10 @@
   }
   function verdictTxt(x) {
     if (x.kind === 'unknown') return 'нет такого правила';
-    if (x.kind === 'skip') return 'не встретилось';
-    return (x.sign > 0 ? 'верно' : 'ошибка') + ' · ' + sgn(x.d);
+    const tail = x.d ? ' · ' + sgn(x.d) : '';
+    if ('ok' in x) return x.ok || x.no ? 'верно ' + x.ok + (x.no ? ' · ошибок ' + x.no : '') + tail : 'не встретилось';
+    if (x.kind === 'skip') return x.sign < 0 ? 'нужна практика' : 'не встретилось';
+    return (x.sign > 1 ? 'отлично' : 'верно') + tail;
   }
   function renderCode() {
     let prev = '';
@@ -424,8 +425,8 @@
         '<div class="m-actions"><button type="button" class="m-btn" data-pt-apply' + (any ? '' : ' disabled') + '>Применить</button></div>';
     }
     return '<p class="pt-note pt-lead">Вставь ответ нейросети целиком или только строку с кодом — сайт сам найдёт <code>' + PREFIX + '|…</code>. ' +
-      'Шаги изменения уровня: успешно ' + sgn(COEF.rulesPractice.ok) + ', больше 3 верных применений без ошибок ' + sgn(2*COEF.rulesPractice.ok) + ', нужна отработка ' + sgn(COEF.rulesPractice.wrong) + '.</p>' +
-      '<textarea class="pt-text pt-in" rows="4" placeholder="' + PREFIX + '|ABCD|pres-simple:7:+|past-cont:3:-" aria-label="Код от нейросети">' + esc(S.codeText) + '</textarea>' +
+      'Уровень правила только растёт — по числу верных применений: хотя бы 1 верное — +1, от 3 верных и точность от 75% — +2, от 5 верных без ошибок — +3. Ошибки уровень не снижают.</p>' +
+      '<textarea class="pt-text pt-in" rows="4" placeholder="' + PREFIX + '|ABCD|pres-simple:7:5/0|past-cont:3:2/3" aria-label="Код от нейросети">' + esc(S.codeText) + '</textarea>' +
       (S.msg ? '<p class="pt-msg" role="status">' + S.msg + '</p>' : '') +
       (S.rows ? prev : '<div class="m-actions"><button type="button" class="m-btn" data-pt-check>Проверить код</button></div>');
   }
@@ -435,7 +436,7 @@
     S.codeText = ta ? ta.value : S.codeText;
     S.parsed = parseCode(S.codeText);
     S.rows = null;
-    if (!S.parsed) { S.msg = 'Код не найден. Он начинается с <code>' + PREFIX + '|</code> и выглядит так: <code>' + PREFIX + '|ABCD|pres-simple:7:+</code>.'; render(); return; }
+    if (!S.parsed) { S.msg = 'Код не найден. Он начинается с <code>' + PREFIX + '|</code> и выглядит так: <code>' + PREFIX + '|ABCD|pres-simple:7:5/0</code>.'; render(); return; }
     if (!S.parsed.items.length) { S.msg = 'В коде нет ни одного правила.'; render(); return; }
     S.rows = plan(S.parsed);
     if (usedTags().includes(S.parsed.tag)) S.rows.forEach(x => x.on = false);

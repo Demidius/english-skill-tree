@@ -64,7 +64,8 @@
       // у прошедших форм тройка всегда считается заново: старые данные бывали ошибочны (sat · sated · sated)
       if (d && d[0] && !base) return;
       const [fm, ir] = forms(en, base);
-      if (d) { d[0] = fm; d[1] = ir; }
+      // vf: forms were added here to an entry without them, so its examples are not verb examples
+      if (d) { if (!d[0]) d.vf = 1; d[0] = fm; d[1] = ir; }
       else WORD_EX[k] = [fm, ir, '', '', '', '', [], [], ''];
     });
   }))));
