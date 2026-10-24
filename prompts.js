@@ -7,6 +7,8 @@
 // не применится дважды даже на другом устройстве. Начисление — SkillCore.ruleGain, без минусов:
 // 0 верных → 0, 1+ → +1, 3+ и точность ≥75% → +2, 5+ без ошибок → +3.
 // Старые коды с оценками (+2, +, -, 0) тоже принимаются; «-» теперь даёт 0.
+// С уровня 7 — скрытые шаги (SkillCore.ruleAdvance): каждое верное применение — шаг, 3 шага = +1 уровень,
+// ошибка по правилу в занятии обнуляет шаги.
 (function () {
   if (typeof G === 'undefined' || !G.rulesData) return;
 
@@ -240,11 +242,14 @@
       const r = byId[it.id];
       if (!r) return Object.assign({}, it, { kind: 'unknown', on: false });
       const d = it.gain;
-      if (!d) return Object.assign({}, it, { r, d: 0, kind: 'skip', to: r.lv, on: false });
-      const exp = clamp(it.from + d);
-      if (r.lv === it.from) return Object.assign({}, it, { r, d, kind: 'ok', to: exp, on: exp !== r.lv });
-      if (r.lv === exp) return Object.assign({}, it, { r, d, kind: 'done', to: r.lv, on: false });
-      return Object.assign({}, it, { r, d, kind: 'moved', to: r.lv, on: false });
+      const ok = 'ok' in it ? it.ok : Math.max(0, it.sign), no = 'ok' in it ? it.no : (it.sign < 0 ? 1 : 0);
+      const st = r.lv === it.from ? (r.st || 0) : 0;
+      const nx = SkillCore.ruleAdvance(it.from, st, ok, no, d);
+      const changed = nx.lv !== it.from || nx.st !== st;
+      if (!changed) return Object.assign({}, it, { r, d: 0, kind: 'skip', to: r.lv, toSt: r.st || 0, on: false });
+      if (r.lv === it.from) return Object.assign({}, it, { r, d: nx.lv - it.from, kind: 'ok', to: nx.lv, toSt: nx.st, on: true });
+      if (r.lv === nx.lv && nx.lv !== it.from) return Object.assign({}, it, { r, d: nx.lv - it.from, kind: 'done', to: r.lv, on: false });
+      return Object.assign({}, it, { r, d: 0, kind: 'moved', to: r.lv, on: false });
     });
   }
 
@@ -396,7 +401,9 @@
   }
   function verdictTxt(x) {
     if (x.kind === 'unknown') return 'нет такого правила';
-    const tail = x.d ? ' · ' + sgn(x.d) : '';
+    const steps = x.kind === 'ok' && x.to >= SkillCore.STEP_FROM && x.to < GMAX && x.r && x.r.lv >= SkillCore.STEP_FROM
+      ? (x.toSt < (x.r.st || 0) && x.to === x.r.lv ? ' · шаги сброшены' : ' · шаги ' + x.toSt + '/' + SkillCore.STEPS) : '';
+    const tail = (x.d ? ' · ' + sgn(x.d) : '') + steps;
     if ('ok' in x) return x.ok || x.no ? 'верно ' + x.ok + (x.no ? ' · ошибок ' + x.no : '') + tail : 'не встретилось';
     if (x.kind === 'skip') return x.sign < 0 ? 'нужна практика' : 'не встретилось';
     return (x.sign > 1 ? 'отлично' : 'верно') + tail;
@@ -416,7 +423,7 @@
         '<div class="wl pt-res">' + S.rows.map((x, i) => {
           const can = !used && x.kind === 'ok';
           const title = x.r ? x.r.title : x.id;
-          const chg = !x.r ? '—' : x.kind === 'skip' ? String(x.r.lv) : x.kind === 'done' ? 'уже ' + x.r.lv : x.r.lv + ' → ' + x.to;
+          const chg = !x.r ? '—' : x.kind === 'skip' ? String(x.r.lv) : x.kind === 'done' ? 'уже ' + x.r.lv : x.to === x.r.lv ? String(x.r.lv) : x.r.lv + ' → ' + x.to;
           return '<label class="row pt-row" data-kind="' + x.kind + '">' +
             '<input type="checkbox" data-pt-row="' + i + '"' + (x.on ? ' checked' : '') + (can ? '' : ' disabled') + '>' +
             '<span class="en">' + esc(title) + '</span><span class="ru">' + esc(verdictTxt(x)) + '</span>' +
@@ -425,7 +432,8 @@
         '<div class="m-actions"><button type="button" class="m-btn" data-pt-apply' + (any ? '' : ' disabled') + '>Применить</button></div>';
     }
     return '<p class="pt-note pt-lead">Вставь ответ нейросети целиком или только строку с кодом — сайт сам найдёт <code>' + PREFIX + '|…</code>. ' +
-      'Уровень правила только растёт — по числу верных применений: хотя бы 1 верное — +1, от 3 верных и точность от 75% — +2, от 5 верных без ошибок — +3. Ошибки уровень не снижают.</p>' +
+      'Уровень правила только растёт — по числу верных применений: хотя бы 1 верное — +1, от 3 верных и точность от 75% — +2, от 5 верных без ошибок — +3. Ошибки уровень не снижают. ' +
+      'С уровня 7: каждое верное применение — шаг, 3 шага подряд — следующий уровень; ошибка по правилу обнуляет шаги.</p>' +
       '<textarea class="pt-text pt-in" rows="4" placeholder="' + PREFIX + '|ABCD|pres-simple:7:5/0|past-cont:3:2/3" aria-label="Код от нейросети">' + esc(S.codeText) + '</textarea>' +
       (S.msg ? '<p class="pt-msg" role="status">' + S.msg + '</p>' : '') +
       (S.rows ? prev : '<div class="m-actions"><button type="button" class="m-btn" data-pt-check>Проверить код</button></div>');
@@ -449,12 +457,12 @@
     if(typeof needProfile==='function'&&needProfile())return;
     if(typeof canWrite==='function'&&!canWrite()){S.msg='Это профиль другого ученика.';render();return;}
     const state=S,profile=profileKey(),tag=S.parsed.tag;
-    const todo=S.rows.filter(x=>x.on&&x.kind==='ok'&&x.r&&x.to!==x.r.lv);
+    const todo=S.rows.filter(x=>x.on&&x.kind==='ok'&&x.r&&(x.to!==x.r.lv||x.toSt!==(x.r.st||0)));
     if(!todo.length||usedTags().includes(tag))return;
     applying=true;
     const button=modal.querySelector('[data-pt-apply]');if(button)button.disabled=true;
     try{
-      const result=await G.applyRuleCode(tag,todo.map(x=>({id:x.id,from:x.r.lv,to:x.to})));
+      const result=await G.applyRuleCode(tag,todo.map(x=>({id:x.id,from:x.r.lv,to:x.to,st:x.toSt||0})));
       markUsed(tag,profile);
       if(S===state){
         S.msg=result.alreadyUsed?'Этот код уже применён к аккаунту.':'Готово: изменено правил - '+result.applied+'.';
