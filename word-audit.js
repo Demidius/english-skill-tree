@@ -174,17 +174,40 @@ stepfather|pf|My stepfather has taught me to drive.|Отчим научил ме
     'Anna is travelling in Asia this month.': 'В этом месяце Анна путешествует по Азии.',
   };
 
+  // ---- пачка 4 (слова 901–1200, A2) ----
+  const RU4 = `
+efa2-10c-1|have a surprise|получить сюрприз, удивиться
+efa2-2b-1|right|правильный, верный (также правый)
+efa2-11a-1|behave calmly in a crisis|спокойно вести себя в кризисной ситуации
+efa2-3a-1|need a new phone|нужен новый телефон
+`;
+  const EXRU4 = `
+She gets on well with her stepmother.|Она хорошо ладит с мачехой.
+I don't believe you.|Я тебе не верю.
+What are you doing tonight?|Что ты делаешь сегодня вечером?
+We're going to Spain next week.|На следующей неделе мы едем в Испанию.
+I want to learn French next year.|В следующем году я хочу выучить французский.
+I read a book before bed.|Перед сном я читаю книгу.
+I walk to work every day.|Я каждый день хожу на работу пешком.
+I help my neighbour every week.|Я каждую неделю помогаю соседу.
+`;
+  const WX4 = `
+often|c|Tom is often working late these days.|В последнее время Том часто работает допоздна.
+wake-up|syn|
+get-to-work|syn|
+`;
+
   // ---- применение ----
   // «;» и «|» — разделители строк и полей в c[3], в тексте их быть не должно.
   const safe = s => s.replace(/;/g, ',').replace(/\|/g, '/');
-  lines(RU + RU2 + RU3).forEach(l => { const [id, en, ru0] = l.split('|').map(s => s.trim()); const ru = ru0 && safe(ru0); if (ru) editRow(id, en, f => { f[1] = f[1].match(/^\s*/)[0] + ru; }); });
+  lines(RU + RU2 + RU3 + RU4).forEach(l => { const [id, en, ru0] = l.split('|').map(s => s.trim()); const ru = ru0 && safe(ru0); if (ru) editRow(id, en, f => { f[1] = f[1].match(/^\s*/)[0] + ru; }); });
   lines(EX + EX2 + EX3).forEach(l => {
     const [id, en, ex, ru] = l.split('|').map(s => s.trim());
     editRow(id, en, f => { f[3] = safe(ex); });
     if (hasExRu && ru) EX_RU[ex] = ru;
   });
   if (hasExRu) {
-    lines(EXRU + EXRU2 + EXRU3).forEach(l => { const i = l.indexOf('|'); EX_RU[l.slice(0, i).trim()] = l.slice(i + 1).trim(); });
+    lines(EXRU + EXRU2 + EXRU3 + EXRU4).forEach(l => { const i = l.indexOf('|'); EX_RU[l.slice(0, i).trim()] = l.slice(i + 1).trim(); });
     Object.assign(EX_RU, ADD_EXRU, ADD_EXRU3);
   }
   if (typeof WORD_EX !== 'undefined') {
@@ -192,7 +215,7 @@ stepfather|pf|My stepfather has taught me to drive.|Отчим научил ме
     const F = {s: 2, p: 3, pf: 4, c: 5};
     const list = s => (s || '').split(';').map(x => x.trim()).filter(Boolean)
       .map(x => { const m = /^(.*?)\s*(?:\((.*)\))?$/.exec(x); return m[2] ? [m[1], m[2]] : [m[1]]; });
-    lines(WX + WX2 + WX3).forEach(l => {
+    lines(WX + WX2 + WX3 + WX4).forEach(l => {
       const [k, field, en, ru] = l.split('|').map(s => s.trim());
       const d = WORD_EX[k]; if (!d) return;
       if (field === 'syn' || field === 'ant') { d[field === 'syn' ? 6 : 7] = list(en); return; }
