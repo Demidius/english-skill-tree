@@ -223,17 +223,52 @@ Children love sweets.|Дети обожают конфеты.
 The books are in that box.|Книги в той коробке.
 `;
 
+  // ---- пачка 6 (слова 1501–1800, A2) ----
+  const RU6 = `
+efa2-2a-1|a file|папка, файл
+efa2-1c-1|Can I have a copy, please?|Можно мне копию, пожалуйста?
+efa2-7a-1|a painter|художник, маляр
+efa2-11c-1|get fitter|прийти в лучшую форму
+efa2-11c-1|get directions|узнать дорогу, проложить маршрут
+efa2-11b-1|need to|нужно (сделать)
+`;
+  const EX6 = `
+efa2-10a-1|a park|Let's go for a walk in the park.|Пойдём погуляем в парке.
+efa2-10a-1|a square|There's a café in the main square.|На главной площади есть кафе.
+efa2-3b-1|a cook|My grandmother was a great cook.|Моя бабушка прекрасно готовила.
+efa2-6c-1|a keyboard|She plays the keyboard in a band.|Она играет на синтезаторе в группе.
+`;
+  const EXRU6 = `
+Is there a pharmacy near here?|Здесь поблизости есть аптека?
+There's a new art gallery in town.|В городе открылась новая картинная галерея.
+This road goes to the airport.|Эта дорога ведёт в аэропорт.
+The taxi rank is outside the station.|Стоянка такси у вокзала.
+Let me check my diary.|Сейчас посмотрю в ежедневнике.
+Where are the scissors?|Где ножницы?
+Don't forget your sunglasses.|Не забудь солнцезащитные очки.
+She works as a model.|Она работает моделью.
+The painter is painting our kitchen.|Маляр красит нашу кухню.
+Please open the attachment.|Откройте, пожалуйста, вложение.
+I'm from Poland. What about you?|Я из Польши. А ты?
+Our drummer is only sixteen.|Нашему барабанщику всего шестнадцать.
+He's the band's guitarist.|Он гитарист группы.
+She's a famous pianist.|Она знаменитая пианистка.
+`;
+  const WX6 = `
+dry|c|The weather is getting drier.|Погода становится суше.
+`;
+
   // ---- применение ----
   // «;» и «|» — разделители строк и полей в c[3], в тексте их быть не должно.
   const safe = s => s.replace(/;/g, ',').replace(/\|/g, '/');
-  lines(RU + RU2 + RU3 + RU4 + RU5).forEach(l => { const [id, en, ru0] = l.split('|').map(s => s.trim()); const ru = ru0 && safe(ru0); if (ru) editRow(id, en, f => { f[1] = f[1].match(/^\s*/)[0] + ru; }); });
-  lines(EX + EX2 + EX3 + EX5).forEach(l => {
+  lines(RU + RU2 + RU3 + RU4 + RU5 + RU6).forEach(l => { const [id, en, ru0] = l.split('|').map(s => s.trim()); const ru = ru0 && safe(ru0); if (ru) editRow(id, en, f => { f[1] = f[1].match(/^\s*/)[0] + ru; }); });
+  lines(EX + EX2 + EX3 + EX5 + EX6).forEach(l => {
     const [id, en, ex, ru] = l.split('|').map(s => s.trim());
     editRow(id, en, f => { f[3] = safe(ex); });
     if (hasExRu && ru) EX_RU[ex] = ru;
   });
   if (hasExRu) {
-    lines(EXRU + EXRU2 + EXRU3 + EXRU4 + EXRU5).forEach(l => { const i = l.indexOf('|'); EX_RU[l.slice(0, i).trim()] = l.slice(i + 1).trim(); });
+    lines(EXRU + EXRU2 + EXRU3 + EXRU4 + EXRU5 + EXRU6).forEach(l => { const i = l.indexOf('|'); EX_RU[l.slice(0, i).trim()] = l.slice(i + 1).trim(); });
     Object.assign(EX_RU, ADD_EXRU, ADD_EXRU3);
   }
   if (typeof WORD_EX !== 'undefined') {
@@ -241,7 +276,7 @@ The books are in that box.|Книги в той коробке.
     const F = {s: 2, p: 3, pf: 4, c: 5};
     const list = s => (s || '').split(';').map(x => x.trim()).filter(Boolean)
       .map(x => { const m = /^(.*?)\s*(?:\((.*)\))?$/.exec(x); return m[2] ? [m[1], m[2]] : [m[1]]; });
-    lines(WX + WX2 + WX3 + WX4).forEach(l => {
+    lines(WX + WX2 + WX3 + WX4 + WX6).forEach(l => {
       const [k, field, en, ru] = l.split('|').map(s => s.trim());
       const d = WORD_EX[k]; if (!d) return;
       if (field === 'syn' || field === 'ant') { d[field === 'syn' ? 6 : 7] = list(en); return; }
