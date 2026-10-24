@@ -129,25 +129,70 @@ potatoes|syn|
 learn|f|learn; learnt / learned; learnt / learned
 `;
 
+  // ---- пачка 3 (слова 601–900, A1 → A2) ----
+  const RU3 = `
+efa1-7a-2|fun|весёлый, интересный (it's fun — это весело)
+efa1-8b-1|eating out|еда вне дома (в кафе, ресторане)
+`;
+  const EX3 = `
+efa1-9a-2|the box office|Buy your tickets at the box office.|Купите билеты в кассе.
+efa2-1b-2|south|Many birds fly south in winter.|Зимой многие птицы улетают на юг.
+`;
+  const EXRU3 = `
+Here's twenty. Keep the change.|Вот двадцать. Сдачи не надо.
+I want to stay at home today.|Сегодня я хочу остаться дома.
+I can't swim.|Я не умею плавать.
+The party was great fun.|На вечеринке было очень весело.
+We went to the pub after work.|После работы мы пошли в паб.
+He kissed her goodbye.|Он поцеловал её на прощание.
+There's nothing in the fridge.|В холодильнике ничего нет.
+I do the shopping on Fridays.|По пятницам я хожу за покупками.
+The bus takes half an hour.|На автобусе ехать полчаса.
+Do you want to come? — I'd love to.|Хочешь пойти? — С удовольствием.
+The hotel has a bar.|В отеле есть бар.
+She's a fashion designer.|Она дизайнер одежды.
+Gdańsk is in the north of Poland.|Гданьск находится на севере Польши.
+The sun comes up in the east.|Солнце встаёт на востоке.
+We live in the west of the city.|Мы живём на западе города.
+`;
+  const WX3 = `
+surprised|ant|not surprised (не удивлён)
+good-morning|ant|
+go-out|syn|
+what-time|pf|What time have you set your alarm for?|На какое время ты поставил будильник?
+stepfather|pf|My stepfather has taught me to drive.|Отчим научил меня водить машину.
+`;
+  // travel: общий блок WORD_EX — про существительное; для карточек с глаголом — свой.
+  const TRAVEL_V = [['travel', 'travelled', 'travelled'], 0, 'We travel a lot in summer.', 'Kate travelled around Italy last year.',
+    'Tom has travelled to ten countries.', 'Anna is travelling in Asia this month.', [['go on a trip', 'поехать в поездку']], [['stay at home', 'сидеть дома']], 'travel', null];
+  WORD_EX_CARD['efa1-7a-1|travel'] = TRAVEL_V;
+  WORD_EX_CARD['efa2-10c-1|travel'] = TRAVEL_V;
+  const ADD_EXRU3 = {
+    'We travel a lot in summer.': 'Летом мы много путешествуем.',
+    'Kate travelled around Italy last year.': 'В прошлом году Кейт путешествовала по Италии.',
+    'Tom has travelled to ten countries.': 'Том побывал в десяти странах.',
+    'Anna is travelling in Asia this month.': 'В этом месяце Анна путешествует по Азии.',
+  };
+
   // ---- применение ----
   // «;» и «|» — разделители строк и полей в c[3], в тексте их быть не должно.
   const safe = s => s.replace(/;/g, ',').replace(/\|/g, '/');
-  lines(RU + RU2).forEach(l => { const [id, en, ru0] = l.split('|').map(s => s.trim()); const ru = ru0 && safe(ru0); if (ru) editRow(id, en, f => { f[1] = f[1].match(/^\s*/)[0] + ru; }); });
-  lines(EX + EX2).forEach(l => {
+  lines(RU + RU2 + RU3).forEach(l => { const [id, en, ru0] = l.split('|').map(s => s.trim()); const ru = ru0 && safe(ru0); if (ru) editRow(id, en, f => { f[1] = f[1].match(/^\s*/)[0] + ru; }); });
+  lines(EX + EX2 + EX3).forEach(l => {
     const [id, en, ex, ru] = l.split('|').map(s => s.trim());
     editRow(id, en, f => { f[3] = safe(ex); });
     if (hasExRu && ru) EX_RU[ex] = ru;
   });
   if (hasExRu) {
-    lines(EXRU + EXRU2).forEach(l => { const i = l.indexOf('|'); EX_RU[l.slice(0, i).trim()] = l.slice(i + 1).trim(); });
-    Object.assign(EX_RU, ADD_EXRU);
+    lines(EXRU + EXRU2 + EXRU3).forEach(l => { const i = l.indexOf('|'); EX_RU[l.slice(0, i).trim()] = l.slice(i + 1).trim(); });
+    Object.assign(EX_RU, ADD_EXRU, ADD_EXRU3);
   }
   if (typeof WORD_EX !== 'undefined') {
     Object.assign(WORD_EX, WX_SET);
     const F = {s: 2, p: 3, pf: 4, c: 5};
     const list = s => (s || '').split(';').map(x => x.trim()).filter(Boolean)
       .map(x => { const m = /^(.*?)\s*(?:\((.*)\))?$/.exec(x); return m[2] ? [m[1], m[2]] : [m[1]]; });
-    lines(WX + WX2).forEach(l => {
+    lines(WX + WX2 + WX3).forEach(l => {
       const [k, field, en, ru] = l.split('|').map(s => s.trim());
       const d = WORD_EX[k]; if (!d) return;
       if (field === 'syn' || field === 'ant') { d[field === 'syn' ? 6 : 7] = list(en); return; }
