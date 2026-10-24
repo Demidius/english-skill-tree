@@ -95,6 +95,22 @@ test('a mistake code never lowers a level',()=>{
  vm.createContext(c);vm.runInContext(source.slice(source.indexOf('  function parseCode('),source.indexOf('  // ---------- окно'))+'\nthis.result=plan(parseCode("EFST1|ABCD|cl-rel:2:0/3|past:5:-"));',c);
  assert.deepEqual(c.result.map(x=>[x.kind,x.to,x.on]),[['skip',2,false],['skip',5,false]]);
 });
+test('from level 7 a rule needs three correct answers in a row per level',()=>{
+ const A=Core.ruleAdvance;
+ assert.deepEqual(A(5,0,6,0,3),{lv:7,st:0});
+ assert.deepEqual(A(7,0,1,0,1),{lv:7,st:1});
+ assert.deepEqual(A(7,2,1,0,1),{lv:8,st:0});
+ assert.deepEqual(A(7,1,5,0,3),{lv:9,st:0});
+ assert.deepEqual(A(8,2,4,1,2),{lv:8,st:0});
+ assert.deepEqual(A(9,2,4,0,3),{lv:10,st:0});
+ assert.deepEqual(A(10,0,3,0,3),{lv:10,st:0});
+ assert.deepEqual(A(6,0,1,0,1),{lv:7,st:0});
+});
+test('AI codes keep hidden steps between sessions and reset them on a mistake',()=>{
+ const source=read('prompts.js'),c={SkillCore:Core,COEF:{rulesPractice:{ok:1}},GMAX:10,rules:()=>[{id:'a',lv:7,st:2},{id:'b',lv:8,st:2},{id:'c',lv:8,st:0}]};
+ vm.createContext(c);vm.runInContext(source.slice(source.indexOf('  function parseCode('),source.indexOf('  // ---------- окно'))+'\nthis.result=plan(parseCode("EFST1|ABCD|a:7:1/0|b:8:3/1|c:8:2/0"));',c);
+ assert.deepEqual(json(c.result.map(x=>[x.kind,x.to,x.toSt,x.on])),[['ok',8,0,true],['ok',8,0,true],['ok',8,2,true]]);
+});
 test('an old code cannot propose a fresh increment after a level has moved',()=>{
  const source=read('prompts.js'),c={SkillCore:Core,COEF:{rulesPractice:{ok:1}},GMAX:10,rules:()=>[{id:'cl-rel',lv:2}]};
  vm.createContext(c);vm.runInContext(source.slice(source.indexOf('  function parseCode('),source.indexOf('  // ---------- окно'))+'\nthis.result=plan(parseCode("EFST1|ABCD|cl-rel:0:+"));',c);
