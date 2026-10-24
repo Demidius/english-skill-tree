@@ -308,32 +308,91 @@ enough|ant|
 go-back|ant|
 `;
 
+  // ---- пачка 8 (слова 2101–2400, экстра A2) ----
+  const RU8 = `
+efx-pi-verbpatterns-1|need to do something|нужно что-либо сделать
+`;
+  Object.assign(WORD_EX_CARD, {
+    'efx-pi-restaurant-1|order': [['order', 'ordered', 'ordered'], 0, 'We usually order pizza on Fridays.', 'Tom ordered a steak and chips.', 'Have you ordered yet?', 'Anna is ordering a coffee at the bar.',
+      [['ask for', 'разг.']], [], 'order', null],
+    'efx-pi-travel-1|book': [['book', 'booked', 'booked'], 0, 'I always book my flights online.', 'We booked a hotel near the beach.', 'Have you booked a table for tonight?', 'Anna is booking a flight to Rome.',
+      [['reserve', 'формальнее']], [], 'book', null],
+    'efx-pi-directions-1|back': [0, 0, "I'll be back in ten minutes.", 'We came back late last night.', 'Tom has just come back from London.', 'She is going back to Spain next week.',
+      [], [], 'back', null],
+    'efx-pi-clothes-2|ring': [0, 0, 'She wears three rings on her hand.', '', 'Ben has bought a ring for Anna.', 'Maria is wearing her wedding ring.',
+      [], [], 'rings|ring', ['rings', 'C', '', ['pl', '', 'sg', 'sg']]],
+    'efx-pi-clothes-1|suit': [0, 0, 'This grey suit fits you very well.', '', 'He has worn the same suit for years.', 'The men are wearing dark suits.',
+      [], [], 'suits|suit', ['suits', 'C', '', ['sg', '', 'sg', 'pl']]],
+    'efx-pi-transport-1|stop': [0, 0, 'The next stop is the station.', 'We missed our stop and had to walk back.', '', '',
+      [], [], 'stops|stop', null],
+    'efx-pi-airport-1|check-in': [0, 0, 'Check-in opens two hours before the flight.', 'Check-in took almost an hour.', 'Online check-in has already opened.', '',
+      [], [], 'check-in', null],
+  });
+  const ADD_EXRU8 = {
+    'We usually order pizza on Fridays.': 'По пятницам мы обычно заказываем пиццу.',
+    'Tom ordered a steak and chips.': 'Том заказал стейк с картошкой фри.',
+    'Have you ordered yet?': 'Вы уже сделали заказ?',
+    'Anna is ordering a coffee at the bar.': 'Анна заказывает кофе у стойки.',
+    'I always book my flights online.': 'Я всегда бронирую билеты на самолёт онлайн.',
+    'We booked a hotel near the beach.': 'Мы забронировали отель у пляжа.',
+    'Have you booked a table for tonight?': 'Ты забронировал столик на вечер?',
+    'Anna is booking a flight to Rome.': 'Анна бронирует билет на самолёт в Рим.',
+    "I'll be back in ten minutes.": 'Я вернусь через десять минут.',
+    'We came back late last night.': 'Мы вернулись вчера поздно вечером.',
+    'Tom has just come back from London.': 'Том только что вернулся из Лондона.',
+    'She is going back to Spain next week.': 'На следующей неделе она возвращается в Испанию.',
+    'The next stop is the station.': 'Следующая остановка — вокзал.',
+    'We missed our stop and had to walk back.': 'Мы проехали свою остановку, и пришлось идти назад.',
+    'Check-in opens two hours before the flight.': 'Регистрация открывается за два часа до вылета.',
+    'Check-in took almost an hour.': 'Регистрация заняла почти час.',
+    'Online check-in has already opened.': 'Онлайн-регистрация уже открылась.',
+  };
+  const EXRU8 = `
+rent an apartment / rent a car|снять квартиру / взять машину напрокат
+hire a bicycle / hire skis|взять напрокат велосипед / лыжи
+book a flight online / book a hotel|забронировать билет на самолёт онлайн / забронировать отель
+buy souvenirs|покупать сувениры
+`;
+
   // ---- применение ----
   // «;» и «|» — разделители строк и полей в c[3], в тексте их быть не должно.
   const safe = s => s.replace(/;/g, ',').replace(/\|/g, '/');
-  lines(RU + RU2 + RU3 + RU4 + RU5 + RU6).forEach(l => { const [id, en, ru0] = l.split('|').map(s => s.trim()); const ru = ru0 && safe(ru0); if (ru) editRow(id, en, f => { f[1] = f[1].match(/^\s*/)[0] + ru; }); });
-  lines(EX + EX2 + EX3 + EX5 + EX6).forEach(l => {
+  const F = {s: 2, p: 3, pf: 4, c: 5};
+  const list = s => (s || '').split(';').map(x => x.trim()).filter(Boolean)
+    .map(x => { const m = /^(.*?)\s*(?:\((.*)\))?$/.exec(x); return m[2] ? [m[1], m[2]] : [m[1]]; });
+  function ruLine(l) { const [id, en, ru0] = l.split('|').map(s => s.trim()); const ru = ru0 && safe(ru0); if (ru) editRow(id, en, f => { f[1] = f[1].match(/^\s*/)[0] + ru; }); }
+  function exLine(l) {
     const [id, en, ex, ru] = l.split('|').map(s => s.trim());
     editRow(id, en, f => { f[3] = safe(ex); });
     if (hasExRu && ru) EX_RU[ex] = ru;
-  });
-  if (hasExRu) {
-    lines(EXRU + EXRU2 + EXRU3 + EXRU4 + EXRU5 + EXRU6 + EXRU7).forEach(l => { const i = l.indexOf('|'); EX_RU[l.slice(0, i).trim()] = l.slice(i + 1).trim(); });
-    Object.assign(EX_RU, ADD_EXRU, ADD_EXRU3, ADD_EXRU7);
   }
-  if (typeof WORD_EX !== 'undefined') {
-    Object.assign(WORD_EX, WX_SET);
-    const F = {s: 2, p: 3, pf: 4, c: 5};
-    const list = s => (s || '').split(';').map(x => x.trim()).filter(Boolean)
-      .map(x => { const m = /^(.*?)\s*(?:\((.*)\))?$/.exec(x); return m[2] ? [m[1], m[2]] : [m[1]]; });
-    lines(WX + WX2 + WX3 + WX4 + WX6 + WX7).forEach(l => {
-      const [k, field, en, ru] = l.split('|').map(s => s.trim());
-      const d = WORD_EX[k]; if (!d) return;
-      if (field === 'syn' || field === 'ant') { d[field === 'syn' ? 6 : 7] = list(en); return; }
-      if (field === 'f') { d[0] = en.split(';').map(x => x.trim()); return; }
-      if (!(field in F)) return;
-      d[F[field]] = en;
-      if (hasExRu && ru) EX_RU[en] = ru;
-    });
+  function exruLine(l) { if (!hasExRu) return; const i = l.indexOf('|'); EX_RU[l.slice(0, i).trim()] = l.slice(i + 1).trim(); }
+  function wxLine(l) {
+    if (typeof WORD_EX === 'undefined') return;
+    const [k, field, en, ru] = l.split('|').map(s => s.trim());
+    const d = WORD_EX[k]; if (!d) return;
+    if (field === 'syn' || field === 'ant') { d[field === 'syn' ? 6 : 7] = list(en); return; }
+    if (field === 'f') { d[0] = en.split(';').map(x => x.trim()); return; }
+    if (!(field in F)) return;
+    d[F[field]] = en;
+    if (hasExRu && ru) EX_RU[en] = ru;
   }
+  lines(RU + RU2 + RU3 + RU4 + RU5 + RU6 + RU8).forEach(ruLine);
+  lines(EX + EX2 + EX3 + EX5 + EX6).forEach(exLine);
+  lines(EXRU + EXRU2 + EXRU3 + EXRU4 + EXRU5 + EXRU6 + EXRU7 + EXRU8).forEach(exruLine);
+  if (hasExRu) Object.assign(EX_RU, ADD_EXRU, ADD_EXRU3, ADD_EXRU7, ADD_EXRU8);
+  if (typeof WORD_EX !== 'undefined') Object.assign(WORD_EX, WX_SET);
+  lines(WX + WX2 + WX3 + WX4 + WX6 + WX7).forEach(wxLine);
+
+  // Следующие пачки лежат в отдельных файлах (word-audit-2.js …) и передают правки одним объектом:
+  // { RU, EX, EXRU, WX } — строки в тех же форматах, CARD — блоки WORD_EX_CARD, ADD_EXRU — переводы примеров.
+  window.wordAuditApply = function (b) {
+    b = b || {};
+    lines(b.RU || '').forEach(ruLine);
+    lines(b.EX || '').forEach(exLine);
+    lines(b.EXRU || '').forEach(exruLine);
+    if (hasExRu && b.ADD_EXRU) Object.assign(EX_RU, b.ADD_EXRU);
+    if (b.CARD) Object.assign(WORD_EX_CARD, b.CARD);
+    lines(b.WX || '').forEach(wxLine);
+  };
 })();
