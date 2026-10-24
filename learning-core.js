@@ -62,6 +62,18 @@ const SkillCore = (() => {
     if(ok>=3 && ok/(ok+no)>=0.75) return 2;
     return 1;
   }
+  // С уровня 7 правило растёт по скрытым шагам: 3 верных подряд = +1 уровень, ошибка обнуляет шаги
+  // (уровень не снижается). Шаги копятся между занятиями. До 7 — обычная награда gain, но не выше 7.
+  const STEP_FROM=7, STEPS=3, RMAX=10;
+  function ruleAdvance(lv,st,ok,no,gain){
+    lv=Math.max(0,Math.min(RMAX,lv|0)); st=Math.max(0,st|0); ok=Math.max(0,ok|0); no=Math.max(0,no|0);
+    if(lv>=RMAX) return {lv,st:0};
+    if(lv<STEP_FROM) return {lv:Math.min(STEP_FROM,lv+Math.max(0,gain|0)),st:0};
+    if(no>0) return {lv,st:0};
+    let steps=st+ok;
+    while(steps>=STEPS && lv<RMAX){ lv++; steps-=STEPS; }
+    return {lv,st:lv>=RMAX?0:steps};
+  }
   function parseRuleCode(text) {
     const found=String(text||'').match(/EFST1\s*\|[^\r\n\x60]+/i);
     if(!found) return null;
@@ -100,6 +112,6 @@ const SkillCore = (() => {
       return b[i]===(vowel?'an':'a');
     });
   }
-  return {createWriteQueue,parseRuleCode,ruleGain,contractionVariants,articleEquivalent};
+  return {createWriteQueue,parseRuleCode,ruleGain,ruleAdvance,STEP_FROM,STEPS,contractionVariants,articleEquivalent};
 })();
 if(typeof module!=='undefined'&&module.exports) module.exports=SkillCore;

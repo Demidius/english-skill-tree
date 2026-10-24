@@ -386,7 +386,7 @@ function cefrProgressHTML(byLevel){
 const G = (function(){
   const STATUS_ORDER=['not_started','learning','review','known','mastered'];
   const STATUS_LABEL={not_started:'не начато', learning:'изучаю', review:'повторяю', known:'знаю', mastered:'закреплено'};
-  const CARDS={}, state={}, scores={}, glv={}, readM={};
+  const CARDS={}, state={}, scores={}, glv={}, readM={}, stM={}; // stM: скрытые шаги к следующему уровню (с уровня 7)
   const GMAX=10, GREV=5;
   const STATUS_FROM_OLD={not_started:0, learning:2, review:6, mastered:10};
   function gstatus(l){ return l>=GMAX?'mastered':l>=8?'known':l>=GREV?'review':l>0?'learning':'not_started'; }
@@ -417,7 +417,11 @@ const G = (function(){
       '<button type="button" class="lvb" data-gset="'+Math.max(0,l-1)+'" title="Понизить"'+(l<=0?' disabled':'')+' aria-label="Понизить">−</button><span class="lvsegs">';
     for(let i=1;i<=GMAX;i++) h+='<button type="button" class="lvs'+(i<=l?' on':'')+'" data-gset="'+(i===l?i-1:i)+'" title="'+(i===l?'Понизить до '+(i-1):'Поставить уровень '+i)+'" aria-label="уровень '+i+'"></button>';
     return h+'</span><span class="lvn">'+l+'</span><button type="button" class="lvb" data-gset="'+Math.min(GMAX,l+1)+'" title="Повысить"'+(l>=GMAX?' disabled':'')+' aria-label="Повысить">+</button></span>'+
-      '</div>';
+      stepsNote(id)+'</div>';
+  }
+  function stepsNote(id){
+    const l=glv[id]; if(l<SkillCore.STEP_FROM || l>=GMAX) return '';
+    return '<span class="r-steps" style="font-size:.85em;opacity:.8" title="С уровня '+SkillCore.STEP_FROM+' нужно '+SkillCore.STEPS+' верных ответа подряд; ошибка обнуляет шаги, уровень не снижается">до уровня '+(l+1)+': '+(stM[id]||0)+' из '+SkillCore.STEPS+' подряд</span>';
   }
   function readEdit(id){ return '<label class="r-read"><input type="checkbox" data-rread'+(readM[id]?' checked':'')+(!canWrite()?' disabled':'')+'> читано <span>— отметка для себя, на уровень не влияет</span></label>'; }
   const TEST_SVG='<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 3.2l1 1 1.7-1.9M2 8.2l1 1 1.7-1.9M6.8 3.6h3.4M6.8 8.6h3.4" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -486,6 +490,7 @@ const G = (function(){
       '<li>Кнопка внизу карточки: ‹ понижает уровень на 1, › повышает, в середине — текущий уровень. На странице правила уровень можно поставить сразу, кликом по шкале.</li>'+
       '<li>После теста на 9–10 можно сразу поставить уровень 10.</li>'+
       '<li>Кнопка «Промт» рядом с отработкой даёт задание для любой нейросети: перевод, поиск ошибок, диалог. В конце нейросеть выдаёт код — введи его там же, и уровни правил вырастут по числу верных применений (до +3 за занятие). Ошибки уровень не снижают.</li>'+
+      '<li>С уровня 7 правило растёт медленнее: нужно 3 верных ответа подряд, чтобы получить следующий уровень. Шаги копятся между занятиями и тестами, ошибка обнуляет шаги, но не уровень. Прогресс шагов виден на странице правила.</li>'+
       '</ul></section>'+
       '<section><h3>Прогресс</h3><ul>'+
       '<li>Прогресс хранится в артефакте и виден на любом устройстве, если войти в аккаунт Claude. Без входа он хранится только в этом браузере.</li>'+
@@ -622,12 +627,15 @@ const G = (function(){
   let unsubP=null, unsubT=null;
   const LKEY10='ef_skilltree_lv10';
   function saveLocal(){ lsSet(LKEY10, JSON.stringify(glv)); }
-  function setLevelG(id,l){
+  const SKEY_ST='ef_rules_steps';
+  // st: скрытые шаги; без st (ручная смена уровня) шаги обнуляются
+  function setLevelG(id,l,st){
     if(needProfile()) return;
-    setG(id,l); paint(id); stats(); board.applyFilter(); renderPractice();
+    setG(id,l); stM[id]=glv[id]>=SkillCore.STEP_FROM && glv[id]<GMAX ? (st|0) : 0;
+    paint(id); stats(); board.applyFilter(); renderPractice();
     const ed=modal.querySelector('.r-level'); if(ed && ruleId===id) ed.outerHTML=gEdit(id);
-    if(db && current && canWrite()) db.collection('profiles/'+current+'/progress').doc(id).set({lv:glv[id], status:state[id], read:!!readM[id], updatedAt:Date.now()}).catch(onWriteError);
-    else if(local) saveLocal();
+    if(db && current && canWrite()) db.collection('profiles/'+current+'/progress').doc(id).set({lv:glv[id], st:stM[id], status:state[id], read:!!readM[id], updatedAt:Date.now()}).catch(onWriteError);
+    else if(local){ saveLocal(); lsSet(SKEY_ST, JSON.stringify(stM)); }
   }
   const RKEY='ef_rules_read';
   function setRead(id, on){
@@ -635,7 +643,7 @@ const G = (function(){
     if(on) readM[id]=true; else delete readM[id];
     paint(id); renderPractice();
     const cb=modal.querySelector('[data-rread]'); if(cb && ruleId===id) cb.checked=!!on;
-    if(db && current && canWrite()) db.collection('profiles/'+current+'/progress').doc(id).set({lv:glv[id], status:state[id], read:!!on, updatedAt:Date.now()}).catch(onWriteError);
+    if(db && current && canWrite()) db.collection('profiles/'+current+'/progress').doc(id).set({lv:glv[id], st:stM[id]||0, status:state[id], read:!!on, updatedAt:Date.now()}).catch(onWriteError);
     else if(local) lsSet(RKEY, JSON.stringify(readM));
   }
   function cycle(id){ if(glv[id]<GMAX) setLevelG(id, glv[id]+1); }
@@ -651,6 +659,7 @@ const G = (function(){
     if(unsubT){ unsubT(); unsubT=null; }
     Object.keys(scores).forEach(k=>delete scores[k]);
     Object.keys(readM).forEach(k=>delete readM[k]);
+    Object.keys(stM).forEach(k=>delete stM[k]);
     ALL.forEach(id=>setG(id,0));
     refresh();
     if(!pid || !db) return;
@@ -664,8 +673,10 @@ const G = (function(){
       if(current!==pid) return;
       ALL.forEach(id=>setG(id,0));
       Object.keys(readM).forEach(k=>delete readM[k]);
+      Object.keys(stM).forEach(k=>delete stM[k]);
       qs.docs.forEach(doc=>{ const v=doc.data(); if(!v || !(doc.id in state)) return;
         if(v.read) readM[doc.id]=true;
+        if(typeof v.st==='number' && v.st>0) stM[doc.id]=v.st|0;
         if(typeof v.lv==='number') setG(doc.id, v.lv);
         else if(STATUS_ORDER.includes(v.status)) setG(doc.id, STATUS_FROM_OLD[v.status]); });
       refresh();
@@ -679,6 +690,7 @@ const G = (function(){
     }catch(e){}
     try{ Object.assign(scores, JSON.parse(lsGet(LKEY+'_scores')||'{}')); }catch(e){}
     try{ const o=JSON.parse(lsGet(RKEY)||'{}'); Object.keys(o).forEach(k=>{ if(k in state && o[k]) readM[k]=true; }); }catch(e){}
+    try{ const o=JSON.parse(lsGet(SKEY_ST)||'{}'); Object.keys(o).forEach(k=>{ if(k in state && o[k]>0) stM[k]=o[k]|0; }); }catch(e){}
     refresh();
   }
 
@@ -688,7 +700,7 @@ const G = (function(){
     if(!/^[A-Z0-9]{3,32}$/.test(tag))throw Error('Неверный код занятия.');
     if(local){
       changes.forEach(x=>{if(glv[x.id]!==x.from)throw Error('Уровни изменились. Проверь код ещё раз.');});
-      changes.forEach(x=>setLevelG(x.id,x.to));
+      changes.forEach(x=>setLevelG(x.id,x.to,x.st));
       return {applied:changes.length};
     }
     // Reserved progress ids use the current access rules and are ignored by the board.
@@ -703,7 +715,7 @@ const G = (function(){
       });
       changes.forEach((x,i)=>{
         const v=snaps[i].data()||{};
-        tx.set(refs[i],{lv:x.to,status:gstatus(x.to),read:!!v.read,updatedAt:Date.now()},{merge:true});
+        tx.set(refs[i],{lv:x.to,st:x.st|0,status:gstatus(x.to),read:!!v.read,updatedAt:Date.now()},{merge:true});
       });
       tx.set(ledger,{at:Date.now(),rules:changes.map(x=>x.id)});
       return {applied:changes.length};
@@ -759,10 +771,12 @@ const G = (function(){
     if(!T || T.finished || T.answers[T.i]!=null) return;
     const q=T.qs[T.i]; T.answers[T.i]=q.opts[k];
     if(T.mix){
-      const d=T.answers[T.i]===q.a?COEF.rulesPractice.ok:0; // ошибка уровень не снижает
+      // ошибка уровень не снижает; с уровня 7 верный ответ — скрытый шаг, ошибка обнуляет шаги
+      const right=T.answers[T.i]===q.a;
+      const nx=SkillCore.ruleAdvance(glv[q.rid], stM[q.rid]||0, right?1:0, right?0:1, right?COEF.rulesPractice.ok:0);
       if(!(q.rid in T.delta)) T.delta[q.rid]={from:glv[q.rid], ok:0, no:0};
-      T.delta[q.rid][T.answers[T.i]===q.a?'ok':'no']++;
-      setLevelG(q.rid, glv[q.rid]+d);
+      T.delta[q.rid][right?'ok':'no']++;
+      setLevelG(q.rid, nx.lv, nx.st);
     }
     renderQ();
   }
@@ -797,7 +811,7 @@ const G = (function(){
       '<div class="m-score">'+score+' / '+total+'</div>'+
       '<div class="m-count">Уровни правил</div><div class="wl mix-res">'+rows.map(r=>
         '<div class="row"><span class="en">'+esc(CARDS[r.id].title)+'</span><span class="ru">верно '+r.d.ok+(r.d.no?' · ошибок '+r.d.no:'')+'</span>'+
-        '<span class="chg">'+r.d.from+' → '+glv[r.id]+'</span></div>').join('')+'</div>'+
+        '<span class="chg">'+r.d.from+' → '+glv[r.id]+(glv[r.id]>=SkillCore.STEP_FROM&&glv[r.id]<GMAX?' · шаги '+(stM[r.id]||0)+'/'+SkillCore.STEPS:'')+'</span></div>').join('')+'</div>'+
       (misses.length?'<div class="m-count" style="margin-top:12px">Ошибки</div><ul class="m-miss">'+misses.map(x=>
         '<li><div class="m-rid">'+esc(CARDS[x.q.rid].title)+'</div>'+fillGap(x.q.s, x.q.a, 'ok')+'<div class="yours">твой ответ: '+esc(optLabel(x.a))+'</div></li>').join('')+'</ul>':'')+
       '<div class="m-actions"><button type="button" class="m-btn ghost" data-act="close">Закрыть</button>'+
@@ -829,7 +843,7 @@ const G = (function(){
     onClose(){ T=null; ruleId=null; modal.classList.remove('rulepage'); },
     select, initLocal, stats, refresh, board, openTopic:openRule,
     // для prompts.js: правила с уровнями и отметкой «изучено», смена уровня по коду из нейросети
-    rulesData(){ return ALL.map(id=>({id, title:CARDS[id].title, branch:CARDS[id].branch, level:CARDS[id].level, lv:glv[id], read:!!readM[id]})); },
+    rulesData(){ return ALL.map(id=>({id, title:CARDS[id].title, branch:CARDS[id].branch, level:CARDS[id].level, lv:glv[id], st:stM[id]||0, read:!!readM[id]})); },
     setRuleLevel(id,l){ if(id in CARDS) setLevelG(id,l); },
     applyRuleCode,
   };
@@ -1687,7 +1701,7 @@ const SETTINGS = (function(){
   const root=document.getElementById('mode-s');
   const SKEY='ef_coef';
   const GROUPS=[
-    {key:'rulesPractice', h:'Правила · быстрый тест', note:'Насколько растёт уровень правила за верный ответ в «Быстром тесте». Ошибка уровень не снижает. Код из «Изучать с AI» начисляет 0…+3 по числу верных применений, тоже без минусов.',
+    {key:'rulesPractice', h:'Правила · быстрый тест', note:'Насколько растёт уровень правила за верный ответ в «Быстром тесте» (до уровня 7). Ошибка уровень не снижает. Код из «Изучать с AI» начисляет 0…+3 по числу верных применений, тоже без минусов. С уровня 7 нужно 3 верных подряд на каждый следующий уровень; ошибка обнуляет эти шаги.',
      f:[['ok','Верный ответ']]},
     {key:'review', h:'Лексика · интервальное повторение', note:'Как в Anki: «Хорошо» умножает интервал на лёгкость слова (≈2,5), «Трудно» и «Легко» — на свои множители. Переводы: верно = «Хорошо», с ошибкой = «Трудно», неверно = «Забыл».',
      f:[['hardPct','«Трудно»: интервал ×, %'],['easyPct','«Легко»: бонус к «Хорошо», %'],['maxIvl','Максимальный интервал, дней']]},
