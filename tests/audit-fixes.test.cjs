@@ -81,12 +81,22 @@ test('two devices changing different words do not overwrite each other',async()=
 });
 test('rule codes parse +2 completely and preserve following rules',()=>{
  assert.deepEqual(Core.parseRuleCode('Code:\nEFST1|ABCDEF1234567890|cl-rel:2:+2|mod-haveto:0:+|past:3:-|other:4:0\n'),{
- tag:'ABCDEF1234567890',items:[{id:'cl-rel',from:2,sign:2},{id:'mod-haveto',from:0,sign:1},{id:'past',from:3,sign:-1},{id:'other',from:4,sign:0}]});
- for(const text of ['EFST1|ABCD|cl-rel:2:+3|other:0:+','EFST1|ABCD|cl-rel:11:+','EFST1|ABCD|cl-rel:2:+2oops','EFST1|ABCD|cl-rel:2:+|broken'])assert.equal(Core.parseRuleCode(text),null);
+ tag:'ABCDEF1234567890',items:[{id:'cl-rel',from:2,sign:2,gain:2},{id:'mod-haveto',from:0,sign:1,gain:1},{id:'past',from:3,sign:-1,gain:0},{id:'other',from:4,sign:0,gain:0}]});
+ for(const text of ['EFST1|ABCD|cl-rel:2:+3|other:0:+','EFST1|ABCD|cl-rel:11:+','EFST1|ABCD|cl-rel:2:+2oops','EFST1|ABCD|cl-rel:2:+|broken','EFST1|ABCD|cl-rel:2:3/','EFST1|ABCD|cl-rel:2:1/2/3'])assert.equal(Core.parseRuleCode(text),null);
  assert.equal(Core.parseRuleCode('EFST1|ABCD|cl-rel:2:+').items[0].sign,1);
 });
+test('rule codes with counts give only non-negative rewards',()=>{
+ assert.deepEqual(Core.parseRuleCode('EFST1|ABCD|a:7:6/0|b:3:2/3|c:5:0/0|d:1:0/4|e:2:3/1|f:2:3/2').items.map(x=>x.gain),[3,1,0,0,2,1]);
+ assert.deepEqual(Core.parseRuleCode('EFST1|ABCD|a:7:5 / 0').items[0],{id:'a',from:7,ok:5,no:0,gain:3});
+ for(const [ok,no,g] of [[0,0,0],[0,9,0],[1,0,1],[1,5,1],[3,1,2],[3,2,1],[4,0,2],[5,0,3],[5,1,2],[12,0,3]])assert.equal(Core.ruleGain(ok,no),g,ok+'/'+no);
+});
+test('a mistake code never lowers a level',()=>{
+ const source=read('prompts.js'),c={SkillCore:Core,COEF:{rulesPractice:{ok:1}},GMAX:10,rules:()=>[{id:'cl-rel',lv:2},{id:'past',lv:5}]};
+ vm.createContext(c);vm.runInContext(source.slice(source.indexOf('  function parseCode('),source.indexOf('  // ---------- окно'))+'\nthis.result=plan(parseCode("EFST1|ABCD|cl-rel:2:0/3|past:5:-"));',c);
+ assert.deepEqual(c.result.map(x=>[x.kind,x.to,x.on]),[['skip',2,false],['skip',5,false]]);
+});
 test('an old code cannot propose a fresh increment after a level has moved',()=>{
- const source=read('prompts.js'),c={SkillCore:Core,COEF:{rulesPractice:{ok:1,wrong:-2}},GMAX:10,rules:()=>[{id:'cl-rel',lv:2}]};
+ const source=read('prompts.js'),c={SkillCore:Core,COEF:{rulesPractice:{ok:1}},GMAX:10,rules:()=>[{id:'cl-rel',lv:2}]};
  vm.createContext(c);vm.runInContext(source.slice(source.indexOf('  function parseCode('),source.indexOf('  // ---------- окно'))+'\nthis.result=plan(parseCode("EFST1|ABCD|cl-rel:0:+"));',c);
  assert.equal(c.result[0].on,false);assert.equal(c.result[0].to,2);
 });
