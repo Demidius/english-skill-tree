@@ -80,6 +80,17 @@ service cloud.firestore {
           && a.inviteId == token && b.inviteId == token && a.createdAt == request.time && b.createdAt == request.time;
       }
     }
+    // Почта для восстановления: видят только владелец и администратор. Адрес записывает
+    // только Cloud Function setRecoveryEmail; сам владелец может лишь отказаться от почты.
+    match /accountPrivate/{uid} {
+      allow get: if self(uid) || admin();
+      allow list: if admin();
+      allow create: if self(uid) && request.resource.data.keys().hasOnly(['emailOptOut', 'optOutAt'])
+        && request.resource.data.emailOptOut is bool && request.resource.data.optOutAt == request.time;
+      allow update: if self(uid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['emailOptOut', 'optOutAt'])
+        && request.resource.data.emailOptOut is bool && request.resource.data.optOutAt == request.time;
+      allow delete: if false;
+    }
     match /settings/{id} { allow read: if true; allow write: if admin(); }
     match /accessAdmins/{uid} { allow get: if self(uid); allow list: if admin(); allow write: if false; }
     match /system/{id} { allow read: if id == 'access' || admin(); allow write: if admin(); }

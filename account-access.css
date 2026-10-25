@@ -59,3 +59,16 @@ html[data-skin="rpg"] .admin-shell h1{font:700 1.8rem/1.2 'Manrope',sans-serif;m
 .admin-shell .admin-editor{padding:20px}
 .admin-shell .admin-editor textarea{font-family:ui-monospace,Consolas,monospace}
 .admin-shell .admin-error{line-height:1.6}
+
+/* Почта для восстановления и «Забыл пароль / ник» */
+.access-row{display:flex;gap:10px;flex-wrap:wrap}
+#recoveryCard .access-status{margin:12px 0 0;max-width:none}
+#recoveryCard .access-status.bad{color:var(--accent-2,#ff8a7a)}
+.auth-forgot{display:flex;justify-content:space-between;gap:12px;margin-top:-4px}
+.auth-forgot button{background:none;border:none;padding:4px 0;font:inherit;font-size:14px;color:var(--ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.auth-ok{margin:0;font-size:14px;line-height:1.45;color:var(--ink);padding:10px 12px;border:1px solid var(--line);border-radius:12px}
+.auth-note{margin:0;font-size:13px;line-height:1.45;color:var(--muted)}
+.auth-card label.auth-check{flex-direction:row;align-items:center;gap:10px;font-size:14px;color:var(--ink);cursor:pointer}
+.auth-card label.auth-check input{width:20px;height:20px;min-height:0;padding:0;margin:0;accent-color:var(--accent)}
+.auth-card input:disabled{opacity:.45}
+.auth-forgot button:focus-visible,.auth-check input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}

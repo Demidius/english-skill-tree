@@ -23,5 +23,12 @@ window.SkillFirebase = {
       db.useEmulator('127.0.0.1', 8080);
     }
     return {auth, db};
+  },
+  // Cloud Functions восстановления доступа (functions/index.js). Регион должен совпадать с setGlobalOptions.
+  callable(name) {
+    if (!firebase.functions) throw Object.assign(Error('functions sdk missing'), {code: 'functions/unavailable'});
+    const f = firebase.app().functions('europe-west1');
+    if (!this._fnEmu && firebase.app().options.projectId === 'demo-skill-tree') { f.useEmulator('127.0.0.1', 5001); this._fnEmu = true; }
+    return f.httpsCallable(name);
   }
 };
