@@ -32,6 +32,7 @@ window.ACCOUNT = (() => {
   async function start(options) {
     if (started) return; started = true;
     ({db, user, ...hooks} = options); guest = !user;
+    if (user) window.RECOVERY?.start({db, user});
     stops.push(db.doc('system/access').onSnapshot(s => { ready = s.exists && s.data().version === 1; render(); }, () => { ready = false; render(); }));
     if (user) {
       stops.push(db.doc('accessAdmins/' + user.uid).onSnapshot(s => { isAdmin = s.exists; hooks.onRole?.(isAdmin); render(); }, () => { isAdmin = false; }));
@@ -79,8 +80,9 @@ window.ACCOUNT = (() => {
         '<label class="access-field">Код или ссылка от друга<input id="friendCode" value="'+esc(incoming)+'" autocomplete="off" placeholder="Вставь приглашение"></label><button class="m-btn ghost" type="button" data-access="accept" '+(!ready?'disabled':'')+'>Принять приглашение…</button>' +
         '<div class="access-friends">'+[...friends.keys()].map(id => '<div class="access-person"><span>'+esc(people.get(id)?.name || 'Загрузка…')+'</span><button type="button" class="chip" data-access="view" data-id="'+esc(id)+'">Смотреть</button><button type="button" class="chip" data-access="remove" data-id="'+esc(id)+'">Убрать</button></div>').join('')+'</div>' +
         (active.length ? '<details class="access-invites"><summary>Действующие приглашения · '+active.length+'</summary>'+active.map(i=>'<div class="access-person"><code>'+esc(i.id.slice(0,8))+'…</code><button class="chip" type="button" data-access="copy-invite" data-id="'+i.id+'">Копировать</button><button class="chip" type="button" data-access="revoke" data-id="'+i.id+'">Отменить</button></div>').join('')+'</details>' : '') +
-        '</section></div><p class="access-status" role="status">'+esc(message)+'</p>';
+        '</section><section class="access-card" id="recoveryCard"></section></div><p class="access-status" role="status">'+esc(message)+'</p>';
     }
+    if (!guest && started) window.RECOVERY?.renderCard(document.getElementById('recoveryCard'));
     root.querySelectorAll('button, input').forEach(e => { if (busy) e.disabled=true; });
     root.onclick = e => { const b=e.target.closest('[data-access]'); if(b) action(b.dataset.access,b.dataset.id); };
     root.oninput = e => { if(e.target.id==='friendCode') incoming=e.target.value; };

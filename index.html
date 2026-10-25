@@ -17,6 +17,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-functions-compat.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&family=Neucha&family=Press+Start+2P&family=Handjet:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=20261019-cefr1">
@@ -28,7 +29,7 @@
 <link rel="stylesheet" href="ui-shell.css?v=20261015-2">
 <link rel="stylesheet" href="classic-theme.css?v=20261015-2">
 <link rel="stylesheet" href="prompts.css?v=20261018-2">
-<link rel="stylesheet" href="account-access.css?v=20261016-20">
+<link rel="stylesheet" href="account-access.css?v=20261025-mail1">
 <link rel="stylesheet" href="help-icons.css?v=20261015-1">
 <link rel="stylesheet" href="table-zoom.css?v=20261022-focus1">
 <link rel="stylesheet" href="beginner-course.css?v=20261022-topics1">
@@ -75,7 +76,7 @@ html.switching .acc-btn::after{content:'…';margin-left:4px;opacity:.8}
 <div class="auth" id="authBox" hidden>
   <form class="auth-card" id="authForm" autocomplete="on">
     <h2>English File · Skill Tree</h2>
-    <p class="auth-sub">Войди, чтобы прогресс сохранялся на всех твоих устройствах.<br>Почта не нужна — только ник и пароль.</p>
+    <p class="auth-sub">Войди, чтобы прогресс сохранялся на всех твоих устройствах.<br>Для входа нужны только ник и пароль.</p>
     <label>Ник<input id="authNick" name="username" autocomplete="username" maxlength="15" required placeholder="например, demid"></label>
     <label>Пароль<input id="authPass" name="password" type="password" autocomplete="current-password" minlength="6" required placeholder="не короче 6 символов"></label>
     <div class="auth-err" id="authErr" hidden></div>
@@ -83,7 +84,32 @@ html.switching .acc-btn::after{content:'…';margin-left:4px;opacity:.8}
       <button type="submit" class="auth-main" id="authLogin">Войти</button>
       <button type="button" class="auth-alt" id="authReg">Создать аккаунт</button>
     </div>
+    <div class="auth-forgot"><button type="button" data-recover="pass">Забыл пароль</button><button type="button" data-recover="nick">Забыл ник</button></div>
     <button type="button" class="auth-skip" id="authSkip">Без регистрации — прогресс только на этом устройстве</button>
+  </form>
+  <form class="auth-card" id="recoverForm" hidden novalidate>
+    <h2 id="recoverTitle">Забыл пароль</h2>
+    <p class="auth-sub" id="recoverSub"></p>
+    <label id="recoverLabel">Ник<input id="recoverInput" autocomplete="username" maxlength="254"></label>
+    <div class="auth-err" id="recoverErr" hidden></div>
+    <p class="auth-ok" id="recoverOk" role="status" hidden></p>
+    <div class="auth-btns"><button type="submit" class="auth-main" id="recoverSend">Отправить письмо</button></div>
+    <button type="button" class="auth-skip" id="recoverBack">Назад ко входу</button>
+  </form>
+</div>
+
+<div class="auth" id="emailPrompt" hidden>
+  <form class="auth-card" id="emailPromptForm" novalidate>
+    <h2>Привяжи почту</h2>
+    <p class="auth-sub">Если забудешь пароль или ник, на эту почту придёт ссылка для восстановления. Сейчас пришлём одно письмо с твоим ником и ссылкой на сайт. Рекламы и рассылок не будет.</p>
+    <label>Почта<input id="emailPromptInput" type="email" autocomplete="email" maxlength="254" placeholder="name@example.com"></label>
+    <label class="auth-check"><input type="checkbox" id="emailPromptOptOut"> Не хочу указывать почту</label>
+    <p class="auth-note" id="emailPromptWarn" hidden>Без почты забытый пароль восстановить не получится. Почту можно добавить позже в настройках.</p>
+    <div class="auth-err" id="emailPromptErr" hidden></div>
+    <div class="auth-btns">
+      <button type="submit" class="auth-main" id="emailPromptSave">Сохранить почту</button>
+      <button type="button" class="auth-alt" id="emailPromptLater">Позже</button>
+    </div>
   </form>
 </div>
 
@@ -106,8 +132,9 @@ html.switching .acc-btn::after{content:'…';margin-left:4px;opacity:.8}
 <script src="verb-forms.js?v=20261024-b5"></script>
 <script src="word-audit.js?v=20261024-b5"></script>
 <script src="learning-core.js?v=20261024-steps1"></script>
-<script src="firebase-config.js?v=20261016-20"></script>
-<script src="account-access.js?v=20261016-20"></script>
+<script src="firebase-config.js?v=20261025-mail1"></script>
+<script src="account-access.js?v=20261025-mail1"></script>
+<script src="account-email.js?v=20261025-mail1"></script>
 <script src="app.js?v=20261024-steps1"></script>
 <script src="extras.js?v=20261024-steps1"></script>
 <script src="modal-resize.js?v=20261019-2"></script>
