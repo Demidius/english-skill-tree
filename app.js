@@ -909,39 +909,40 @@ const W = (function(){
   function lvlCeil(ivl){ for(const t of [2,4,7,14,25,45,90,180]) if(ivl<t) return t-0.1; return Infinity; }
   // due dates of 1+ day fall on the start of a "study day" (04:00 local), like Anki
   function dueDay(now, days){ const d=new Date(now-4*36e5); d.setDate(d.getDate()+days); d.setHours(4,0,0,0); return d.getTime(); }
+  // Оценки двигают уровень на фиксированный шаг: «Забыл» −2, «Трудно» 0, «Хорошо» +1, «Легко» +2.
+  // Срок следующего показа — интервал нового уровня (таблица ниже). На уровне 10 интервал продолжает расти.
+  const GRADE_MAX=10;
+  const GRADE_STEP={again:-2, hard:0, good:1, easy:2};
+  const GRADE_IVL=[0.5,0.5,1,2.5,5,10,17,30,60,120,180]; // дней до показа для уровня 0–10
   function sched(r,g,now){
     const R=COEF.review, cap=x=>Math.min(R.maxIvl, x);
     let ivl=r[4]||0, ease=r[5]||2.5, due;
-    // early review (topic session before the due date): grow from the time that really passed, never below the current interval
-    const early=ivl>0 && r[3]>now, base=early?Math.max(0,(now-(r[1]||now))/DAY):ivl;
-    // overdue bonus (like Anki): whole days past the due date; «Хорошо» and «Я знаю» get half of them, «Легко» all, «Трудно» none
-    const late=(ivl>0 && r[3] && !early)?Math.max(0,Math.floor((now-r[3])/DAY)):0;
-    // «Забыл»: the word drops 3 levels (not below 1) and comes back after the interval of its new level;
-    // at level 1 (new or weak words) it comes back in 10 minutes, still in this session
-    if(g==='again'){
-      if(ivl>=1) ease=Math.max(1.3,ease-0.2);
-      ivl= ivl>0 ? IVL_FOR_LEVEL[Math.max(1,lvFromIvl(ivl,true)-3)] : 0;
-      due= ivl>0 ? dueDay(now, Math.max(1,Math.round(ivl))) : now+10*MIN;
+    const cur=Math.max(0,Math.min(GRADE_MAX,r[0]|0));
+    // повтор раньше срока (слово ещё не пора показывать): «Хорошо» и «Легко» не поднимают уровень и не сдвигают срок
+    const early=ivl>0 && r[3]>now;
+    if(g==='reset'){ return {due:0, ivl:0, ease:2.5, lv:0}; }
+    if(g==='known'){ // «Я знаю»: first 45 days (level 8), then level 9 (90+), then level 10 (180+)
+      // a correctly typed word below level 8 always goes to level 8 — even before its due date
+      // or right after «Забыл»; levels 9 and 10 only come on checks that are due
+      const late=(ivl>0 && r[3] && !early)?Math.max(0,Math.floor((now-r[3])/DAY)):0;
+      if(ivl<45) ivl=45;
+      else if(early) return {due:r[3], ivl, ease, lv:r[0]};
+      else { const gr=Math.max(ivl+1, (ivl+late/2)*ease); ivl=ivl<90?Math.min(179.9,Math.max(90,gr)):ivl<180?Math.max(180,gr):gr; }
+      ivl=cap(Math.round(ivl*10)/10);
+      return {due:dueDay(now, Math.max(1,Math.round(ivl))), ivl, ease:Math.round(ease*100)/100, lv:lvFromIvl(ivl, true)};
     }
-    else if(g==='reset'){ ivl=0; ease=2.5; due=0; }
+    if(early && (g==='good' || g==='easy')) return {due:r[3], ivl, ease, lv:cur};
+    const lv=Math.max(0,Math.min(GRADE_MAX, cur+(GRADE_STEP[g]||0)));
+    if(g==='again'){ if(ivl>=1) ease=Math.max(1.3,ease-0.2); }
+    else if(g==='hard'){ if(ivl>=1) ease=Math.max(1.3,ease-0.15); }
+    else if(g==='easy') ease=ease+0.15;
+    if(g==='again' && lv<=1){ ivl=0; due=now+10*MIN; } // слабое слово вернётся через 10 минут, ещё в этой сессии
     else {
-      if(g==='known'){ // «Я знаю»: first 45 days (level 8), then level 9 (90+), then level 10 (180+)
-        // a correctly typed word below level 8 always goes to level 8 — even before its due date
-        // or right after «Забыл»; levels 9 and 10 only come on checks that are due
-        if(ivl<45) ivl=45;
-        else if(early) return {due:r[3], ivl, ease, lv:r[0]};
-        else { const gr=Math.max(ivl+1, (ivl+late/2)*ease); ivl=ivl<90?Math.min(179.9,Math.max(90,gr)):ivl<180?Math.max(180,gr):gr; }
-      }
-      else if(g==='hard'){ // «Трудно» never lifts the word above its current level (only the first step 1 → 2)
-        let v=!ivl?0.5:early?Math.max(ivl,base*R.hardPct/100):Math.max(1,ivl*R.hardPct/100);
-        if(ivl>=1){ v=Math.min(v, lvlCeil(ivl)); ease=Math.max(1.3,ease-0.15); }
-        ivl=v; }
-      else if(g==='good'){ ivl=!ivl?1:early?Math.max(ivl,base*ease):Math.max(ivl+1,(ivl+late/2)*ease); }
-      else { ivl=!ivl?4:early?Math.max(ivl,base*ease*R.easyPct/100):Math.max(ivl+1,(ivl+late)*ease*R.easyPct/100); ease=ease+0.15; }
+      ivl=GRADE_IVL[lv];
+      if(lv===GRADE_MAX && cur===GRADE_MAX && g!=='hard' && g!=='again') ivl=Math.max(ivl,(r[4]||0)*ease); // закреплённое слово уходит всё дальше
       ivl=cap(Math.round(ivl*10)/10);
       due= ivl<1 ? now+ivl*DAY : dueDay(now, Math.max(1,Math.round(ivl)));
     }
-    const lv = g==='reset' ? 0 : lvFromIvl(ivl, true);
     return {due, ivl, ease:Math.round(ease*100)/100, lv};
   }
   // when the word comes back: whole days for 1+ day intervals, minutes/hours for short steps
@@ -1067,7 +1068,7 @@ const W = (function(){
       '<li>В списке слов уровень можно поменять вручную: «−» и «+» или клик по шкале. Слово получит интервал этого уровня (например, 7 — повтор через месяц).</li>'+
       '</ul></section>'+
       '<section><h3>Оценки и уровень</h3><ul>'+
-      '<li>Оценки как в Anki: «Забыл» — уровень слова снижается на 3 (не ниже 1), и слово вернётся через срок нового уровня (6 → 3 — через 2–3 дня); если уровень стал 1 (новое или слабое слово) — через 10 минут, ещё раз в этой сессии; «Хорошо» и «Легко» — через растущее число дней; «Трудно» тоже отодвигает повтор, но не поднимает уровень слова. Если повторяешь позже срока и вспомнил, интервал растёт сильнее: слово продержалось дольше. Под кнопкой видно, когда слово вернётся и какой у него станет уровень (например, «ур. 2 → 3»).</li>'+
+      '<li>Оценки меняют уровень слова: «Забыл» — −2, «Трудно» — уровень не меняется, «Хорошо» — +1, «Легко» — +2. Слово вернётся через срок нового уровня (например, уровень 5 — через 10 дней); если после «Забыл» уровень стал 0 или 1 — через 10 минут, ещё раз в этой сессии. Если слово открыто раньше срока, «Хорошо» и «Легко» уровень не поднимают. Под кнопкой видно, когда слово вернётся и какой у него станет уровень (например, «ур. 2 → 3»).</li>'+
       '<li>Уровень 0–10 показывает интервал и степень знания: 0 — новое, 1–4 — изучаю, 5–7 — повторяю, 8–9 — знаю, 10 — закреплено. Уровни 8–9 зелёные, 10 выделен бирюзовым.</li>'+
       '<li>Кнопка «Я знаю» на лицевой стороне открывает поле: впиши слово по-английски. Если верно — уровень 8 и проверка через 45 дней; на следующих проверках верный ответ поднимает до 9, потом до 10. Верный ответ всегда даёт минимум уровень 8 — даже если срок слова ещё не подошёл или ты его недавно забыл. Если нет — открывается ответ, и слово оцениваешь как обычно. «Обнулить» возвращает слово в новые.</li>'+
       '<li>«← Предыдущее слово» возвращает к прошлой карточке и отменяет её оценку, чтобы можно было оценить заново.</li>'+
@@ -1703,8 +1704,8 @@ const SETTINGS = (function(){
   const GROUPS=[
     {key:'rulesPractice', h:'Правила · быстрый тест', note:'Насколько растёт уровень правила за верный ответ в «Быстром тесте» (до уровня 7). Ошибка уровень не снижает. Код из «Изучать с AI» начисляет 0…+3 по числу верных применений, тоже без минусов. С уровня 7 нужно 3 верных подряд на каждый следующий уровень; ошибка обнуляет эти шаги.',
      f:[['ok','Верный ответ']]},
-    {key:'review', h:'Лексика · интервальное повторение', note:'Как в Anki: «Хорошо» умножает интервал на лёгкость слова (≈2,5), «Трудно» и «Легко» — на свои множители. Переводы: верно = «Хорошо», с ошибкой = «Трудно», неверно = «Забыл».',
-     f:[['hardPct','«Трудно»: интервал ×, %'],['easyPct','«Легко»: бонус к «Хорошо», %'],['maxIvl','Максимальный интервал, дней']]},
+    {key:'review', h:'Лексика · интервальное повторение', note:'Оценки меняют уровень слова: «Забыл» −2, «Трудно» 0, «Хорошо» +1, «Легко» +2; срок повтора — интервал нового уровня. Переводы: верно = «Хорошо», с ошибкой = «Трудно», неверно = «Забыл».',
+     f:[['maxIvl','Максимальный интервал, дней']]},
   ];
   let msg='';
   function render(){
