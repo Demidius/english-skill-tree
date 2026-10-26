@@ -41,6 +41,10 @@
     C2: 'very rich, nuanced, near-native vocabulary and style: idioms, set phrases, subtle shades of meaning, sophisticated structures',
   };
   function savedTextLevel() { const v = lsGet(TEXT_LEVEL_KEY); return v && TEXT_LEVELS[v] ? v : 'auto'; }
+  // Сколько правил брать в «Самые слабые» (и в выбор по умолчанию). Пусто — как в типе задания.
+  const PICK_KEY = 'ef_prompt_pick_n';
+  const PICK_NS = [3, 5, 6, 8, 10, 12, 15, 20];
+  function savedPickN() { const n = +lsGet(PICK_KEY); return PICK_NS.includes(n) ? n : 0; }
   const LV_ORDER = { A1: 0, A2: 1, B1: 2, B2: 3 };
   const AI_CHATS = {
     gpt: { name: 'GPT', url: 'https://chatgpt.com/', query: 'q', android: 'com.openai.chatgpt' },
@@ -81,23 +85,41 @@
 
   let S = null; // состояние окна
 
+  const css = document.createElement('style');
+  css.textContent =
+    '.pt-filters{display:flex;flex-wrap:wrap;gap:6px 8px;margin:6px 0 8px;}' +
+    '.pt-sel{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;color:var(--muted);}' +
+    '.pt-sel select{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;min-height:32px;padding:4px 8px;font:inherit;font-size:.85rem;max-width:58vw;cursor:pointer;}' +
+    '.pt-sel select:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}' +
+    '.pt-tools .pt-sel span,.pt-grid .pt-sel span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}' +
+    '.pt-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));}.pt-grid .pt-sel select{width:100%;max-width:none;}' +
+    '.pt-tools .pt-sel select{max-width:none;min-width:52px;}.pt-tools .chip{padding:4px 10px;}' +
+    '@media (max-width:480px){.pt-grid{grid-template-columns:1fr 1fr;}.pt-grid .pt-sel:last-child{grid-column:1 / -1;}}' +
+    '.pt-level.pt-filters{align-items:center;margin-top:12px;}.pt-level.pt-filters .pt-note{margin:0;font-size:.75rem;}' +
+    '.pt-hid{font-weight:400;opacity:.7;}';
+  document.head.appendChild(css);
+
   // ---------- данные ----------
   function rules() {
     return G.rulesData().filter(r => INFO[r.id]).sort((a, b) =>
       a.lv - b.lv || LV_ORDER[a.level] - LV_ORDER[b.level] || a.title.localeCompare(b.title));
   }
+  // Список правил под фильтрами: «Изучено» / все, уровень A1–B2, тема (ветка дерева).
   function visibleRules() {
-    const all = rules();
-    return S.scope === 'read' ? all.filter(r => r.read) : all;
+    return rules().filter(r => (S.scope !== 'read' || r.read) &&
+      (S.fLevel === 'all' || r.level === S.fLevel) && (S.fBranch === 'all' || INFO[r.id].branch === S.fBranch));
   }
+  // сколько правил останется, если поменять один фильтр (для подписей в списках)
+  function countBy(o) { const keep = S; S = Object.assign({}, S, o); try { return visibleRules().length; } finally { S = keep; } }
+  function pickN(type) { return (S && S.pickN) || savedPickN() || TYPES[type || S.type].def; }
   function defaultSel(type) {
-    const n = TYPES[type].def;
+    const n = pickN(type);
     const pool = rules().filter(r => r.read && r.lv < GMAX);
     return new Set(pool.slice(0, n).map(r => r.id));
   }
   // «Самые слабые N» — из того списка, который сейчас показан («Изучено» или «Все правила»).
   function weakPool() { return visibleRules().filter(r => r.lv < GMAX); }
-  function weakSel() { return new Set(weakPool().slice(0, TYPES[S.type].def).map(r => r.id)); }
+  function weakSel() { return new Set(weakPool().slice(0, pickN()).map(r => r.id)); }
   function newTag() {
     return Array.from(crypto.getRandomValues(new Uint8Array(8)),n=>n.toString(16).padStart(2,'0')).join('').toUpperCase();
   }
@@ -261,7 +283,7 @@
   function open(tab, topicId) {
     if (topicId && !INFO[topicId]) return;
     if (typeof needProfile === 'function' && needProfile()) return;
-    S = { tab: tab || 'prompt', topicId: topicId || null, type: topicId ? 'explain' : 'translate', scope: topicId ? 'all' : 'read', tag: newTag(), touched: !!topicId,
+    S = { tab: tab || 'prompt', topicId: topicId || null, type: topicId ? 'explain' : 'translate', scope: topicId ? 'all' : 'read', fLevel: 'all', fBranch: 'all', pickN: savedPickN(), tag: newTag(), touched: !!topicId,
           sel: topicId ? new Set([topicId]) : defaultSel('translate'), textLength: 2, textLevel: savedTextLevel(), lengthOpen: false, manualOpen: false, codeText: '', parsed: null, rows: null, msg: '', returnFocus: document.activeElement };
     if (!rules().some(r => r.read)) S.scope = 'all';
     modal.classList.remove('rulepage', 'testm');
@@ -320,7 +342,7 @@
     const list = visibleRules();
     const txt = buildPrompt();
     const nSel = S.sel.size;
-    const nWeak = Math.min(TYPES[S.type].def, weakPool().length);
+    const shown = new Set(list.map(r => r.id)), hidden = [...S.sel].filter(id => !shown.has(id)).length;
     return '<div class="m-count pt-h">1. Что делаем</div>' +
       '<div class="pt-types">' + Object.keys(TYPES).filter(k => !TYPES[k].topicOnly).map(k => {
         const button = '<button type="button" class="m-opt pt-type" data-pt-type="' + k + '" aria-pressed="' + (S.type === k) + '">' +
@@ -333,14 +355,17 @@
       }).join('') + '</div>' +
       renderTextLevel() +
       (TYPES[S.type].direction ? '<p class="pt-note">Одно предложение → твой перевод → разбор → следующее. Напиши «хватит», чтобы получить общие итоги и код для сайта.</p>' : '') +
-      '<div class="m-count pt-h">2. Правила · выбрано ' + nSel + '</div>' +
+      '<div class="m-count pt-h">2. Правила · выбрано ' + nSel + (hidden ? ' <span class="pt-hid">(' + hidden + ' не видно из-за фильтров)</span>' : '') + '</div>' +
+      '<div class="pt-filters pt-grid">' +
+        selectHTML('scope', 'Какие правила', S.scope, [['read', '«Изучено» (' + countBy({ scope: 'read' }) + ')'], ['all', 'Все правила (' + countBy({ scope: 'all' }) + ')']]) +
+        selectHTML('level', 'Уровень правил', S.fLevel, [['all', 'Все уровни']].concat(Object.keys(LV_ORDER).map(k => [k, k + ' (' + countBy({ fLevel: k }) + ')']))) +
+        selectHTML('branch', 'Тема', S.fBranch, [['all', 'Все темы']].concat(G_BRANCHES.map(b => [b.name, b.name + ' (' + countBy({ fBranch: b.name }) + ')']))) +
+      '</div>' +
       '<div class="pt-tools">' +
-        '<button type="button" class="chip" data-pt-scope="read" data-active="' + (S.scope === 'read' ? 1 : 0) + '">«Изучено»</button>' +
-        '<button type="button" class="chip" data-pt-scope="all" data-active="' + (S.scope === 'all' ? 1 : 0) + '">Все правила</button>' +
-        '<span class="pt-sp"></span>' +
-        (nWeak ? '<button type="button" class="chip" data-pt-pick="weak">Самые слабые ' + nWeak + '</button>' :
-          '<button type="button" class="chip" data-pt-pick="weak" disabled>Самые слабые</button>') +
-        '<button type="button" class="chip" data-pt-pick="none">Снять</button>' +
+        '<button type="button" class="chip" data-pt-pick="weak"' + (weakPool().length ? '' : ' disabled') + '>Самые слабые</button>' +
+        selectHTML('n', 'Сколько правил', String(pickN()), PICK_NS.map(n => [String(n), String(n)])) +
+        '<button type="button" class="chip" data-pt-pick="shown"' + (list.length ? '' : ' disabled') + '>Все видимые</button>' +
+        '<button type="button" class="chip" data-pt-pick="none"' + (nSel ? '' : ' disabled') + '>Снять</button>' +
       '</div>' +
       (list.length ?
         '<div class="pt-rules">' + list.map(r =>
@@ -349,7 +374,8 @@
           '<span class="pt-rm">' + esc(r.level) + ' · ' + esc(INFO[r.id].branch) + '</span>' +
           '<span class="pt-lv" data-b="' + (r.lv >= GMAX ? 'm' : r.lv >= 5 ? 'r' : r.lv > 0 ? 'l' : '0') + '">' + r.lv + '</span></label>').join('') +
         '</div>' :
-        '<p class="pt-note">Нет правил с отметкой «изучено». Переключись на «Все правила» или отметь галочкой «изучено» правила в дереве.</p>') +
+        '<p class="pt-note">' + (S.fLevel !== 'all' || S.fBranch !== 'all' ? 'Под эти фильтры правил нет. Смени уровень или тему.' :
+          'Нет правил с отметкой «изучено». Переключись на «Все правила» или отметь галочкой «изучено» правила в дереве.') + '</p>') +
       '<section class="pt-actions pt-launch" aria-labelledby="ptLaunchTitle">' +
         '<h3 id="ptLaunchTitle" class="m-count pt-h">3. Начни занятие</h3>' +
         '<p class="pt-note pt-launch-note">' + launchNote(txt) + '</p>' +
@@ -368,13 +394,16 @@
   }
   function levelLabel() { return TEXT_LEVELS[S.textLevel] ? S.textLevel : 'авто'; }
   function toggleLabel() { return 'Настроить длину текста: ' + lengthLabel(); }
+  // Компактный выпадающий список; изменения ловит onChange по data-pt-sel.
+  function selectHTML(key, label, value, opts) {
+    return '<label class="pt-sel"><span>' + esc(label) + '</span><select data-pt-sel="' + key + '">' +
+      opts.map(([v, t]) => '<option value="' + esc(v) + '"' + (v === value ? ' selected' : '') + '>' + esc(t) + '</option>').join('') +
+      '</select></label>';
+  }
   function renderTextLevel() {
-    return '<div class="pt-level"><div class="pt-level-h" id="ptTextLevelLabel">Уровень языка <output>' + esc(levelLabel()) + '</output></div>' +
-      '<div class="pt-level-btns" role="group" aria-labelledby="ptTextLevelLabel">' +
-      ['auto'].concat(Object.keys(TEXT_LEVELS)).map(k =>
-        '<button type="button" class="chip" data-pt-level="' + k + '" aria-pressed="' + (S.textLevel === k) + '">' +
-        (k === 'auto' ? 'Авто' : k) + '</button>').join('') + '</div>' +
-      '<p class="pt-note">Для всех заданий: слова и сложность предложений — под этот уровень. Выбранные правила всё равно будут использоваться.</p></div>';
+    return '<div class="pt-level pt-filters">' +
+      selectHTML('textLevel', 'Уровень языка', S.textLevel, [['auto', 'Авто']].concat(Object.keys(TEXT_LEVELS).map(k => [k, k]))) +
+      '<p class="pt-note">Слова и сложность предложений — под этот уровень, для всех заданий.</p></div>';
   }
   function renderTextLength() {
     return '<div id="ptTextLengthPanel" class="pt-length"><label for="ptTextLength">Длина текста</label>' +
@@ -544,6 +573,22 @@
     msg.scrollIntoView({ block: 'nearest' });
   }
 
+  function onSelect(key, v) {
+    if (key === 'textLevel') {
+      if (v !== 'auto' && !TEXT_LEVELS[v]) return;
+      S.textLevel = v; S.tag = newTag(); S.copied = false; lsSet(TEXT_LEVEL_KEY, v);
+    } else if (key === 'scope') S.scope = v === 'all' ? 'all' : 'read';
+    else if (key === 'level') S.fLevel = LV_ORDER[v] != null ? v : 'all';
+    else if (key === 'branch') S.fBranch = G_BRANCHES.some(b => b.name === v) ? v : 'all';
+    else if (key === 'n') {
+      const n = +v; if (!PICK_NS.includes(n)) return;
+      S.pickN = n; lsSet(PICK_KEY, String(n));
+      // новое число сразу применяется: берём столько самых слабых из видимого списка
+      S.touched = true; S.copied = false; S.sel = weakSel(); S.tag = newTag();
+    } else return;
+    render();
+    const f = modal.querySelector('[data-pt-sel="' + key + '"]'); if (f) f.focus({ preventScroll: true });
+  }
   const owner = {
     onClick(ev) {
       const t = ev.target;
@@ -556,13 +601,6 @@
         } else S.lengthOpen = !S.lengthOpen;
         render(); modal.querySelector('[data-pt-length-toggle]').focus({ preventScroll: true }); return;
       }
-      const lvb = t.closest('[data-pt-level]');
-      if (lvb) {
-        const lv = lvb.dataset.ptLevel;
-        if (lv !== 'auto' && !TEXT_LEVELS[lv]) return;
-        if (lv !== S.textLevel) { S.textLevel = lv; S.tag = newTag(); S.copied = false; lsSet(TEXT_LEVEL_KEY, lv); }
-        render(); const f = modal.querySelector('[data-pt-level="' + lv + '"]'); if (f) f.focus({ preventScroll: true }); return;
-      }
       const ty = t.closest('[data-pt-type]');
       if (ty) {
         const type = ty.dataset.ptType;
@@ -572,7 +610,12 @@
       }
       const sc = t.closest('[data-pt-scope]'); if (sc) { S.scope = sc.dataset.ptScope; render(); return; }
       const pk = t.closest('[data-pt-pick]');
-      if (pk) { S.touched = true; S.copied = false; S.sel = pk.dataset.ptPick === 'weak' ? weakSel() : new Set(); S.tag = newTag(); render(); return; }
+      if (pk) {
+        const how = pk.dataset.ptPick;
+        S.touched = true; S.copied = false;
+        S.sel = how === 'weak' ? weakSel() : how === 'shown' ? new Set(visibleRules().map(r => r.id)) : new Set();
+        S.tag = newTag(); render(); return;
+      }
       const chat = t.closest('[data-pt-open]');
       if (chat) {
         const ai = AI_CHATS[chat.dataset.ptOpen];
@@ -610,6 +653,7 @@
     onChange(ev) {
       const t = ev.target;
       if (t.matches('[data-pt-length]')) { updateTextLength(t); return; }
+      if (t.matches('[data-pt-sel]')) { onSelect(t.dataset.ptSel, t.value); return; }
       if (t.matches('[data-pt-app]')) { preferApp = t.checked; render(); return; }
       if (t.matches('[data-pt-id]')) {
         S.touched = true; S.copied = false;
