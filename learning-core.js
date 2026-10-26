@@ -98,7 +98,10 @@ const SkillCore = (() => {
     s=s.replace(/\b(\w+)'d\b/g,(m,p,offset,whole)=>p+(/^\s+(better|been|got|had|done|seen|eaten|gone)\b/.test(whole.slice(offset+m.length))?' had':' would'));
     const rules=[[/\bcan't\b/g,'cannot'],[/\bcan not\b/g,'cannot'],[/\bwon't\b/g,'will not'],[/\bshan't\b/g,'shall not'],[/\blet's\b/g,'let us'],[/\b(\w+)n't\b/g,'$1 not'],[/\b(\w+)'m\b/g,'$1 am'],[/\b(\w+)'re\b/g,'$1 are'],[/\b(\w+)'ve\b/g,'$1 have'],[/\b(\w+)'ll\b/g,'$1 will']];
     rules.forEach(([re,replacement])=>{s=s.replace(re,replacement);});
-    return new Set([s.replace(/'/g,'')]);
+    // «Her hair's blonde.»: у существительного 's бывает и is — принимаем оба прочтения.
+    const out=new Set([s.replace(/'/g,'')]);
+    if(/\w's\b/.test(s)) out.add(s.replace(/\b(\w+)'s\b/g,'$1 is').replace(/'/g,''));
+    return out;
   }
   function articleEquivalent(expected,typed) {
     const a=expected.split(' '),b=typed.split(' ');
