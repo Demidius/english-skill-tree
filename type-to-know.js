@@ -24,7 +24,8 @@ document.addEventListener('keydown', ev => {
 // «Я знаю», неверный ответ: показываем, какие буквы ошибочны.
 // Опечатка — правильная буква над неверной; слово целиком другое — правильное слово над ним;
 // пропущенное — зелёное над красной чертой; лишнее — зачёркнуто.
-// Мало ошибок — сразу предлагаем оценку: 1 буква — «Хорошо», 2 — «Трудно».
+// Мало ошибок внутри слова — сразу предлагаем оценку: 1 опечатка — «Отлично», 2 — «Хорошо».
+// Пропущенное/лишнее целое слово, неправильное слово или сильно отличающийся ответ — без подсказки.
 (function () {
   const st = document.createElement('style');
   st.textContent =
@@ -109,7 +110,8 @@ document.addEventListener('keydown', ev => {
       else if (i > 0 && Math.abs(D[i][j] - (D[i - 1][j] + 1)) < 1e-9) { seq.push(['del', tw[i - 1]]); i--; }
       else { seq.push(['ins', rw[j - 1]]); j--; }
     }
-    b.innerHTML = seq.reverse().map(o => {
+    const aligned = seq.reverse();
+    b.innerHTML = aligned.map(o => {
       if (o[0] === 'del') return sp('kd-del', o[1]);
       if (o[0] === 'ins') return col(gap, o[1]);
       const d = wd(o[1], o[2]);
@@ -118,8 +120,20 @@ document.addEventListener('keydown', ev => {
       return col(sp('kd-del', o[1]), o[2]);
     }).join(' ');
     b.setAttribute('aria-label', 'ты написал ' + typed + ', правильно ' + best.r);
-    // 1 неверная буква — предлагаем «Хорошо», 2 — «Трудно» (кнопка в фокусе: Enter или пробел)
-    const g = best.dist === 1 ? 'good' : best.dist === 2 ? 'hard' : '';
+
+    // Подсказка только для небольших опечаток ВНУТРИ слова.
+    // Вставка/удаление целого слова (например, пропущенное "a") и замена слова целиком
+    // не должны подталкивать к конкретной оценке.
+    const onlySmallTyposInsideWords = aligned.every(o => {
+      if (o[0] !== 'w') return false; // целое слово добавлено или пропущено
+      const d = wd(o[1], o[2]);
+      if (d === 0) return true;
+      const maxLen = Math.max(o[1].length, o[2].length);
+      return d <= Math.max(1, Math.floor(maxLen / 3));
+    });
+    // 1 небольшая опечатка -> «Отлично» (+2), 2 -> «Хорошо» (+1).
+    const g = onlySmallTyposInsideWords && best.dist === 1 ? 'easy'
+      : onlySmallTyposInsideWords && best.dist === 2 ? 'good' : '';
     const btn = g && fc.closest('.modal') && fc.closest('.modal').querySelector('.grade[data-g="' + g + '"]');
     if (btn) { btn.classList.add('kd-suggest'); btn.focus({ preventScroll: true }); }
   }
