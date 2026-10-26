@@ -70,4 +70,39 @@
       else WORD_EX[k] = [fm, ir, '', '', '', '', [], [], ''];
     });
   }))));
+
+  // Карточки с прошедшими формами: «рассказал, сказал (tell)» → «2-я форма глагола tell — рассказал, сказал».
+  // 2-я или 3-я форма — по самому слову; если они совпадают (told, made), — по остальным словам темы.
+  function pastOf(en, ru) {
+    const m = /\(([a-z]+(?: [a-z]+)*)(?:([:,])\s*([^)]*))?\)\s*$/.exec(ru || '');
+    if (!m) return null;
+    const verb = m[1], h = verb.split(' ')[0], words = en.split(' '), first = words[0].toLowerCase();
+    if (words.slice(1).join(' ') !== verb.split(' ').slice(1).join(' ')) return null;
+    const lead = ru.slice(0, m.index).trim();
+    let v2 = false, v3 = false;
+    if (h === 'can') v2 = first === 'could';
+    else if (irr[h]) { v2 = irr[h][0].split('/').includes(first); v3 = irr[h][1].split('/').includes(first); }
+    else if (ed(h) === first && first !== h) v2 = v3 = true;
+    // у read, put, cost прошедшая форма совпадает с начальной: смотрим, что перевод в прошедшем времени
+    if (first === h && !/^\S*(л|ла|ли|ло|лся|лась)(,|\s|$)/.test(lead)) return null;
+    if (!v2 && !v3) return null;
+    return { verb, lead, v2, v3, sep: m[2], extra: (m[3] || '').trim() };
+  }
+  W_BRANCHES.forEach(br => ['cells', 'extra'].forEach(p => Object.values(br[p] || {}).forEach(cs => cs.forEach(c => {
+    if (!c || typeof c[3] !== 'string') return;
+    const rows = c[3].split(';');
+    const info = rows.map(x => { const f = x.split('|'); return f[2] && f[2].trim() === 'v' ? pastOf(f[0].trim(), f[1].trim()) : null; });
+    const only2 = info.filter(i => i && i.v2 && !i.v3).length, only3 = info.filter(i => i && i.v3 && !i.v2).length;
+    if (!only2 && !only3) return; // в теме нет явно прошедших форм — подсказку в скобках не трогаем
+    const topic = only3 > only2 ? 3 : 2;
+    c[3] = rows.map((x, i) => {
+      const it = info[i]; if (!it) return x;
+      const n = it.v2 && it.v3 ? topic : it.v3 ? 3 : 2;
+      const f = x.split('|');
+      const who = it.sep === ':' && it.extra ? ' (' + it.extra + ')' : '';
+      const note = it.sep === ',' && it.extra ? ' (' + it.extra + ')' : '';
+      f[1] = f[1].match(/^\s*/)[0] + n + '-я форма глагола ' + it.verb + who + ' — ' + it.lead + note;
+      return f.join('|');
+    }).join(';');
+  }))));
 })();
