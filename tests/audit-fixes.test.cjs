@@ -89,6 +89,8 @@ test('rule codes with counts give only non-negative rewards',()=>{
  assert.deepEqual(Core.parseRuleCode('EFST1|ABCD|a:7:6/0|b:3:2/3|c:5:0/0|d:1:0/4|e:2:3/1|f:2:3/2').items.map(x=>x.gain),[3,1,0,0,2,1]);
  assert.deepEqual(Core.parseRuleCode('EFST1|ABCD|a:7:5 / 0').items[0],{id:'a',from:7,ok:5,no:0,gain:3});
  for(const [ok,no,g] of [[0,0,0],[0,9,0],[1,0,1],[1,5,1],[3,1,2],[3,2,1],[4,0,2],[5,0,3],[5,1,2],[12,0,3]])assert.equal(Core.ruleGain(ok,no),g,ok+'/'+no);
+ for(const [lv,ok,no,g] of [[3,1,0,1],[3,2,5,1],[4,2,0,0],[4,3,2,0],[4,4,2,1],[5,3,1,2],[6,5,0,3],[6,2,1,0],[7,1,0,1]])assert.equal(Core.ruleGain(ok,no,lv),g,'lv'+lv+' '+ok+'/'+no);
+ assert.equal(Core.parseRuleCode('EFST1|AB12|pres-be:4:2/0|past-be:4:4/2').items.map(x=>x.gain).join(),'0,1');
 });
 test('a mistake code never lowers a level',()=>{
  const source=read('prompts.js'),c={SkillCore:Core,COEF:{rulesPractice:{ok:1}},GMAX:10,rules:()=>[{id:'cl-rel',lv:2},{id:'past',lv:5}]};
