@@ -55,16 +55,22 @@ const SkillCore = (() => {
   }
   // Награда за занятие с нейросетью: только плюс, по числу верных применений правила.
   // 0 верных → 0; 1+ → +1; 3+ и точность ≥75% → +2; 5+ без ошибок → +3.
-  function ruleGain(ok,no) {
+  // На уровнях 4–6 (lv — уровень из кода) рост только при 3+ верных и точности не ниже 2/3 (66%).
+  const STEP_FROM=7, STEPS=3, RMAX=10, GATE_FROM=4, GATE_OK=3;
+  function ruleGated(lv,ok,no) {
+    lv=+lv; ok=+ok||0; no=+no||0;
+    return lv>=GATE_FROM && lv<STEP_FROM && ok>0 && !(ok>=GATE_OK && 3*ok>=2*(ok+no));
+  }
+  function ruleGain(ok,no,lv) {
     ok=+ok||0; no=+no||0;
     if(ok<=0) return 0;
+    if(lv!=null && ruleGated(lv,ok,no)) return 0;
     if(ok>=5 && no===0) return 3;
     if(ok>=3 && ok/(ok+no)>=0.75) return 2;
     return 1;
   }
   // С уровня 7 правило растёт по скрытым шагам: 3 верных подряд = +1 уровень, ошибка обнуляет шаги
   // (уровень не снижается). Шаги копятся между занятиями. До 7 — обычная награда gain, но не выше 7.
-  const STEP_FROM=7, STEPS=3, RMAX=10;
   function ruleAdvance(lv,st,ok,no,gain){
     lv=Math.max(0,Math.min(RMAX,lv|0)); st=Math.max(0,st|0); ok=Math.max(0,ok|0); no=Math.max(0,no|0);
     if(lv>=RMAX) return {lv,st:0};
@@ -84,7 +90,7 @@ const SkillCore = (() => {
       // id:уровень:верно/ошибок (новый формат) или id:уровень:оценка (старые коды: +2, +, -, 0)
       const m=token.match(/^([a-z0-9-]+)\s*:\s*(\d{1,2})\s*:\s*(?:(\d{1,3})\s*\/\s*(\d{1,3})|(\+2|\+1|\+|[-−–—]|0|=))$/i);
       if(!m || +m[2]>10) return null;
-      if(m[3]!=null){ const ok=+m[3],no=+m[4]; items.push({id:m[1].toLowerCase(),from:+m[2],ok,no,gain:ruleGain(ok,no)}); continue; }
+      if(m[3]!=null){ const ok=+m[3],no=+m[4]; items.push({id:m[1].toLowerCase(),from:+m[2],ok,no,gain:ruleGain(ok,no,+m[2])}); continue; }
       const sign=m[5]==='+2'?2:m[5][0]==='+'?1:/[0=]/.test(m[5])?0:-1;
       items.push({id:m[1].toLowerCase(),from:+m[2],sign,gain:Math.max(0,sign)});
     }
@@ -115,6 +121,6 @@ const SkillCore = (() => {
       return b[i]===(vowel?'an':'a');
     });
   }
-  return {createWriteQueue,parseRuleCode,ruleGain,ruleAdvance,STEP_FROM,STEPS,contractionVariants,articleEquivalent};
+  return {createWriteQueue,parseRuleCode,ruleGain,ruleGated,ruleAdvance,STEP_FROM,STEPS,GATE_FROM,GATE_OK,contractionVariants,articleEquivalent};
 })();
 if(typeof module!=='undefined'&&module.exports) module.exports=SkillCore;
