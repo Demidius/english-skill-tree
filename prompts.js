@@ -121,6 +121,16 @@
   // «Самые слабые N» — из того списка, который сейчас показан («Изучено» или «Все правила»).
   function weakPool() { return visibleRules().filter(r => r.lv < GMAX); }
   function weakSel() { return new Set(weakPool().slice(0, pickN()).map(r => r.id)); }
+  // Фильтр не просто скрывает правила: всё, что перестало проходить фильтры,
+  // сразу снимается с выбора и больше не попадёт в промт даже после расширения фильтра.
+  function pruneFilteredSelection() {
+    const shown = new Set(visibleRules().map(r => r.id));
+    let changed = false;
+    [...S.sel].forEach(id => {
+      if (!shown.has(id)) { S.sel.delete(id); changed = true; }
+    });
+    return changed;
+  }
   function newTag() {
     return Array.from(crypto.getRandomValues(new Uint8Array(8)),n=>n.toString(16).padStart(2,'0')).join('').toUpperCase();
   }
@@ -576,18 +586,25 @@
   }
 
   function onSelect(key, v) {
+    let filterChanged = false;
     if (key === 'textLevel') {
       if (v !== 'auto' && !TEXT_LEVELS[v]) return;
       S.textLevel = v; S.tag = newTag(); S.copied = false; lsSet(TEXT_LEVEL_KEY, v);
-    } else if (key === 'scope') S.scope = v === 'all' ? 'all' : 'read';
-    else if (key === 'level') S.fLevel = LV_ORDER[v] != null ? v : 'all';
-    else if (key === 'branch') S.fBranch = G_BRANCHES.some(b => b.name === v) ? v : 'all';
+    } else if (key === 'scope') { S.scope = v === 'all' ? 'all' : 'read'; filterChanged = true; }
+    else if (key === 'level') { S.fLevel = LV_ORDER[v] != null ? v : 'all'; filterChanged = true; }
+    else if (key === 'branch') { S.fBranch = G_BRANCHES.some(b => b.name === v) ? v : 'all'; filterChanged = true; }
     else if (key === 'n') {
       const n = +v; if (!PICK_NS.includes(n)) return;
       S.pickN = n; lsSet(PICK_KEY, String(n));
       // новое число сразу применяется: берём столько самых слабых из видимого списка
       S.touched = true; S.copied = false; S.sel = weakSel(); S.tag = newTag();
     } else return;
+    if (filterChanged) {
+      S.touched = true;
+      S.copied = false;
+      pruneFilteredSelection();
+      S.tag = newTag();
+    }
     render();
     const f = modal.querySelector('[data-pt-sel="' + key + '"]'); if (f) f.focus({ preventScroll: true });
   }
@@ -610,7 +627,13 @@
         if (S.type !== type) S.lengthOpen = false;
         S.type = type; S.copied = false; if (!S.touched) S.sel = defaultSel(S.type); S.tag = newTag(); render(); return;
       }
-      const sc = t.closest('[data-pt-scope]'); if (sc) { S.scope = sc.dataset.ptScope; render(); return; }
+      const sc = t.closest('[data-pt-scope]'); if (sc) {
+        S.scope = sc.dataset.ptScope;
+        S.touched = true; S.copied = false;
+        pruneFilteredSelection();
+        S.tag = newTag();
+        render(); return;
+      }
       const pk = t.closest('[data-pt-pick]');
       if (pk) {
         const how = pk.dataset.ptPick;
