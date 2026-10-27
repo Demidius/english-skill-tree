@@ -14,7 +14,8 @@
 
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = 'search-toggle';
+    // Класс study-search нужен подсказкам тура: на телефоне поле свёрнуто, и шаг «Поиск» указывает на лупу.
+    btn.className = 'search-toggle study-search';
     btn.setAttribute('aria-label', 'Поиск');
     btn.setAttribute('aria-controls', search.id);
     btn.setAttribute('aria-expanded', 'false');

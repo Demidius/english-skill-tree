@@ -4,8 +4,8 @@
 /* Телефон: поиск свёрнут в лупу в полосе тем (search-fold.js) */
 .jumpnav .search-toggle { display: none; }
 @media (max-width: 720px) {
-  .mode:not(.search-open) .study-search { display: none; }
-  .study-search { margin-top: 14px; scroll-margin-top: 12px; }
+  .mode:not(.search-open) section.study-search { display: none; }
+  section.study-search { margin-top: 14px; scroll-margin-top: 12px; }
   .study-search > label {
     position: absolute; width: 1px; height: 1px; overflow: hidden;
     clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;

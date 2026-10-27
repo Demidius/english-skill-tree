@@ -1,0 +1,37 @@
+/* Аудит: читаемые подписи на цветных плашках (контраст текста не ниже 4,5:1) */
+
+/* «не начато» и счётчик ‹ 0 ›: светлый текст лежал на светло-сером фоне (1,3:1) */
+.node[data-status="not_started"] .status-chip {
+  background: transparent; color: var(--muted);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--muted) 55%, transparent);
+}
+/* оранжевая и зелёная плашки: белый текст терялся (около 2,3:1), тёмный читается */
+.node[data-status="learning"] .status-chip,
+.node[data-status="known"] .status-chip { color: #1C1C20; }
+
+/* Кнопки уровней в «Интервальном повторении» (RPG): на мятной A1 и жёлтой B2 — тёмный текст,
+   синюю A2 и фиолетовую B1 чуть затемняем, чтобы белый текст читался */
+html[data-skin="rpg"] .rv-tg.on:is([data-tg="A1"], [data-tg="B2"]),
+html[data-skin="rpg"] .rv-tg.on:is([data-tg="A1"], [data-tg="B2"]) :is(b, span) { color: #1C1C20 !important; }
+html[data-skin="rpg"] .rv-tg.on:is([data-tg="A2"], [data-tg="B1"]) {
+  background: color-mix(in srgb, var(--lc) 80%, #000) !important;
+  border-color: color-mix(in srgb, var(--lc) 80%, #000) !important;
+}
+
+/* Цветные заголовки веток и тем: белый текст на ярком фоне недотягивал (3,2–4,2:1) —
+   фон немного затемняем полупрозрачным слоем, оттенок ветки остаётся узнаваемым.
+   !important нужен: цвет ветки задан в style="background:…", а это сбрасывает слой. */
+.bhead .root,
+html[data-wview="levels"] #mode-w .wlv-topic { background-image: linear-gradient(rgba(0, 0, 0, .24), rgba(0, 0, 0, .24)) !important; }
+.bhead .root .ru, .bhead .root .cnt { opacity: 1; }
+
+/* Ромбы уровней слева от рядов: так же, как кнопки уровней */
+.lvl-label:is(.band-A1, .band-B2) .diamond span { color: #1C1C20; }
+.lvl-label:is(.band-A2, .band-B1) .diamond { background-image: linear-gradient(rgba(0, 0, 0, .24), rgba(0, 0, 0, .24)) !important; }
+
+/* Тег have (розовый) на тёмной карточке RPG: 4,15:1 → чуть светлее */
+html:root[data-skin="rpg"] { --tag-have: #F36F8E; }
+
+/* Закрытые темы экстра-лексики остаются приглушёнными, но текст на них читается */
+.mode-w .node.locked { opacity: .88; }
+.mode-w .node.locked :is(.status-chip, .lesson-ref) { color: var(--ink); }
