@@ -1,10 +1,16 @@
 /* Телефон: разделы «Правила / Лексика / Настройки» — в нижней панели (tabbar.js) */
 .tabbar { display: none; }
 @media (max-width: 999px) {
+  /* Панель светлее фона страницы и отделена линией, чтобы не сливаться с содержимым под ней */
   .tabbar {
     display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
-    background: var(--bg); border-top: 2px solid var(--line);
+    background: var(--surface-2); border-top: 1px solid color-mix(in srgb, var(--ink) 22%, transparent);
+    box-shadow: 0 -10px 24px rgba(0, 0, 0, .45);
     padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  /* RPG: стальная рамка, как у панелей сайта, и жёсткая пиксельная тень над ней */
+  html[data-skin="rpg"] .tabbar {
+    background: #34343C; border-top: 3px solid #8D99AE; box-shadow: 0 -4px 0 #0E0E12;
   }
   .tabbar[hidden] { display: none; }
   /* место под панелью, чтобы она не закрывала конец страницы */
@@ -32,7 +38,11 @@
   html body .tabbar .modes button[data-mode="s"] { --tab-ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1'/%3E%3Ccircle cx='15' cy='6' r='2'/%3E%3Ccircle cx='9' cy='12' r='2'/%3E%3Ccircle cx='17' cy='18' r='2'/%3E%3C/svg%3E"); }
   html body .tabbar .modes button:hover { color: var(--ink); }
   html body .tabbar .modes button[aria-pressed="true"] {
-    background: var(--surface-2); color: var(--ink); box-shadow: inset 0 3px 0 var(--ink);
+    background: color-mix(in srgb, var(--ink) 12%, var(--surface-2)); color: var(--ink); box-shadow: inset 0 3px 0 var(--accent);
+  }
+  html[data-skin="rpg"] body .tabbar .modes button { color: #C3C7D6; }
+  html[data-skin="rpg"] body .tabbar .modes button[aria-pressed="true"] {
+    background: #4A4A55; color: #FFFFFF; box-shadow: inset 0 3px 0 #EDF2F4;
   }
   html body .tabbar .modes button:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; }
   html[data-skin="rpg"] body .tabbar .modes button { font-size: 1.2rem; }
