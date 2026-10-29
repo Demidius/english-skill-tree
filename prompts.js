@@ -159,13 +159,19 @@
   function orderedSel() {
     return rules().filter(r => S.sel.has(r.id)).map(r => r.id);
   }
+  // Разнообразие заданий без хранения и передачи истории предложений.
+  const DIVERSITY_INSTRUCTION =
+    'Keep exercises varied and realistic: rotate topics, situations, subjects, verbs and sentence structures rather than relying on textbook clichés (coffee, shopping, going to work). ' +
+    'Avoid near-identical situations or sentence patterns in consecutive tasks, even when the words change. ' +
+    'Vary rule combinations where possible, but keep examples natural, clear and within the chosen CEFR level. ';
+
   // Инструкции — по-английски (так промт помещается в ссылку), но общаться нейросеть должна по-русски.
   function sentencePrompt(direction) {
     const toEnglish = direction === 'ru-en';
     return 'Task: translation one full sentence at a time, ' + (toEnglish ? 'from Russian into English (RU → EN)' : 'from English into Russian (EN → RU)') + '.\n' +
       '1. Give exactly one new full sentence ' + (toEnglish ? 'in Russian' : 'in English') + ' on an everyday topic. ' +
       'It must practise one or more rules from the list. Rotate the rules, gradually cover the whole list, and give weak rules more often. ' +
-      levelInstruction() + 'Do not give a set of sentences, a ready translation, or a hint about which rule is needed.\n' +
+      levelInstruction() + DIVERSITY_INSTRUCTION + 'Do not give a set of sentences, a ready translation, or a hint about which rule is needed.\n' +
       '2. Stop and wait for my translation ' + (toEnglish ? 'into English' : 'into Russian') + '. Do not answer for me and do not analyse the sentence in advance.\n' +
       '3. After each of my translations, immediately give a short analysis in Russian. If the translation is correct, say so explicitly. ' +
       'If there is a mistake, show my version and the corrected version in the correction format, explain why, and give the id of the rule from the list. ' +
@@ -203,7 +209,7 @@
         '1. Write one coherent text in Russian. Length: ' + TEXT_LENGTHS[S.textLength].en + '. ' +
         'Topic: everyday life (work, travel, friends, plans, weekends, etc.). Stay within the chosen length. ' +
         'Try to cover the selected rules naturally, starting with the weak ones. If not all rules fit into a short text, do not make it longer and do not overload the sentences: use only some of the rules. ' +
-        'Rules that did not appear in the text or in my translation are "not tested" (0) in the result; their levels do not change. ' + levelInstruction() +
+        'Rules that did not appear in the text or in my translation are "not tested" (0) in the result; their levels do not change. ' + levelInstruction() + DIVERSITY_INSTRUCTION +
         'Do not hint which rule is where, and do not give the translation.\n' +
         '2. Stop and wait for my translation. Do not analyse anything in advance.\n' +
         '3. When I send my translation, go through it sentence by sentence, in Russian:\n' +
