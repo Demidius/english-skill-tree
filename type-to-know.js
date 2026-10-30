@@ -81,7 +81,9 @@ document.addEventListener('keydown', ev => {
     const typed = clean(b.textContent);
     if (!en || !typed) return;
     let best = null;
-    alts(en).map(clean).filter(Boolean).forEach(r => [typed, strip(typed)].forEach(t => {
+    // Compare expanded contractions too, so where's / where is is not highlighted as an error.
+    const variants = s => typeof SkillCore === 'undefined' ? [s] : [s, ...SkillCore.contractionVariants(s)];
+    alts(en).flatMap(variants).map(clean).filter(Boolean).forEach(r => [typed, strip(typed)].flatMap(variants).forEach(t => {
       const dist = table(low(t), low(r))[t.length][r.length];
       if (!best || dist < best.dist) best = { t, r, dist };
     }));
@@ -256,8 +258,12 @@ document.addEventListener('keydown', ev => {
     'ba-linkers|a lot of': ['lots of'],
     'ti2-expr|until': ['till'],
   };
-  const norm = s => String(s).toLowerCase().replace(/[’`ʼ']/g, '').replace(/[^a-z0-9 ]+/g, ' ')
-    .replace(/\s+/g, ' ').trim().replace(/^(to|a|an|the) /, '');
+  // Use the same contraction expansion as the shared checker before removing apostrophes.
+  const norm = s => {
+    const expanded = typeof SkillCore === 'undefined' ? s : [...SkillCore.contractionVariants(s)][0];
+    return String(expanded).toLowerCase().replace(/[’`ʼ']/g, '').replace(/[^a-z0-9 ]+/g, ' ')
+      .replace(/\s+/g, ' ').trim().replace(/^(to|a|an|the) /, '');
+  };
   function alts(en) {
     const base = en.replace(/\(.*?\)/g, ' ');
     return [en, base].concat(base.split(/\s*[\/;,]\s*|\s+or\s+/)).map(norm).filter(Boolean);
