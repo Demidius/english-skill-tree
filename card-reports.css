@@ -1,0 +1,18 @@
+/* Optional card report form, above the study modal without losing the current word. */
+.fc-report { display:flex; justify-content:flex-end; padding:4px 12px 0; }
+.report-link {font-size:.86rem; text-decoration:underline; text-underline-offset:3px; opacity:.85}
+.report-link:hover,.report-link:focus-visible {opacity:1}
+.report-overlay[hidden] {display:none!important}
+.report-overlay {position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,.74);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;}
+.report-dialog {width:min(100%,540px);max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box;padding:22px;background:var(--surface,#29282d);color:var(--ink,#f4f4f4);border:2px solid var(--line,#888);border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.45);font:inherit;}
+.report-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.report-heading h2{font-size:1.25rem;margin:0}
+.report-close{border:1px solid var(--line,#888);background:transparent;color:inherit;min-width:36px;min-height:36px;cursor:pointer}
+.report-card-title{overflow-wrap:anywhere;opacity:.85;margin:14px 0}
+.report-form label{display:block;font-weight:600;margin:12px 0 7px}
+.report-form label span{font-weight:400;opacity:.7}
+.report-form textarea{width:100%;min-height:126px;box-sizing:border-box;background:var(--surface-2,#222);color:inherit;border:1px solid var(--line,#888);border-radius:4px;padding:12px;font:inherit;resize:vertical}
+.report-help{font-size:.9rem;opacity:.76}
+.report-status{min-height:1.4rem}
+.report-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+@media(max-width:720px){.report-dialog{padding:18px}.report-overlay{padding:8px}.report-actions>*{flex:1}}
