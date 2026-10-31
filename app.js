@@ -1679,7 +1679,13 @@ const W = (function(){
         let w=null;
         if(S.mode==='session') w=S.queue[0];
         else { const row=a.closest('[data-word-id]'); w=row&&CARDS[row.dataset.wordId]?.words.find(x=>x.k===row.dataset.wordKey); }
-        if(w){ const c=CARDS[w.tid]; CardReports.open({kind:'word',topicId:w.tid,wordKey:w.k,english:w.en,russian:w.ru,topicTitle:c.title,source:c.level+' · '+c.src}); }
+        if(w){
+          const c=CARDS[w.tid], row=a.closest('[data-word-id]');
+          CardReports.open({kind:'word',topicId:w.tid,wordKey:w.k,
+            english:row?.querySelector('.en')?.textContent||w.en,
+            russian:row?.querySelector('.ru')?.textContent||w.ru,
+            topicTitle:c.title,source:c.level+' · '+c.src});
+        }
         return;
       }
       const id=S.id;
