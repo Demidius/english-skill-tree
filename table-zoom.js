@@ -19,7 +19,7 @@
   // с запасом, чтобы медленная прокрутка колёсиком не перестраивала таблицу посреди жеста
   const BUTTON_MS = 180, NOTCH_MS = 120, IDLE_MS = 260;
   const done = new WeakSet(), controllers = [];
-  const clampZ = k => Math.min(MAX, Math.max(MIN, Math.round(k * 1000) / 1000));
+  const clampZ = k => Number.isFinite(k) ? Math.min(MAX, Math.max(MIN, Math.round(k * 1000) / 1000)) : 1;
   const load = key => { try { return parseFloat(localStorage.getItem(key)); } catch (e) { return NaN; } };
   const store = (key, v) => { try { localStorage.setItem(key, v); } catch (e) {} };
   // «уменьшить движение» в системе: масштаб меняется сразу, без анимации
@@ -32,7 +32,7 @@
     if (!tree || done.has(tree)) return;
     done.add(tree);
     const KEY = 'ef_zoom_' + mode.id;
-    let k = clampZ(load(KEY) || 1), on = false, saveT = 0, pv = null;
+    let k = clampZ(load(KEY) || 1), on = false, saveT = 0, pv = null, lastWidth = 0;
 
     const bar = document.createElement('div');
     bar.className = 'tree-zoom'; bar.hidden = true;
@@ -57,9 +57,18 @@
 
     const isGrid = () => !mode.hidden && getComputedStyle(tree).display === 'grid';
     // ширина таблицы при 100% и самый мелкий масштаб, при котором она ровно во всю ширину экрана
-    function natWidth() { return pv ? pv.natW : tree.getBoundingClientRect().width / (parseFloat(tree.style.zoom) || 1); }
-    function minK() { return Math.min(1, Math.max(MIN, Math.floor(scroller.clientWidth / natWidth() * 1000) / 1000)); }
+    function natWidth() {
+      const width = pv ? pv.natW : tree.getBoundingClientRect().width / (parseFloat(tree.style.zoom) || 1);
+      if (Number.isFinite(width) && width > 0) lastWidth = width;
+      return lastWidth;
+    }
+    function minK() {
+      const width = natWidth(), available = scroller.clientWidth;
+      if (!(width > 0 && available > 0)) return MIN;
+      return Math.min(1, Math.max(MIN, Math.floor(available / width * 1000) / 1000));
+    }
     function show(v) {
+      v = clampZ(v);
       val.textContent = Math.round(v * 100) + '%';
       bar.querySelector('[data-z="out"]').disabled = !on || v <= minK() + 0.001;
       bar.querySelector('[data-z="in"]').disabled = v >= MAX;
@@ -109,6 +118,10 @@
     }
     // показать предпросмотр: масштаб kk при прокрутке (sl, wy)
     function render(p, kk, sl, wy) {
+      // Every displayed frame must obey the same bounds as the final zoom.
+      kk = Number.isFinite(kk) ? clamp(kk, minK(), MAX) : clampZ(p.k);
+      sl = Number.isFinite(sl) ? sl : p.sl;
+      wy = Number.isFinite(wy) ? wy : p.wy;
       p.k = kk; p.sl = sl; p.wy = wy;
       // длины в transform умножаются на zoom элемента — поэтому сдвиг делим на k0
       tree.style.transform = 'translate(' + ((p.sl0 - sl) / p.k0) + 'px,' + ((p.wy0 - wy) / p.k0) + 'px) scale(' + (kk / p.k0) + ')';
@@ -125,11 +138,15 @@
     // колонка уровней и точка под курсором согласованы. Прокрутка меняется пропорционально масштабу,
     // поэтому точка под курсором стоит на месте и в промежуточных кадрах.
     function animate(p, to, ms) {
-      const a = { k0: p.k, sl0: p.sl, wy0: p.wy, to, t0: performance.now(), ms };
+      // Start on the first animation frame. Mixing performance.now() with the frame's
+      // timestamp can produce negative progress and enormous extrapolated zoom values.
+      const a = { k0: p.k, sl0: p.sl, wy0: p.wy, to, t0: null, ms };
       p.anim = a;
       const frame = now => {
         if (p.anim !== a || pv !== p) return;
-        const t = Math.min(1, (now - a.t0) / a.ms), e = 1 - Math.pow(1 - t, 3);
+        if (!Number.isFinite(now)) { finishAnim(p); return; }
+        if (a.t0 === null) a.t0 = now;
+        const t = clamp((now - a.t0) / a.ms, 0, 1), e = 1 - Math.pow(1 - t, 3);
         const kk = a.k0 * Math.pow(a.to.k / a.k0, e);
         const f = Math.abs(a.to.k - a.k0) > 1e-6 ? (kk - a.k0) / (a.to.k - a.k0) : e;
         render(p, kk, a.sl0 + (a.to.sl - a.sl0) * f, a.wy0 + (a.to.wy - a.wy0) * f);
@@ -157,20 +174,24 @@
     }
     function commit() {
       const p = pv; if (!p) return;
-      pv = null; clearTimeout(p.timer);
+      // Include scrolling that happened outside the preview (scrollbar, keyboard,
+      // search navigation), rather than restoring the old page/branch position.
+      const externalX = scroller.scrollLeft - p.sl0, externalY = scrollY - p.wy0;
+      clearTimeout(p.timer);
       // анимация могла ещё идти (медленное устройство): сначала доводим предпросмотр до конечного вида
       finishAnim(p);
+      pv = null;
       // карточка под точкой масштабирования: после применения вернём её ровно туда, где она была
       // в предпросмотре (при мелком масштабе текст переносится чуть иначе, и расчёт может сместиться)
-      const hit = p.ax != null && document.elementFromPoint(p.ax, p.ay);
+      const hit = isGrid() && p.ax != null && document.elementFromPoint(p.ax, p.ay);
       const anchor = hit && tree.contains(hit) ? (hit.closest('.node') || nearestNode(p.ax, p.ay) || hit.closest('.cell, .bhead, .lvl-label')) : null;
       const before = anchor && anchor.getBoundingClientRect();
       tree.style.transform = ''; tree.style.transformOrigin = ''; tree.style.willChange = '';
       p.sticky.forEach(st => { st.el.style.transform = ''; });
       if (p.keep) p.keep.remove();
-      k = p.k; paint();
-      scroller.scrollTo({ left: p.sl, behavior: 'instant' });
-      window.scrollTo({ left: scrollX, top: p.wy, behavior: 'instant' });
+      k = clampZ(p.k); paint();
+      scroller.scrollTo({ left: p.sl + externalX, behavior: 'instant' });
+      window.scrollTo({ left: scrollX, top: p.wy + externalY, behavior: 'instant' });
       if (anchor) {
         const after = anchor.getBoundingClientRect();
         const dx = after.left - before.left, dy = after.top - before.top;
@@ -203,7 +224,7 @@
     }
     function sync() {
       const was = on, now = isGrid();
-      if (!now && pv) commit();
+      if (pv) commit();
       on = now; bar.hidden = !on;
       if (on !== was) paint();
       enforceMin();
@@ -235,6 +256,9 @@
     }, true);
 
     addEventListener('resize', sync);
+    // Finish the preview as soon as native scrolling changes its coordinate origin.
+    scroller.addEventListener('scroll', () => { if (pv) commit(); }, { passive: true });
+    addEventListener('scroll', () => { if (pv) commit(); }, { passive: true });
     // режим (Правила/Лексика), вид таблицы слов, оформление и шрифт переключаются атрибутами
     new MutationObserver(sync).observe(mode, { attributes: true, attributeFilter: ['hidden'] });
     new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ['data-wview', 'data-skin', 'data-fs'] });
