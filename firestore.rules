@@ -80,17 +80,11 @@ service cloud.firestore {
           && a.inviteId == token && b.inviteId == token && a.createdAt == request.time && b.createdAt == request.time;
       }
     }
-    // Users may submit immutable card reports. Only admins can review the queue.
+    // Жалобы на ошибки в карточках: подача пользователями, проверка администратором.
     match /cardReports/{reportId} {
       allow get, list: if admin();
       allow create: if signed()
-        && reportId.matches('^[A-Za-z0-9]{20}
-    match /accessAdmins/{uid} { allow get: if self(uid); allow list: if admin(); allow write: if false; }
-    match /system/{id} { allow read: if id == 'access' || admin(); allow write: if admin(); }
-    match /{document=**} { allow read, write: if false; }
-  }
-}
-)
+        && reportId.matches('^[A-Za-z0-9]{20}$')
         && exists(/databases/$(database)/documents/profiles/$(request.auth.uid))
         && request.resource.data.keys().hasAll([
           'kind', 'topicId', 'wordKey', 'english', 'russian', 'topicTitle', 'source',
@@ -114,9 +108,9 @@ service cloud.firestore {
         && request.resource.data.status == 'new';
       allow update: if admin()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'status','reviewedAt','reviewedBy','adminNote'
+          'status', 'reviewedAt', 'reviewedBy', 'adminNote'
         ])
-        && request.resource.data.status in ['new','in_progress','fixed','dismissed']
+        && request.resource.data.status in ['new', 'in_progress', 'fixed', 'dismissed']
         && request.resource.data.reviewedAt == request.time
         && request.resource.data.reviewedBy == request.auth.uid
         && request.resource.data.adminNote is string && request.resource.data.adminNote.size() <= 1000;
