@@ -243,6 +243,10 @@ document.addEventListener('keydown', ev => {
     'ba-social|nice to meet you.': ['pleased to meet you'],
     "ba-social|you're welcome.": ['no problem', 'not at all', "don't mention it"],
     'ba-social|see you later.': ['see you soon', 'see you', 'see ya'],
+    // The Russian confirmation does not require a demonstrative or a full clause.
+    "efa1-pe1-3|that's right.": [
+      "right", "correct", "that's correct", "yes that's right", "yes that's correct"
+    ],
     // This prompt has no intensifier; that and the introductory I'm are optional here.
     "efa1-pe3-2|i'm sorry i'm late.": [
       "i'm sorry that i'm late", "sorry i'm late", "sorry that i'm late",
