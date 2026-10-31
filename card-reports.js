@@ -1,6 +1,5 @@
 /* Report a problematic grammar or vocabulary card without interrupting the study session. */
 window.CardReports = (() => {
-  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const cover = document.createElement('div');
   cover.className = 'report-overlay';
   cover.hidden = true;
@@ -18,7 +17,7 @@ window.CardReports = (() => {
   let item=null, previousFocus=null, busy=false;
   function close(){
     if(busy) return;
-    cover.hidden=true; item=null; field.value=''; status.textContent='';
+    cover.hidden=true; item=null; field.value=''; field.disabled=false; send.disabled=false; send.textContent='Отправить жалобу'; cover.querySelector('.report-cancel').textContent='Отмена'; status.textContent='';
     if(previousFocus && document.contains(previousFocus)) previousFocus.focus({preventScroll:true});
   }
   cover.querySelector('.report-close').addEventListener('click', close);
@@ -43,7 +42,7 @@ window.CardReports = (() => {
       english:String(data.english||'').slice(0,300),russian:String(data.russian||'').slice(0,500),
       topicTitle:String(data.topicTitle||'').slice(0,160),source:String(data.source||'').slice(0,120)};
     cover.querySelector('.report-card-title').textContent=(item.kind==='word'?'Слово: ':'Правило: ')+(item.english||item.topicTitle)+(item.russian?' · '+item.russian:'');
-    status.textContent='';field.value='';cover.hidden=false;field.focus();
+    status.textContent='';field.value='';field.disabled=false;send.disabled=false;send.textContent='Отправить жалобу';cover.querySelector('.report-cancel').textContent='Отмена';cover.hidden=false;field.focus();
   }
   form.addEventListener('submit',async e=>{
     e.preventDefault(); if(!item||busy)return;
@@ -65,8 +64,5 @@ window.CardReports = (() => {
     }catch(error){status.textContent=error.code==='permission-denied'?'Нет разрешения на отправку. Возможно, правила базы ещё не обновлены.':'Не удалось отправить жалобу. Проверь интернет и попробуй ещё раз.';}
     finally{busy=false;if(send.textContent!=='Готово')send.disabled=false;cover.querySelector('.report-cancel').disabled=false;}
   });
-  const originalClose=close;
-  cover.querySelector('.report-cancel').addEventListener('click',()=>{field.disabled=false;send.textContent='Отправить жалобу';});
-  cover.querySelector('.report-close').addEventListener('click',()=>{field.disabled=false;send.textContent='Отправить жалобу';});
   return {open};
 })();
