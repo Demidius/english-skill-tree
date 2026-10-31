@@ -964,8 +964,10 @@ const W = (function(){
   }
   function extraHTML(w){
     const ck=w.tid+'|'+w.k, own=typeof WORD_EX_CARD!=='undefined'&&Object.prototype.hasOwnProperty.call(WORD_EX_CARD,ck);
-    const d=own?WORD_EX_CARD[ck]:(typeof WORD_EX!=='undefined')&&WORD_EX[w.k]; if(!d) return '';
-    let [forms,irr,s,p,pf,c,syn,ant,rx,nn]=d;
+    const support=typeof WORD_DETAILS==='undefined'?null:WORD_DETAILS[ck];
+    const d=own?WORD_EX_CARD[ck]:(typeof WORD_EX!=='undefined')&&WORD_EX[w.k];
+    if(!d && !support) return '';
+    let [forms,irr,s,p,pf,c,syn,ant,rx,nn]=d||[null,0,'','','','',[],[],'',null];
     if(!own && w.p){
       // WORD_EX is keyed by spelling, so homographs share one entry (park n/v, orange n/adj).
       // Show only the parts that belong to this word's part of speech.
@@ -989,8 +991,20 @@ const W = (function(){
     const NUM={sg:'ед. ч.', pl:'мн. ч.'};
     const rows=[['Present Simple',s,nn&&nn[3][0]],['Past Simple',p,''],['Present Perfect',pf,nn&&nn[3][2]],['Present Continuous',c,nn&&nn[3][3]]].filter(r=>r[1]);
     if(rows.length) h+='<div class="wx-ex">'+rows.map(r=>'<div><span class="lb">'+r[0]+(r[2]&&NUM[r[2]]?' · '+NUM[r[2]]:'')+'</span><p><span class="trt">'+hl(r[1])+'</span><span class="btns">'+trBtn(r[1])+sayBtn(r[1])+'</span></p></div>').join('')+'</div>';
-    const lst=(t,a)=>a&&a.length?'<div class="wx-syn"><span class="lb">'+t+'</span>'+a.map(x=>'<em>'+esc(x[0])+(x[1]?' <i>— '+esc(x[1])+'</i>':'')+'</em>').join('')+'</div>':'';
-    h+=lst('Синонимы',syn)+lst('Антонимы',ant);
+    // A sentence-level example is labelled as an example, without assigning it a false tense.
+    if(support && support[0].length) h+='<div class="wx-ex">'+support[0].map(([en,ru])=>
+      '<div><span class="lb">Пример</span><p><span class="trt">'+hl(en)+'</span><span class="btns">'+
+      (ru?'<button type="button" class="trb" data-tr="'+esc(ru)+'" aria-label="Перевести на русский" title="Перевод">RU</button>':trBtn(en))+
+      sayBtn(en)+'</span></p></div>').join('')+'</div>';
+    if(support){ if(!syn || !syn.length) syn=support[1]; if(!ant || !ant.length) ant=support[2]; }
+    const note=support&&support[3]===1
+      ? ['У числа нет прямого лексического синонима.','У числа нет прямого лексического антонима.']
+      : support&&support[3]===2
+      ? ['Для этого названия прямой синоним не приводится.','У этого названия нет прямого антонима.']
+      : ['Однозначная замена для этого значения не приведена; она зависит от контекста.','Прямой антоним для этого значения не приведён.'];
+    const lst=(t,a,n)=>'<div class="wx-syn"><span class="lb">'+t+'</span>'+
+      (a&&a.length?a.map(x=>'<em>'+esc(x[0])+(x[1]?' <i>- '+esc(x[1])+'</i>':'')+'</em>').join(''):'<span class="hint">'+esc(n)+'</span>')+'</div>';
+    h+=lst('Синонимы и близкие выражения',syn,note[0])+lst('Антонимы и противоположные выражения',ant,note[1]);
     return h+'</div>';
   }
   function exampleHTML(w){
