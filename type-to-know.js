@@ -243,6 +243,12 @@ document.addEventListener('keydown', ev => {
     'ba-social|nice to meet you.': ['pleased to meet you'],
     "ba-social|you're welcome.": ['no problem', 'not at all', "don't mention it"],
     'ba-social|see you later.': ['see you soon', 'see you', 'see ya'],
+    // This prompt has no intensifier; that and the introductory I'm are optional here.
+    "efa1-pe3-2|i'm sorry i'm late.": [
+      "i'm sorry that i'm late", "sorry i'm late", "sorry that i'm late",
+      "i'm really sorry i'm late", "i'm really sorry that i'm late",
+      "sorry for being late", "i'm sorry for being late"
+    ],
     // короткие и разговорные формы — тоже правильные
     'ba-social|goodbye': ['bye', 'bye bye', 'good bye', 'bye-bye'],
     'ba-social|thank you': ['thanks', 'thank you very much', 'thanks a lot'],
