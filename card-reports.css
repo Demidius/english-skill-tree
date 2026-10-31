@@ -1,5 +1,15 @@
 /* Optional card report form, above the study modal without losing the current word. */
-.fc-report { display:flex; justify-content:flex-end; padding:4px 12px 0; }
+/* Audio control on the left and report button on the right, in the same footer row. */
+.fc-foot { display:flex; flex-wrap:nowrap; align-items:center; justify-content:space-between; gap:8px; }
+.fc-foot > .auto { flex:0 1 auto; min-width:0; }
+.fc-foot-right { display:flex; flex:0 1 auto; min-width:0; justify-content:flex-end; align-items:center; gap:10px; }
+.fc-foot-right .report-link { text-align:right; line-height:1.25; }
+.fc-foot-right .fc-links { flex-shrink:0; }
+@media(max-width:720px) {
+  .fc-foot .kbd-hint { display:none; }
+  .fc-foot > .auto { font-size:.74rem; white-space:nowrap; }
+  .fc-foot-right .report-link { font-size:.74rem; }
+}
 .report-link {font-size:.86rem; text-decoration:underline; text-underline-offset:3px; opacity:.85}
 .report-link:hover,.report-link:focus-visible {opacity:1}
 .report-overlay[hidden] {display:none!important}
