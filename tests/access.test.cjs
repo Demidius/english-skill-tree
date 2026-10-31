@@ -106,3 +106,44 @@ test('removing an administrator role immediately denies subsequent data access a
   await assertFails(updateDoc(doc(db('demid'),'profiles/alice/progress/topic'),{lv:9}));
   await assertFails(getDoc(doc(db('demid'),'profiles/alice')));
 });
+
+
+function cardReport(overrides={}) {
+  return {
+    kind:'word',topicId:'efa1-2a-2',wordKey:'what-s-that',
+    english:"What's that?",russian:'Что это? (предмет далеко)',
+    topicTitle:'Words and phrases',source:'A1 · 2A',
+    message:'',reporterUid:'alice',reporterName:'Alice',
+    status:'new',createdAt:serverTimestamp(),...overrides
+  };
+}
+test('card reports accept empty descriptions and record authenticated authors and server times',async()=>{
+  const id='r'.repeat(20),path='cardReports/'+id;
+  await assertSucceeds(setDoc(doc(db(owner),path),cardReport()));
+  await assertFails(getDoc(doc(db(owner),path)));
+  await assertFails(getDoc(doc(db(peer),path)));
+  await assertFails(getDocs(collection(db(peer),'cardReports')));
+  await assertSucceeds(getDocs(collection(db('demid'),'cardReports')));
+  await assertSucceeds(getDoc(doc(db('demid'),path)));
+  await assertFails(updateDoc(doc(db(owner),path),{status:'fixed'}));
+  await assertFails(deleteDoc(doc(db(owner),path)));
+});
+test('card reports cannot impersonate another user or spoof creation timestamp',async()=>{
+  await assertFails(setDoc(doc(db(owner),'cardReports/'+'x'.repeat(20)),cardReport({reporterUid:'bob'})));
+  await assertFails(setDoc(doc(db(owner),'cardReports/'+'y'.repeat(20)),cardReport({reporterName:'Bob'})));
+  await assertFails(setDoc(doc(db(owner),'cardReports/'+'z'.repeat(20)),cardReport({createdAt:Timestamp.now()})));
+  await assertFails(setDoc(doc(db(owner),'cardReports/'+'a'.repeat(20)),cardReport({adminNote:'injected'})));
+  await assertFails(setDoc(doc(db(null),'cardReports/'+'b'.repeat(20)),cardReport()));
+});
+test('admin can update only report review fields, while original report stays immutable',async()=>{
+  const path='cardReports/'+'q'.repeat(20);
+  await assertSucceeds(setDoc(doc(db(owner),path),cardReport({message:'Неверная подсказка'})));
+  await assertSucceeds(updateDoc(doc(db('demid'),path),{
+    status:'fixed',adminNote:'Исправлен перевод',reviewedBy:'demid',reviewedAt:serverTimestamp()
+  }));
+  await assertFails(updateDoc(doc(db('demid'),path),{
+    status:'dismissed',adminNote:'',reviewedBy:'alice',reviewedAt:serverTimestamp()
+  }));
+  await assertFails(updateDoc(doc(db('demid'),path),{message:'Удалить жалобу'}));
+  await assertFails(updateDoc(doc(db(peer),path),{status:'dismissed'}));
+});
