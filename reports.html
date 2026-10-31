@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ru" data-skin="rpg">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="same-origin">
+<title>Жалобы на карточки · Skill Tree</title>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Handjet:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=20261016-14">
+<link rel="stylesheet" href="themes.css?v=20261016-1">
+<link rel="stylesheet" href="account-access.css?v=20261016-20">
+<link rel="stylesheet" href="reports.css?v=20261031-1">
+</head>
+<body>
+<main class="reports-shell">
+<div class="reports-head">
+  <div><h1>Жалобы на карточки</h1><p><a href="index.html">Сайт</a> · <a href="admin.html">Управление данными</a></p></div>
+  <button id="reportLogout" type="button" class="m-btn ghost" hidden>Выйти</button>
+</div>
+<p id="reportAccessStatus" role="status">Проверяю доступ…</p>
+<form id="reportLogin" class="access-card" hidden>
+  <h2>Вход администратора</h2>
+  <label class="access-field">Ник<input id="reportNick" autocomplete="username" required maxlength="15"></label>
+  <label class="access-field">Пароль<input id="reportPass" type="password" autocomplete="current-password" required></label>
+  <button type="submit" class="m-btn">Войти</button>
+</form>
+<section id="reportWorkspace" hidden>
+  <p>Жалобы хранятся в базе независимо от прогресса. Можно проверять их раз в неделю и отмечать, какие исправлены.</p>
+  <div class="reports-toolbar">
+    <label>Статус
+      <select id="reportFilter"><option value="open">Новые и в работе</option><option value="new">Новые</option><option value="in_progress">В работе</option><option value="fixed">Исправлены</option><option value="dismissed">Отклонены</option><option value="all">Все</option></select>
+    </label>
+    <label>Когда
+      <select id="reportPeriod"><option value="all">За всё время</option><option value="7">За 7 дней</option><option value="30">За 30 дней</option></select>
+    </label>
+    <button type="button" class="m-btn ghost" id="reportRefresh">Обновить</button>
+    <button type="button" class="m-btn ghost" id="reportCopy">Скопировать для проверки</button>
+    <button type="button" class="m-btn ghost" id="reportCsv">Скачать CSV</button>
+  </div>
+  <p id="reportCount" role="status"></p>
+  <div id="reportGroups"></div>
+  <button type="button" class="m-btn ghost" id="reportMore" hidden>Загрузить ещё 200</button>
+</section>
+</main>
+<script src="firebase-config.js?v=20261016-20"></script>
+<script src="reports.js?v=20261031-1"></script>
+</body>
+</html>
