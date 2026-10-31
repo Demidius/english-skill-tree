@@ -308,7 +308,7 @@ const BEGINNER_COURSE = [
         ["Are they free?","Эти места свободны?","o"],
         ["Are you on holiday?","Вы здесь на отдыхе?","o"],
         ["We're on business.","Мы здесь по делам.","o"],
-        ["What's that?","Что это там?","o"],
+        ["What's that?","Что это? (предмет далеко)","o"],
         ["Have a nice day!","Хорошего дня!","o"],
         ["Nice to meet you, too.","Мне тоже приятно познакомиться.","o"],
         ["I'm not very good with dogs.","Я не очень умею обращаться с собаками.","o"],
@@ -539,19 +539,19 @@ const BEGINNER_COURSE = [
         ["buy","покупать","v"],
         ["here","здесь","o"],
         ["there","там","o"],
-        ["this","этот; эта; это","o"],
-        ["that","тот; та; то","o"],
-        ["these","эти","o"],
-        ["those","те","o"]
+        ["this","этот; эта; это (предмет рядом)","o"],
+        ["that","тот; та; то (предмет далеко)","o"],
+        ["these","эти (предметы рядом)","o"],
+        ["those","те (предметы далеко)","o"]
       ]},
       {"title": "Фразы при покупке", "branch": "shopping", "words": [
         ["How much is it?","Сколько это стоит?","o"],
         ["How much are they?","Сколько они стоят?","o"],
-        ["How much is this mug?","Сколько стоит эта кружка?","o"],
-        ["How much are these key rings?","Сколько стоят эти брелоки?","o"],
+        ["How much is this mug?","Сколько стоит эта кружка? (рядом)","o"],
+        ["How much are these key rings?","Сколько стоят эти брелоки? (рядом)","o"],
         ["They're twenty pounds.","Они стоят двадцать фунтов.","o"],
         ["A T-shirt, please.","Футболку, пожалуйста.","o"],
-        ["Is this your phone?","Это ваш телефон?","o"],
+        ["Is this your phone?","Это ваш телефон? (предмет рядом)","o"],
         ["Thank you very much.","Большое спасибо.","o"],
         ["You're welcome.","Пожалуйста, в ответ на благодарность.","o"]
       ]}
