@@ -568,7 +568,7 @@ const G = (function(){
       '<h3 class="r-h">Когда используем</h3>'+li(R.u)+
       '<h3 class="r-h">Примеры</h3><div class="r-ex">'+R.e.map(p=>'<div class="r-row"><div><div class="r-en">'+esc(p[0])+'</div><div class="r-ru">'+esc(p[1])+'</div></div>'+sayBtn(p[0].replace(/\(.*?\)/g,''))+'</div>').join('')+'</div>'+
       '<h3 class="r-h">Исключения и ловушки</h3><ul class="r-x">'+R.x.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>'+
-      '<div class="m-actions">'+(TESTS[id]?'<button type="button" class="m-btn ghost" data-act="rtest">Пройти тест'+(sc?' · было '+sc.score+'/'+sc.total:'')+'</button>':'')+
+      '<div class="m-actions"><button type="button" class="m-btn ghost report-link" data-act="report-rule">Пожаловаться на ошибку</button>'+(TESTS[id]?'<button type="button" class="m-btn ghost" data-act="rtest">Пройти тест'+(sc?' · было '+sc.score+'/'+sc.total:'')+'</button>':'')+
       '<button type="button" class="m-btn" data-act="close">Закрыть</button></div>';
     modal.scrollTop=0;
     const f=modal.querySelector('.m-close'); if(f) f.focus({preventScroll:true});
@@ -824,6 +824,7 @@ const G = (function(){
       const gs=ev.target.closest('[data-gset]'); if(gs && ruleId){ setLevelG(ruleId, +gs.dataset.gset); return; }
       const o=ev.target.closest('[data-opt]'); if(o){ choose(+o.dataset.opt); return; }
       const a=ev.target.closest('[data-act]'); if(!a) return;
+      if(a.dataset.act==='report-rule' && ruleId){ const c=CARDS[ruleId]; CardReports.open({kind:'rule',topicId:ruleId,topicTitle:c.title,english:c.title,russian:'',source:c.level}); return; }
       if(a.dataset.act==='rtest' && ruleId){ openTest(ruleId); return; }
       if(!T) return;
       if(a.dataset.act==='mixagain'){ openMix(); return; }
@@ -1203,7 +1204,7 @@ const W = (function(){
       '<div class="lesson-links">'+lessonRefHTML('rules',c.level,c.src,c.book,c.title)+'</div>'+cardSummary(id)+
       '<div class="wl">'+c.words.map(w=>
         '<div class="row" data-word-id="'+esc(id)+'" data-word-key="'+esc(w.k)+'"><span class="en">'+esc(w.en)+'</span><span class="ru">'+esc(w.ru)+'</span>'+
-        (w.p?'<span class="tg '+w.p+'" title="'+esc(POS_RU[w.p])+'">'+POS_NAME[w.p]+'</span>':'')+lvlEdit(id,w)+sayBtn(w.en)+
+        (w.p?'<span class="tg '+w.p+'" title="'+esc(POS_RU[w.p])+'">'+POS_NAME[w.p]+'</span>':'')+lvlEdit(id,w)+sayBtn(w.en)+'<button type="button" class="linkbtn report-link" data-act="report-word">Пожаловаться</button>'+
         (w.note?'<span class="exl nt">'+esc(w.note)+'</span>':'')+
         (w.ex?'<span class="exl">'+exampleHTML(w)+'</span>':'')+'</div>').join('')+'</div>'+
       '<div class="m-actions"><button type="button" class="m-btn ghost" data-act="close">Закрыть</button>'+
@@ -1244,7 +1245,7 @@ const W = (function(){
       sections.filter(Boolean).map(section=>{const refs=section.refs.filter(([id])=>part==='all'||(part==='extra')===CARDS[id].extra);if(!refs.length)return '';return '<section class="course-word-section"><h3>'+esc(section.title)+'</h3><div class="wl">'+refs.map(([id,k,en,ru])=>{
         const w=CARDS[id].words.find(w=>w.k===k);
         return '<div class="row" data-word-id="'+esc(id)+'" data-word-key="'+esc(k)+'"><span class="en">'+esc(en)+'</span><span class="ru">'+esc(ru)+'</span>'+
-          (w.p?'<span class="tg '+w.p+'">'+POS_NAME[w.p]+'</span>':'')+'<span class="course-level" data-tid="'+id+'">'+lvlEdit(id,w)+'</span>'+sayBtn(en)+
+          (w.p?'<span class="tg '+w.p+'">'+POS_NAME[w.p]+'</span>':'')+'<span class="course-level" data-tid="'+id+'">'+lvlEdit(id,w)+'</span>'+sayBtn(en)+'<button type="button" class="linkbtn report-link" data-act="report-word">Пожаловаться</button>'+
           (w.note?'<span class="exl nt">'+esc(w.note)+'</span>':'')+(w.ex?'<span class="exl">'+exampleHTML(w)+'</span>':'')+'</div>';
       }).join('')+'</div></section>';}).join('')+
       '<div class="m-actions"><button type="button" class="m-btn ghost" data-act="close">Закрыть</button><button type="button" class="m-btn" data-act="course-session">Отработать '+(sectionIndex==null?'урок':'подтему')+'</button></div>';
@@ -1438,7 +1439,7 @@ const W = (function(){
       (S.flipped?'':'<button type="button" class="m-btn show" data-act="flip">Показать ответ</button>')+'</div>'+
       '<div class="fc-row"><button type="button" class="m-btn ghost fc-back" data-act="back"'+(S.hist.length?'':' disabled')+'>← Предыдущее слово</button>'+
       '<button type="button" class="m-btn fc-know" data-act="kopen"'+(S.flipped||S.kbox?' disabled aria-hidden="true" tabindex="-1"':'')+' title="Впиши слово по-английски: если верно — уровень 8 и проверка через 45 дней, на следующих проверках — 9 и 10">Я знаю</button></div>';
-    h+='<div class="fc-foot">'+
+    h+='<div class="fc-report"><button type="button" class="linkbtn report-link" data-act="report-word">Пожаловаться на ошибку</button></div>'+'<div class="fc-foot">'+
       (canSpeak?'<label class="auto"><input type="checkbox" id="autoSay"'+(autoSay?' checked':'')+'> озвучивать ответ</label>':'<span></span>')+
       (S.flipped?'<span class="fc-links"><button type="button" class="linkbtn" data-g="reset">Обнулить</button></span>':
         '<span class="auto kbd-hint">пробел — показать ответ</span>')+
@@ -1674,6 +1675,13 @@ const W = (function(){
       if(sl && S && (S.mode==='list'||S.mode==='course-list')){ const box=sl.closest('.lvle'), source=sl.closest('[data-tid]'); if(box) setLevel(source?source.dataset.tid:S.id, box.dataset.k, +sl.dataset.setl); return; }
       const g=ev.target.closest('[data-g]'); if(g){ grade(g.dataset.g); return; }
       const a=ev.target.closest('[data-act]'); if(!a||!S) return;
+      if(a.dataset.act==='report-word'){
+        let w=null;
+        if(S.mode==='session') w=S.queue[0];
+        else { const row=a.closest('[data-word-id]'); w=row&&CARDS[row.dataset.wordId]?.words.find(x=>x.k===row.dataset.wordKey); }
+        if(w){ const c=CARDS[w.tid]; CardReports.open({kind:'word',topicId:w.tid,wordKey:w.k,english:w.en,russian:w.ru,topicTitle:c.title,source:c.level+' · '+c.src}); }
+        return;
+      }
       const id=S.id;
       if(a.dataset.act==='course-list') openCourseList(S.course,S.section,S.part);
       else if(a.dataset.act==='course-session') openCourseSession(S.course,S.section,S.part);
@@ -1732,7 +1740,7 @@ const SETTINGS = (function(){
         '</fieldset>').join('')+
       '<div class="set-actions"><span class="set-msg" id="coefMsg" role="status">'+esc(msg)+'</span>'+
       '<button type="button" class="m-btn ghost" id="coefReset">Вернуть по умолчанию</button>'+
-      '</div></form></div>';
+      '</div></form>'+(db && ACCOUNT.isAdmin?'<p class="set-actions"><a class="m-btn ghost" href="reports.html">Все жалобы на карточки</a></p>':'')+'</div>';
     if(db && !ACCOUNT.isAdmin){ root.querySelectorAll('#coefForm button,#coefForm input').forEach(e=>e.disabled=true); }
     ACCOUNT.mount(root);
   }
