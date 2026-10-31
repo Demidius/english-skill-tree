@@ -80,6 +80,48 @@ service cloud.firestore {
           && a.inviteId == token && b.inviteId == token && a.createdAt == request.time && b.createdAt == request.time;
       }
     }
+    // Users may submit immutable card reports. Only admins can review the queue.
+    match /cardReports/{reportId} {
+      allow get, list: if admin();
+      allow create: if signed()
+        && reportId.matches('^[A-Za-z0-9]{20}
+    match /accessAdmins/{uid} { allow get: if self(uid); allow list: if admin(); allow write: if false; }
+    match /system/{id} { allow read: if id == 'access' || admin(); allow write: if admin(); }
+    match /{document=**} { allow read, write: if false; }
+  }
+}
+)
+        && exists(/databases/$(database)/documents/profiles/$(request.auth.uid))
+        && request.resource.data.keys().hasAll([
+          'kind', 'topicId', 'wordKey', 'english', 'russian', 'topicTitle', 'source',
+          'message', 'reporterUid', 'reporterName', 'createdAt', 'status'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'kind', 'topicId', 'wordKey', 'english', 'russian', 'topicTitle', 'source',
+          'message', 'reporterUid', 'reporterName', 'createdAt', 'status'
+        ])
+        && request.resource.data.kind in ['word', 'rule']
+        && request.resource.data.topicId is string && request.resource.data.topicId.size() > 0 && request.resource.data.topicId.size() <= 120
+        && request.resource.data.wordKey is string && request.resource.data.wordKey.size() <= 120
+        && request.resource.data.english is string && request.resource.data.english.size() <= 300
+        && request.resource.data.russian is string && request.resource.data.russian.size() <= 500
+        && request.resource.data.topicTitle is string && request.resource.data.topicTitle.size() <= 160
+        && request.resource.data.source is string && request.resource.data.source.size() <= 120
+        && request.resource.data.message is string && request.resource.data.message.size() <= 2000
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.reporterName == profile(request.auth.uid).name
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.status == 'new';
+      allow update: if admin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status','reviewedAt','reviewedBy','adminNote'
+        ])
+        && request.resource.data.status in ['new','in_progress','fixed','dismissed']
+        && request.resource.data.reviewedAt == request.time
+        && request.resource.data.reviewedBy == request.auth.uid
+        && request.resource.data.adminNote is string && request.resource.data.adminNote.size() <= 1000;
+      allow delete: if admin();
+    }
     match /settings/{id} { allow read: if true; allow write: if admin(); }
     match /accessAdmins/{uid} { allow get: if self(uid); allow list: if admin(); allow write: if false; }
     match /system/{id} { allow read: if id == 'access' || admin(); allow write: if admin(); }
