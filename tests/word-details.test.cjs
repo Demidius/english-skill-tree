@@ -83,3 +83,9 @@ test('the data is loaded before the renderer',()=>{
  const index=read('index.html');
  assert.ok(index.indexOf('word-details-data.js')<index.indexOf('<script src="app.js'));
 });
+
+test('an early flight has a natural paraphrase and contrasting expression',()=>{
+ const row=support['efa1-11b-2|an-early-flight'];
+ assert.ok(row[1].some(([text])=>/early in the day/.test(text)));
+ assert.ok(row[2].some(([text])=>text==='a late flight'));
+});
