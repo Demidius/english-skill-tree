@@ -243,6 +243,8 @@ document.addEventListener('keydown', ev => {
     'ba-social|nice to meet you.': ['pleased to meet you'],
     "ba-social|you're welcome.": ['no problem', 'not at all', "don't mention it"],
     'ba-social|see you later.': ['see you soon', 'see you', 'see ya'],
+    // Both evening and night fit the evening reading of this Russian prompt.
+    'efa1-10b-2|last friday night': ['last Friday evening'],
     // The Russian confirmation does not require a demonstrative or a full clause.
     "efa1-pe1-3|that's right.": [
       "right", "correct", "that's correct", "yes that's right", "yes that's correct"
