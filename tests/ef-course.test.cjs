@@ -39,3 +39,10 @@ test('progress from the old A1 topics carries over',()=>{
   assert.ok(d.T.includes('pe-family'));
 });
 
+
+test('A1 demonstrative translation prompts clarify object distance',()=>{
+  const entries=cards('A1').flatMap(c=>c[3].split(';').map(r=>r.split('|')));
+  const translation=en=>entries.find(r=>r[0].trim()===en)?.[1]?.trim();
+  assert.equal(translation("What's that?"),'Что это? (предмет далеко)');
+  assert.equal(translation('How much is that?'),'Сколько это стоит? (предмет далеко)');
+});
