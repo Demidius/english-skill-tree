@@ -1410,6 +1410,13 @@ const W = (function(){
     let h=(S.lv?lvHead():head(id, S.review?'Повторение':'Карточки'))+
       '<div class="sess-meta"><span>осталось '+S.queue.length+(S.wait&&S.wait.length?' · ждут '+S.wait.length:'')+'</span><span>'+(S.lv?esc(CARDS[id].title):'тема '+cardInfo(id).pct+'%')+'</span></div>'+
       '<div class="sess-bar"><span style="width:'+pct+'%"></span></div>'+
+      '<div class="fc-foot fc-tools">'+
+      (canSpeak?'<label class="auto"><input type="checkbox" id="autoSay"'+(autoSay?' checked':'')+'> озвучивать ответ</label>':'<span></span>')+
+      '<span class="fc-foot-right">'+
+      (S.flipped?'<span class="fc-links"><button type="button" class="linkbtn" data-g="reset">Обнулить</button></span>':
+        '<span class="auto kbd-hint">пробел - показать ответ</span>')+
+      '<button type="button" class="linkbtn report-link" data-act="report-word">Пожаловаться на ошибку</button>'+
+      '</span></div>'+
       '<div class="fc">'+(w.p?'<span class="pos">'+esc(POS_RU[w.p])+'</span>':'')+
       '<div class="front'+(S.flipped?' small':'')+'">'+esc(w.ru)+'</div>';
     if(!S.flipped && S.kbox){
@@ -1439,13 +1446,7 @@ const W = (function(){
       (S.flipped?'':'<button type="button" class="m-btn show" data-act="flip">Показать ответ</button>')+'</div>'+
       '<div class="fc-row"><button type="button" class="m-btn ghost fc-back" data-act="back"'+(S.hist.length?'':' disabled')+'>← Предыдущее слово</button>'+
       '<button type="button" class="m-btn fc-know" data-act="kopen"'+(S.flipped||S.kbox?' disabled aria-hidden="true" tabindex="-1"':'')+' title="Впиши слово по-английски: если верно — уровень 8 и проверка через 45 дней, на следующих проверках — 9 и 10">Я знаю</button></div>';
-    h+='<div class="fc-foot">'+
-      (canSpeak?'<label class="auto"><input type="checkbox" id="autoSay"'+(autoSay?' checked':'')+'> озвучивать ответ</label>':'<span></span>')+
-      '<span class="fc-foot-right">'+
-      (S.flipped?'<span class="fc-links"><button type="button" class="linkbtn" data-g="reset">Обнулить</button></span>':
-        '<span class="auto kbd-hint">пробел - показать ответ</span>')+
-      '<button type="button" class="linkbtn report-link" data-act="report-word">Пожаловаться на ошибку</button>'+
-      '</span></div></div>';
+    h+='</div>';
     modal.innerHTML=h; modal.classList.add('fixed');
     const f=modal.querySelector(S.kbox&&!S.flipped?'#knownIn':S.flipped?'.grade.hard':'[data-act="flip"]'); if(f) f.focus({preventScroll:true});
   }
