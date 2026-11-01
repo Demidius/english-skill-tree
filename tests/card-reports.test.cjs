@@ -29,13 +29,21 @@ test('report rules keep submissions immutable and admin access restricted',()=>{
   assert.match(rules,/diff\(resource\.data\)\.affectedKeys\(\)\.hasOnly/);
 });
 
-test('audio control and complaint action share one footer row',()=>{
+test('audio/report controls are above the flashcard and buttons stay at the bottom',()=>{
   const app=read('app.js');
   const css=read('card-reports.css');
-  const footer=app.slice(app.indexOf('    h+=\'<div class="fc-foot">\'+'),app.indexOf('    modal.innerHTML=h; modal.classList.add(\'fixed\');'));
-  assert.match(footer,/id="autoSay"/);
-  assert.match(footer,/data-act="report-word"/);
-  assert.match(footer,/fc-foot-right/);
-  assert.doesNotMatch(footer,/fc-report/);
-  assert.match(css,/\.fc-foot\s*\{[^}]*flex-wrap:nowrap/);
+  const begin=app.indexOf("    let h=(S.lv?lvHead():head(");
+  const end=app.indexOf("    modal.innerHTML=h; modal.classList.add('fixed');",begin);
+  const session=app.slice(begin,end);
+  const tools=session.indexOf('fc-foot fc-tools');
+  const card=session.indexOf("'<div class=\"fc\">");
+  const buttons=session.indexOf('fc-actions');
+  assert.ok(tools>=0 && card>tools && buttons>card);
+  assert.match(session,/id="autoSay"/);
+  assert.match(session,/data-act="report-word"/);
+  assert.match(session,/fc-foot-right/);
+  assert.equal((session.match(/id="autoSay"/g)||[]).length,1);
+  assert.equal((session.match(/Пожаловаться на ошибку/g)||[]).length,1);
+  assert.match(css,/\.modal\.fixed > \.fc-actions\s*\{[^}]*margin-top:auto/);
+  assert.match(css,/\.modal\.fixed > \.fc-tools\s*\{[^}]*flex-wrap:nowrap/);
 });
