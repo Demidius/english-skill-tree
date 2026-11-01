@@ -1,5 +1,6 @@
-/* Optional card report form, above the study modal without losing the current word. */
-/* Audio control on the left and report button on the right, in the same footer row. */
+/* Study controls directly below the progress bar, buttons anchored at the bottom. */
+.modal.fixed > .fc-tools { display:flex; flex:0 0 auto; margin:0 0 8px; min-height:32px; flex-wrap:nowrap; align-items:center; justify-content:space-between; gap:8px; }
+.modal.fixed > .fc-actions { margin-top:auto; margin-bottom:0; padding-bottom:0; flex-shrink:0; }
 .fc-foot { display:flex; flex-wrap:nowrap; align-items:center; justify-content:space-between; gap:8px; }
 .fc-foot > .auto { flex:0 1 auto; min-width:0; }
 .fc-foot-right { display:flex; flex:0 1 auto; min-width:0; justify-content:flex-end; align-items:center; gap:10px; }
