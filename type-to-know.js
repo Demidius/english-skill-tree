@@ -21,6 +21,18 @@ document.addEventListener('keydown', ev => {
   try { inp.setSelectionRange(n, n); } catch (e) {}
 }, true);
 
+// Допустимые варианты перевода для конкретных русских формулировок.
+// Не делаем глобальные замены like/love и this/it: в других контекстах они меняют смысл.
+const CARD_TRANSLATION_ALTERNATIVES = Object.freeze({
+  'i love your shoes.|мне нравятся твои туфли.': ['I like your shoes.'],
+  'this is for you.|это тебе.': ['It is for you.'],
+});
+function cardTranslationAlternatives(en, ru) {
+  return CARD_TRANSLATION_ALTERNATIVES[
+    String(en).trim().toLowerCase() + '|' + String(ru).trim().toLowerCase()
+  ] || [];
+}
+
 // «Я знаю», неверный ответ: показываем, какие буквы ошибочны.
 // Опечатка — правильная буква над неверной; слово целиком другое — правильное слово над ним;
 // пропущенное — зелёное над красной чертой; лишнее — зачёркнуто.
@@ -75,6 +87,7 @@ document.addEventListener('keydown', ev => {
     b.dataset.diff = '1';
     const fc = b.closest('.fc'), back = fc && fc.querySelector('.back');
     const en = back && back.firstChild && back.firstChild.nodeType === 3 ? back.firstChild.nodeValue.trim() : '';
+    const ru = (fc && fc.querySelector('.front')?.textContent.trim()) || '';
     // знаки препинания (точка в конце, запятые, ?!) не проверяются — убираем их из сравнения
     // дефис = пробел (forty-four и forty four засчитываются одинаково), поэтому сравниваем по словам без дефисов
     const clean = s => s.replace(/[.,!?;:…"«»]/g, '').replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
@@ -83,7 +96,7 @@ document.addEventListener('keydown', ev => {
     let best = null;
     // Compare expanded contractions too, so where's / where is is not highlighted as an error.
     const variants = s => typeof SkillCore === 'undefined' ? [s] : [s, ...SkillCore.contractionVariants(s)];
-    alts(en).flatMap(variants).map(clean).filter(Boolean).forEach(r => [typed, strip(typed)].flatMap(variants).forEach(t => {
+    alts(en).concat(cardTranslationAlternatives(en, ru)).flatMap(variants).map(clean).filter(Boolean).forEach(r => [typed, strip(typed)].flatMap(variants).forEach(t => {
       const dist = table(low(t), low(r))[t.length][r.length];
       if (!best || dist < best.dist) best = { t, r, dist };
     }));
@@ -317,7 +330,7 @@ document.addEventListener('keydown', ev => {
     const answerKey = w.id + '|' + w.en.toLowerCase();
     const phraseAnswers = typeof A1_PHRASE_ANSWERS !== 'undefined' ? (A1_PHRASE_ANSWERS[answerKey] || []) : [];
     const also = /\([a-z]…\)/i.test(ru) ? [] : (ALSO[answerKey] || []).concat(phraseAnswers,legacyAnswers);
-    const as = alts(w.en).concat(also.map(norm));
+    const as = alts(w.en).concat(also.map(norm), cardTranslationAlternatives(w.en, ru).map(norm));
     if (as.includes(typed)) return true;
     if (ART_OK.has(w.en.toLowerCase()) && as.some(a => SkillCore.articleEquivalent(a,typed))) return true;
     if ((answerKey === 'wo-work|work for'||legacyKeys.has('wo-work|work-for')) && /^work for (?:(?:a|the) )?company$/.test(typed)) return true;
