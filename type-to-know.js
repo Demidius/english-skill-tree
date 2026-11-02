@@ -26,6 +26,7 @@ document.addEventListener('keydown', ev => {
 const CARD_TRANSLATION_ALTERNATIVES = Object.freeze({
   'i love your shoes.|мне нравятся твои туфли.': ['I like your shoes.'],
   'this is for you.|это тебе.': ['It is for you.'],
+  'want a coffee|хотеть кофе': ['want coffee'],
 });
 function cardTranslationAlternatives(en, ru) {
   return CARD_TRANSLATION_ALTERNATIVES[
