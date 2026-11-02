@@ -89,3 +89,35 @@ test('an early flight has a natural paraphrase and contrasting expression',()=>{
  assert.ok(row[1].some(([text])=>/early in the day/.test(text)));
  assert.ok(row[2].some(([text])=>text==='a late flight'));
 });
+
+test('contextual alternatives for two A1 phrases are accepted without hiding pronoun errors',()=>{
+ const Core=require('../learning-core.js'),listeners=[],front={textContent:''};
+ const document={
+  head:{appendChild(){}},body:{},
+  createElement:()=>({}),
+  addEventListener:(name,fn,capture)=>listeners.push({name,fn,capture}),
+  querySelector:()=>front
+ };
+ class MutationObserver{observe(){}}
+ new Function('document','MutationObserver','SkillCore',read('type-to-know.js'))(document,MutationObserver,Core);
+ const submit=listeners.find(x=>x.name==='submit');
+ assert.equal(submit.capture,true,'accepted variants must be applied before the main submit handler');
+ function accepts(en,ru,id,answer){
+  front.textContent=ru;
+  const inp={value:answer};
+  const form={classList:{contains:c=>c==='kbox'},
+   dataset:{wordId:id,wordKey:'test',wordEn:en,wordPos:'o'},
+   querySelector:q=>q==='#knownIn'?inp:null};
+  submit.fn({target:form,preventDefault(){},stopPropagation(){}});
+  return inp.value===en;
+ }
+ const shoes=['I love your shoes.','Мне нравятся твои туфли.','efa1-6a-3'];
+ assert.equal(accepts(...shoes,'I like your shoes.'),true);
+ assert.equal(accepts(...shoes,'I like my shoes.'),false);
+ assert.equal(accepts(...shoes,'I love my shoes.'),false);
+ const gift=['This is for you.','Это тебе.','efa1-pe4-3'];
+ assert.equal(accepts(...gift,'It is for you.'),true);
+ assert.equal(accepts(...gift,"It's for you."),true);
+ assert.equal(accepts(...gift,'It is for me.'),false);
+ assert.equal(accepts('I love your shoes.','Мне очень нравятся ваши туфли.','efa1-6a-3','I like your shoes.'),false);
+});
