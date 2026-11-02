@@ -120,4 +120,9 @@ test('contextual alternatives for two A1 phrases are accepted without hiding pro
  assert.equal(accepts(...gift,"It's for you."),true);
  assert.equal(accepts(...gift,'It is for me.'),false);
  assert.equal(accepts('I love your shoes.','Мне очень нравятся ваши туфли.','efa1-6a-3','I like your shoes.'),false);
+ const coffee=['want a coffee','хотеть кофе','efa1-3b-1'];
+ assert.equal(accepts(...coffee,'want coffee'),true);
+ assert.equal(accepts(...coffee,'want a coffee'),true);
+ assert.equal(accepts(...coffee,'I want coffee'),false);
+ assert.equal(accepts(...coffee,'I want a coffee'),false);
 });
