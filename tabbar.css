@@ -54,3 +54,88 @@
   /* Пока открыта клавиатура (поиск, ввод), панель не нужна и только съедает место */
   body:has(:is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]), textarea):focus) .tabbar { display: none; }
 }
+
+
+/* Mobile: title and account on one line, without the abandoned nav row.
+   The active progress panel joins the header to form a single framed section. */
+@media (max-width: 999px) {
+  header.top .title-row {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 7px;
+    padding-right: 37px; /* reserve space for the ? help button */
+    min-width: 0;
+  }
+  header.top .title-row h1 {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    white-space: nowrap;
+    text-wrap: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  header.top .mobile-title-account {
+    flex: 0 0 auto;
+    display: block;
+    min-width: 0;
+    max-width: 34%;
+  }
+  header.top .mobile-title-account[hidden] { display: none; }
+  header.top .mobile-title-account .acc-btn {
+    width: 100%;
+    max-width: 100%;
+    min-height: 40px;
+    gap: 4px;
+    padding: 6px 8px;
+    white-space: nowrap;
+  }
+  header.top .mobile-title-account .acc-name {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  header.top .mobile-title-account .acc-menu {
+    left: auto;
+    right: 0;
+    min-width: min(260px, calc(100vw - 48px));
+    max-width: calc(100vw - 48px);
+  }
+  header.top .navrow { display: none !important; }
+  /* In grammar and vocabulary modes, the progress panel directly follows the header. */
+  body:has(.mode:not([hidden]) > .stats-row) header.top {
+    border-bottom: 0;
+    padding-bottom: 5px;
+    margin-bottom: 0;
+  }
+  body .mode:not([hidden]) > .stats-row {
+    margin-top: 0;
+    border-top: 0;
+    border-radius: 0 0 12px 12px;
+    padding-top: 7px;
+  }
+  html[data-skin="rpg"] body:has(.mode:not([hidden]) > .stats-row) header.top {
+    box-shadow: inset 2px 0 0 var(--bg), inset -2px 0 0 var(--bg), 4px 0 0 var(--ui-deep);
+  }
+  html[data-skin="rpg"] body .mode:not([hidden]) > .stats-row {
+    box-shadow: inset 2px 0 0 var(--bg), inset -2px 0 0 var(--bg), inset 0 -2px 0 var(--bg), 4px 4px 0 var(--ui-deep);
+  }
+}
+@media (max-width: 720px) {
+  html[data-skin="rpg"] header.top .title-row h1 {
+    font-size: clamp(17px, 4.8vw, 21px);
+    letter-spacing: -.025em;
+  }
+  html[data-skin="rpg"] header.top .mobile-title-account .acc-btn {
+    font-size: 20px;
+    line-height: 1;
+    min-height: 40px;
+  }
+}
+@media (max-width: 360px) {
+  header.top .title-row { gap: 4px; padding-right: 30px; }
+  html[data-skin="rpg"] header.top .title-row h1 { font-size: 16px; }
+  html[data-skin="rpg"] header.top .mobile-title-account .acc-btn { font-size: 18px; padding-inline: 5px; }
+}
