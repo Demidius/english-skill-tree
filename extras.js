@@ -149,22 +149,26 @@ if (typeof WORD_TR !== 'undefined') {
     if (row.nextElementSibling !== panel) panel.before(row);
     return true;
   }
-  // ---- телефон: аккаунт в одной строке с переключателем режимов ----
+  // ---- телефон: выбор аккаунта рядом с заголовком; разделы уже в нижней панели ----
   function mobileNav(on) {
     const tr = document.querySelector('.title-row');
-    const md = document.querySelector('.modes'); if (!tr || !md) return;
-    let nav = document.querySelector('.navrow');
-    if (on) {
-      if (!nav) {
-        nav = document.createElement('div'); nav.className = 'navrow';
-        nav.appendChild(makeAcc());
-        const sep = document.createElement('span'); sep.className = 'navsep'; nav.appendChild(sep);
-        md.before(nav);
-      }
-      if (md.parentNode !== nav) nav.appendChild(md);
-      nav.hidden = false;
-    } else if (nav) {
-      nav.before(md); nav.hidden = true;
+    if (!tr) return;
+    let acc = tr.querySelector('.mobile-title-account');
+    if (on && !acc) {
+      acc = makeAcc();
+      acc.classList.add('mobile-title-account');
+      const title = tr.querySelector('h1');
+      if (title) title.after(acc);
+      else tr.prepend(acc);
+    }
+    if (acc) acc.hidden = !on;
+    // Старую отдельную строку больше не создаём. Если она осталась в DOM,
+    // возвращаем переключатель в заголовок, пока tabbar.js не переместит его вниз.
+    const nav = tr.querySelector('.navrow');
+    if (nav) {
+      const md = nav.querySelector('.modes');
+      if (md) tr.appendChild(md);
+      nav.remove();
     }
   }
   // ---- ПК: переключатель «Правила / Лексика» — внутри единого блока, слева под аккаунтом ----
