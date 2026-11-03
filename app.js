@@ -58,8 +58,10 @@ function applyCoef(src){
   Object.keys(COEF_DEFAULT).forEach(g=>Object.keys(COEF_DEFAULT[g]).forEach(k=>{
     const v=src&&src[g]&&src[g][k];
     const rg=COEF_RANGE[g+'.'+k]||[-10,10];
-    const step=COEF_STEP[g+'.'+k]||1;
-    COEF[g][k]=(typeof v==='number'&&isFinite(v))?Math.max(rg[0],Math.min(rg[1],Math.round(v/step)*step)):COEF_DEFAULT[g][k];
+    // COEF_STEP controls the +/- buttons, not the precision of saved values.
+    // In particular, the default maximum of 365 days must not become 360.
+    const precision=(g==='review'&&/^level(?:[2-9]|10)Days$/.test(k))?2:1;
+    COEF[g][k]=(typeof v==='number'&&isFinite(v))?Math.max(rg[0],Math.min(rg[1],Math.round(v*precision)/precision)):COEF_DEFAULT[g][k];
   }));
 }
 function sgn(n){ return (n>0?'+':n<0?'−':'')+Math.abs(n); }
@@ -1821,7 +1823,7 @@ const SETTINGS = (function(){
       '<form id="coefForm" class="set-grid" autocomplete="off">'+GROUPS.map(g=>'<fieldset class="set-card"><legend>'+esc(g.h)+'</legend><p class="set-note">'+esc(g.note)+'</p>'+
         g.f.map(([k,l])=>'<label class="set-row" for="c-'+g.key+'-'+k+'"><span>'+esc(l)+'</span>'+
           '<span class="set-step"><button type="button" class="lvb" data-step="-1" data-for="c-'+g.key+'-'+k+'" aria-label="меньше">−</button>'+
-          '<input type="number" id="c-'+g.key+'-'+k+'" data-g="'+g.key+'" data-k="'+k+'" min="'+(COEF_RANGE[g.key+'.'+k]||[-10,10])[0]+'" max="'+(COEF_RANGE[g.key+'.'+k]||[-10,10])[1]+'" data-step="'+(COEF_STEP[g.key+'.'+k]||1)+'" step="'+(COEF_STEP[g.key+'.'+k]||1)+'" value="'+COEF[g.key][k]+'">'+
+          '<input type="number" id="c-'+g.key+'-'+k+'" data-g="'+g.key+'" data-k="'+k+'" min="'+(COEF_RANGE[g.key+'.'+k]||[-10,10])[0]+'" max="'+(COEF_RANGE[g.key+'.'+k]||[-10,10])[1]+'" data-step="'+(COEF_STEP[g.key+'.'+k]||1)+'" step="'+(g.key==='review'&&/^level(?:[2-9]|10)Days$/.test(k)?0.5:1)+'" value="'+COEF[g.key][k]+'">'+
           '<button type="button" class="lvb" data-step="1" data-for="c-'+g.key+'-'+k+'" aria-label="больше">+</button></span></label>').join('')+
         '</fieldset>').join('')+
       '<div class="set-actions"><span class="set-msg" id="coefMsg" role="status">'+esc(msg)+'</span>'+
