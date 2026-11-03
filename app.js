@@ -16,9 +16,28 @@ const phoneMQ = window.matchMedia('(max-width: 720px)');
 // shared persistence state (filled in at the bottom)
 let db=null, local=false, profiles=[], current=null;
 // level coefficients (shared by all students, edited on the «Настройки» tab)
-const COEF_DEFAULT={rulesPractice:{ok:1}, review:{newPerSession:20, hardPct:120, easyPct:130, maxIvl:365}};
-const COEF_RANGE={'rulesPractice.ok':[0,3], 'review.newPerSession':[0,200], 'review.hardPct':[100,200], 'review.easyPct':[100,300], 'review.maxIvl':[180,3650]};
-const COEF_STEP={'review.newPerSession':5, 'review.hardPct':5, 'review.easyPct':5, 'review.maxIvl':30};
+const COEF_DEFAULT={rulesPractice:{ok:1}, review:{
+  newPerSession:20, hardPct:120, easyPct:130, maxIvl:365,
+  againMinutes:10, againJitterPct:10,
+  hardDelayPct:100, hardJitterPct:10,
+  goodDelayPct:100, goodJitterPct:15,
+  easyDelayPct:100, easyJitterPct:20
+}};
+const COEF_RANGE={
+  'rulesPractice.ok':[0,3],
+  'review.newPerSession':[0,200], 'review.hardPct':[100,200], 'review.easyPct':[100,300], 'review.maxIvl':[180,3650],
+  'review.againMinutes':[1,60], 'review.againJitterPct':[0,50],
+  'review.hardDelayPct':[25,200], 'review.hardJitterPct':[0,50],
+  'review.goodDelayPct':[25,300], 'review.goodJitterPct':[0,50],
+  'review.easyDelayPct':[25,400], 'review.easyJitterPct':[0,50]
+};
+const COEF_STEP={
+  'review.newPerSession':5, 'review.hardPct':5, 'review.easyPct':5, 'review.maxIvl':30,
+  'review.againMinutes':1, 'review.againJitterPct':5,
+  'review.hardDelayPct':5, 'review.hardJitterPct':5,
+  'review.goodDelayPct':5, 'review.goodJitterPct':5,
+  'review.easyDelayPct':5, 'review.easyJitterPct':5
+};
 const COEF=JSON.parse(JSON.stringify(COEF_DEFAULT));
 function applyCoef(src){
   Object.keys(COEF_DEFAULT).forEach(g=>Object.keys(COEF_DEFAULT[g]).forEach(k=>{
@@ -915,7 +934,18 @@ const W = (function(){
   const GRADE_MAX=10;
   const GRADE_STEP={again:-2, hard:0, good:1, easy:2};
   const GRADE_IVL=[0.5,0.5,1,2.5,5,10,17,30,60,120,180]; // дней до показа для уровня 0–10
-  function sched(r,g,now){
+  const GRADE_DELAY_PCT={hard:'hardDelayPct', good:'goodDelayPct', easy:'easyDelayPct'};
+  const GRADE_JITTER_PCT={again:'againJitterPct', hard:'hardJitterPct', good:'goodJitterPct', easy:'easyJitterPct'};
+  // Stable pseudorandom spread per word, answer and review: previews must equal the saved interval.
+  function gradeSpread(r,g,key){
+    const pct=COEF.review[GRADE_JITTER_PCT[g]]||0;
+    if(!pct) return 1;
+    const token=String(key||'')+'|'+g+'|'+(r[1]||0)+'|'+(r[2]||0)+'|'+(r[0]||0);
+    let hash=2166136261;
+    for(let i=0;i<token.length;i++){ hash^=token.charCodeAt(i); hash=Math.imul(hash,16777619); }
+    return 1+(((hash>>>0)/4294967295)*2-1)*pct/100;
+  }
+  function sched(r,g,now,key){
     const R=COEF.review, cap=x=>Math.min(R.maxIvl, x);
     let ivl=r[4]||0, ease=r[5]||2.5, due;
     const cur=Math.max(0,Math.min(GRADE_MAX,r[0]|0));
@@ -937,12 +967,15 @@ const W = (function(){
     if(g==='again'){ if(ivl>=1) ease=Math.max(1.3,ease-0.2); }
     else if(g==='hard'){ if(ivl>=1) ease=Math.max(1.3,ease-0.15); }
     else if(g==='easy') ease=ease+0.15;
-    if(g==='again' && lv<=1){ ivl=0; due=now+10*MIN; } // слабое слово вернётся через 10 минут, ещё в этой сессии
-    else {
+    if(g==='again' && lv<=1){
+      ivl=0;
+      due=now+Math.max(1,Math.round(R.againMinutes*gradeSpread(r,g,key)))*MIN; // в текущей сессии
+    } else {
       ivl=GRADE_IVL[lv];
       if(lv===GRADE_MAX && cur===GRADE_MAX && g!=='hard' && g!=='again') ivl=Math.max(ivl,(r[4]||0)*ease); // закреплённое слово уходит всё дальше
-      ivl=cap(Math.round(ivl*10)/10);
-      due= ivl<1 ? now+ivl*DAY : dueDay(now, Math.max(1,Math.round(ivl)));
+      ivl=ivl*(GRADE_DELAY_PCT[g]?R[GRADE_DELAY_PCT[g]]:100)/100*gradeSpread(r,g,key);
+      ivl=cap(Math.max(0.001,Math.round(ivl*1000)/1000));
+      due=ivl<1 ? now+ivl*DAY : dueDay(now,Math.max(1,Math.round(ivl)));
     }
     return {due, ivl, ease:Math.round(ease*100)/100, lv};
   }
@@ -1405,7 +1438,7 @@ const W = (function(){
     const w=S.queue[0], id=w.tid, l=lvl(id,w.k), r=rec(id,w.k), now=Date.now();
     const pct=Math.round(S.done/(S.done+S.queue.length)*100);
     // under each grade: when the word comes back and which level it will have («ур. 2 → 3»)
-    const nx=g=>{ const sc=sched(r,g,now), d=sc.lv>l?'up':sc.lv<l?'down':'same';
+    const nx=g=>{ const sc=sched(r,g,now,id+'|'+w.k), d=sc.lv>l?'up':sc.lv<l?'down':'same';
       return whenLabel(sc.ivl, sc.due, now)+'</small><small class="g-lv" data-d="'+d+'" style="opacity:'+(d==='up'?1:.75)+'" title="уровень слова после этой оценки">ур. '+l+' → '+sc.lv; };
     let h=(S.lv?lvHead():head(id, S.review?'Повторение':'Карточки'))+
       '<div class="sess-meta"><span>осталось '+S.queue.length+(S.wait&&S.wait.length?' · ждут '+S.wait.length:'')+'</span><span>'+(S.lv?esc(CARDS[id].title):'тема '+cardInfo(id).pct+'%')+'</span></div>'+
@@ -1495,7 +1528,7 @@ const W = (function(){
     S.hist.push({queue:S.queue.slice(), wait:S.wait.slice(), done:S.done, fails:Object.assign({},S.fails), seen:S.seen.slice(), tid:id,
       k:S.queue[0].k, had:!!(prog[id]&&prog[id][S.queue[0].k]), prev:prog[id]&&prog[id][S.queue[0].k]?prog[id][S.queue[0].k].slice():null});
     const w=S.queue.shift();
-    const r=rec(id,w.k), now=Date.now(), sc=sched(r,g,now);
+    const r=rec(id,w.k), now=Date.now(), sc=sched(r,g,now,id+'|'+w.k);
     if(!prog[id]) prog[id]={};
     prog[id][w.k]=[sc.lv, now, (r[2]||0)+1, sc.due, sc.ivl, sc.ease];
     if(g==='known' && S.kdone){ S.kdone.lv=sc.lv; S.kdone.when=whenLabel(sc.ivl, sc.due, now); }
@@ -1735,8 +1768,19 @@ const SETTINGS = (function(){
   const GROUPS=[
     {key:'rulesPractice', h:'Правила · быстрый тест', note:'Насколько растёт уровень правила за верный ответ в «Быстром тесте» (до уровня 7). Ошибка уровень не снижает. Код из «Изучать с AI» начисляет 0…+3 по числу верных применений, тоже без минусов. С уровня 7 нужно 3 верных подряд на каждый следующий уровень; ошибка обнуляет эти шаги.',
      f:[['ok','Верный ответ']]},
-    {key:'review', h:'Лексика · интервальное повторение', note:'Оценки меняют уровень слова: «Забыл» −2, «Трудно» 0, «Хорошо» +1, «Отлично» +2; срок повтора — интервал нового уровня. Переводы: верно = «Хорошо», с ошибкой = «Трудно», неверно = «Забыл».',
+    {key:'review', h:'Лексика · общие интервалы', note:'Максимальный срок до следующего повторения. Настройки оценок ниже влияют только на новые ответы: уже назначенные даты не меняются.',
      f:[['maxIvl','Максимальный интервал, дней']]},
+    {key:'review', h:'Лексика · интервалы по кнопкам', note:'100% = обычный срок для нового уровня. 80% = на 20% раньше, 120% = на 20% позже. Разброс ±% выбирает срок внутри этого диапазона отдельно для каждого слова. «Забыл»: минуты относятся к словам на уровнях 0–1.',
+     f:[
+       ['againMinutes','«Забыл» - повтор через, мин'],
+       ['againJitterPct','«Забыл» - разброс, ±%'],
+       ['hardDelayPct','«Трудно» - срок, %'],
+       ['hardJitterPct','«Трудно» - разброс, ±%'],
+       ['goodDelayPct','«Хорошо» - срок, %'],
+       ['goodJitterPct','«Хорошо» - разброс, ±%'],
+       ['easyDelayPct','«Отлично» - срок, %'],
+       ['easyJitterPct','«Отлично» - разброс, ±%']
+     ]},
   ];
   let msg='';
   function render(){
@@ -1770,7 +1814,7 @@ const SETTINGS = (function(){
     if(b){ const i=document.getElementById(b.dataset.for); i.value=Math.max(+i.min,Math.min(+i.max,(+i.value||0)+(+b.dataset.step)*(+i.dataset.step||1))); save(read()); return; }
     if(ev.target.id==='coefReset'){ save(JSON.parse(JSON.stringify(COEF_DEFAULT))); render(); }
   });
-  root.addEventListener('input',ev=>{
+  root.addEventListener('change',ev=>{
     const i=ev.target;
     if(i.matches('#coefForm input[data-g]') && i.value!=='' && i.validity.valid) save(read());
   });
