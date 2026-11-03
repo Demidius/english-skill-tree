@@ -22,9 +22,9 @@ const COEF_DEFAULT={rulesPractice:{ok:1}, review:{
   hardDelayPct:100, hardJitterPct:10,
   goodDelayPct:100, goodJitterPct:15,
   easyDelayPct:100, easyJitterPct:20,
-  level0Hours:12, level1Hours:12,
-  level2Days:1, level3Days:2.5, level4Days:5, level5Days:10,
-  level6Days:17, level7Days:30, level8Days:60, level9Days:120, level10Days:180
+  level0Days:1, level1Days:2,
+  level2Days:3, level3Days:5, level4Days:10, level5Days:15,
+  level6Days:20, level7Days:30, level8Days:60, level9Days:120, level10Days:180
 }};
 const COEF_RANGE={
   'rulesPractice.ok':[0,3],
@@ -33,7 +33,7 @@ const COEF_RANGE={
   'review.hardDelayPct':[25,200], 'review.hardJitterPct':[0,50],
   'review.goodDelayPct':[25,300], 'review.goodJitterPct':[0,50],
   'review.easyDelayPct':[25,400], 'review.easyJitterPct':[0,50],
-  'review.level0Hours':[1,72], 'review.level1Hours':[1,72],
+  'review.level0Days':[0.01,3650], 'review.level1Days':[0.01,3650],
   'review.level2Days':[0.5,3650], 'review.level3Days':[0.5,3650],
   'review.level4Days':[0.5,3650], 'review.level5Days':[0.5,3650],
   'review.level6Days':[0.5,3650], 'review.level7Days':[0.5,3650],
@@ -46,7 +46,7 @@ const COEF_STEP={
   'review.hardDelayPct':5, 'review.hardJitterPct':5,
   'review.goodDelayPct':5, 'review.goodJitterPct':5,
   'review.easyDelayPct':5, 'review.easyJitterPct':5,
-  'review.level0Hours':1, 'review.level1Hours':1,
+  'review.level0Days':0.5, 'review.level1Days':0.5,
   'review.level2Days':0.5, 'review.level3Days':0.5,
   'review.level4Days':0.5, 'review.level5Days':0.5,
   'review.level6Days':0.5, 'review.level7Days':0.5,
@@ -55,12 +55,23 @@ const COEF_STEP={
 };
 const COEF=JSON.parse(JSON.stringify(COEF_DEFAULT));
 function applyCoef(src){
+  // Preserve older settings where levels 0 and 1 were stored in hours.
+  // New settings use days for every level; explicitly stored days take priority.
+  const copy=src&&typeof src==='object'?Object.assign({},src):null;
+  if(copy&&copy.review&&typeof copy.review==='object'){
+    copy.review=Object.assign({},copy.review);
+    for(let l=0;l<=1;l++){
+      const days='level'+l+'Days', hours='level'+l+'Hours';
+      if(typeof copy.review[days]!=='number' && typeof copy.review[hours]==='number' && isFinite(copy.review[hours])){
+        copy.review[days]=copy.review[hours]/24;
+      }
+    }
+  }
   Object.keys(COEF_DEFAULT).forEach(g=>Object.keys(COEF_DEFAULT[g]).forEach(k=>{
-    const v=src&&src[g]&&src[g][k];
+    const v=copy&&copy[g]&&copy[g][k];
     const rg=COEF_RANGE[g+'.'+k]||[-10,10];
-    // COEF_STEP controls the +/- buttons, not the precision of saved values.
-    // In particular, the default maximum of 365 days must not become 360.
-    const precision=(g==='review'&&/^level(?:[2-9]|10)Days$/.test(k))?2:1;
+    // COEF_STEP only controls +/- buttons; fractional days stay editable.
+    const precision=(g==='review'&&/^level(?:[0-9]|10)Days$/.test(k))?100:1;
     COEF[g][k]=(typeof v==='number'&&isFinite(v))?Math.max(rg[0],Math.min(rg[1],Math.round(v*precision)/precision)):COEF_DEFAULT[g][k];
   }));
 }
@@ -951,10 +962,10 @@ const W = (function(){
   // Срок следующего показа — интервал нового уровня (таблица ниже). На уровне 10 интервал продолжает расти.
   const GRADE_MAX=10;
   const GRADE_STEP={again:-2, hard:0, good:1, easy:2};
-  // Custom level intervals: 0–1 in hours, 2–10 in days.
+  // Custom base intervals for levels 0–10, all measured in days.
   function levelDays(l){
     const level=Math.max(0,Math.min(10,l|0));
-    return level<=1 ? COEF.review['level'+level+'Hours']/24 : COEF.review['level'+level+'Days'];
+    return COEF.review['level'+level+'Days'];
   }
   const GRADE_DELAY_PCT={hard:'hardDelayPct', good:'goodDelayPct', easy:'easyDelayPct'};
   const GRADE_JITTER_PCT={again:'againJitterPct', hard:'hardJitterPct', good:'goodJitterPct', easy:'easyJitterPct'};
@@ -1791,10 +1802,10 @@ const SETTINGS = (function(){
      f:[['ok','Верный ответ']]},
     {key:'review', h:'Лексика · общие интервалы', note:'Максимальный срок до следующего повторения. Настройки оценок ниже влияют только на новые ответы: уже назначенные даты не меняются.',
      f:[['maxIvl','Максимальный интервал, дней']]},
-    {key:'review', h:'Лексика · сроки по уровням знания', note:'Для каждого уровня выбери срок повторения: 0–1 в часах, 2–10 в днях. После «Забыл» на уровнях 0–1 действует короткий таймер, который настраивается ниже.',
+    {key:'review', h:'Лексика · сроки по уровням знания', note:'Для каждого уровня от 0 до 10 выбери срок повторения в днях. После «Забыл» на уровнях 0–1 действует отдельный короткий таймер в минутах, который настраивается ниже.',
      f:[
-       ['level0Hours','0 · новое, часов'],
-       ['level1Hours','1 · изучаю, часов'],
+       ['level0Days','0 · новое, дней'],
+       ['level1Days','1 · изучаю, дней'],
        ['level2Days','2 · изучаю, дней'],
        ['level3Days','3 · изучаю, дней'],
        ['level4Days','4 · изучаю, дней'],
@@ -1823,7 +1834,7 @@ const SETTINGS = (function(){
       '<form id="coefForm" class="set-grid" autocomplete="off">'+GROUPS.map(g=>'<fieldset class="set-card"><legend>'+esc(g.h)+'</legend><p class="set-note">'+esc(g.note)+'</p>'+
         g.f.map(([k,l])=>'<label class="set-row" for="c-'+g.key+'-'+k+'"><span>'+esc(l)+'</span>'+
           '<span class="set-step"><button type="button" class="lvb" data-step="-1" data-for="c-'+g.key+'-'+k+'" aria-label="меньше">−</button>'+
-          '<input type="number" id="c-'+g.key+'-'+k+'" data-g="'+g.key+'" data-k="'+k+'" min="'+(COEF_RANGE[g.key+'.'+k]||[-10,10])[0]+'" max="'+(COEF_RANGE[g.key+'.'+k]||[-10,10])[1]+'" data-step="'+(COEF_STEP[g.key+'.'+k]||1)+'" step="'+(g.key==='review'&&/^level(?:[2-9]|10)Days$/.test(k)?0.5:1)+'" value="'+COEF[g.key][k]+'">'+
+          '<input type="number" id="c-'+g.key+'-'+k+'" data-g="'+g.key+'" data-k="'+k+'" min="'+(COEF_RANGE[g.key+'.'+k]||[-10,10])[0]+'" max="'+(COEF_RANGE[g.key+'.'+k]||[-10,10])[1]+'" data-step="'+(COEF_STEP[g.key+'.'+k]||1)+'" step="'+(g.key==='review'&&/^level(?:[0-9]|10)Days$/.test(k)?'any':1)+'" value="'+COEF[g.key][k]+'">'+
           '<button type="button" class="lvb" data-step="1" data-for="c-'+g.key+'-'+k+'" aria-label="больше">+</button></span></label>').join('')+
         '</fieldset>').join('')+
       '<div class="set-actions"><span class="set-msg" id="coefMsg" role="status">'+esc(msg)+'</span>'+
