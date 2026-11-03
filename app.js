@@ -19,9 +19,7 @@ let db=null, local=false, profiles=[], current=null;
 const COEF_DEFAULT={rulesPractice:{ok:1}, review:{
   newPerSession:20, hardPct:120, easyPct:130, maxIvl:365,
   againMinutes:10, againJitterPct:10,
-  hardDelayPct:100, hardJitterPct:10,
-  goodDelayPct:100, goodJitterPct:15,
-  easyDelayPct:100, easyJitterPct:20,
+  hardJitterPct:10, goodJitterPct:15, easyJitterPct:20,
   level0Days:1, level1Days:2,
   level2Days:3, level3Days:5, level4Days:10, level5Days:15,
   level6Days:20, level7Days:30, level8Days:60, level9Days:120, level10Days:180
@@ -30,9 +28,9 @@ const COEF_RANGE={
   'rulesPractice.ok':[0,3],
   'review.newPerSession':[0,200], 'review.hardPct':[100,200], 'review.easyPct':[100,300], 'review.maxIvl':[180,3650],
   'review.againMinutes':[1,60], 'review.againJitterPct':[0,50],
-  'review.hardDelayPct':[25,200], 'review.hardJitterPct':[0,50],
-  'review.goodDelayPct':[25,300], 'review.goodJitterPct':[0,50],
-  'review.easyDelayPct':[25,400], 'review.easyJitterPct':[0,50],
+  'review.hardJitterPct':[0,50],
+  'review.goodJitterPct':[0,50],
+  'review.easyJitterPct':[0,50],
   'review.level0Days':[0.01,3650], 'review.level1Days':[0.01,3650],
   'review.level2Days':[0.5,3650], 'review.level3Days':[0.5,3650],
   'review.level4Days':[0.5,3650], 'review.level5Days':[0.5,3650],
@@ -43,9 +41,9 @@ const COEF_RANGE={
 const COEF_STEP={
   'review.newPerSession':5, 'review.hardPct':5, 'review.easyPct':5, 'review.maxIvl':30,
   'review.againMinutes':1, 'review.againJitterPct':5,
-  'review.hardDelayPct':5, 'review.hardJitterPct':5,
-  'review.goodDelayPct':5, 'review.goodJitterPct':5,
-  'review.easyDelayPct':5, 'review.easyJitterPct':5,
+  'review.hardJitterPct':5,
+  'review.goodJitterPct':5,
+  'review.easyJitterPct':5,
   'review.level0Days':0.5, 'review.level1Days':0.5,
   'review.level2Days':0.5, 'review.level3Days':0.5,
   'review.level4Days':0.5, 'review.level5Days':0.5,
@@ -967,7 +965,6 @@ const W = (function(){
     const level=Math.max(0,Math.min(10,l|0));
     return COEF.review['level'+level+'Days'];
   }
-  const GRADE_DELAY_PCT={hard:'hardDelayPct', good:'goodDelayPct', easy:'easyDelayPct'};
   const GRADE_JITTER_PCT={again:'againJitterPct', hard:'hardJitterPct', good:'goodJitterPct', easy:'easyJitterPct'};
   // Stable pseudorandom spread per word, answer and review: previews must equal the saved interval.
   function gradeSpread(r,g,key){
@@ -1004,7 +1001,7 @@ const W = (function(){
     } else {
       ivl=levelDays(lv);
       if(lv===GRADE_MAX && cur===GRADE_MAX && g!=='hard' && g!=='again') ivl=Math.max(ivl,(r[4]||0)*ease); // закреплённое слово уходит всё дальше
-      ivl=ivl*(GRADE_DELAY_PCT[g]?R[GRADE_DELAY_PCT[g]]:100)/100*gradeSpread(r,g,key);
+      ivl=ivl*gradeSpread(r,g,key);
       ivl=cap(Math.max(0.001,Math.round(ivl*1000)/1000));
       due=ivl<1 ? now+ivl*DAY : dueDay(now,Math.max(1,Math.round(ivl)));
     }
@@ -1816,15 +1813,12 @@ const SETTINGS = (function(){
        ['level9Days','9 · знаю, дней'],
        ['level10Days','10 · закреплено, дней']
      ]},
-    {key:'review', h:'Лексика · поправки по кнопкам', note:'Базовый срок берётся из уровня выше. 100% = без изменений; 80% = на 20% раньше, 120% = на 20% позже. Для каждой кнопки можно задать свой разброс ±%. На уровне 10 интервалы могут расти до указанного максимума.',
+    {key:'review', h:'Лексика · разброс по кнопкам', note:'Базовый срок повторения задаётся выше для каждого уровня знания. Здесь можно настроить только случайный разброс ±% для каждой оценки. Для «Забыл» на уровнях 0–1 сохраняется отдельный короткий интервал в минутах.',
      f:[
        ['againMinutes','«Забыл» - повтор через, мин'],
        ['againJitterPct','«Забыл» - разброс, ±%'],
-       ['hardDelayPct','«Трудно» - срок, %'],
        ['hardJitterPct','«Трудно» - разброс, ±%'],
-       ['goodDelayPct','«Хорошо» - срок, %'],
        ['goodJitterPct','«Хорошо» - разброс, ±%'],
-       ['easyDelayPct','«Отлично» - срок, %'],
        ['easyJitterPct','«Отлично» - разброс, ±%']
      ]},
   ];
