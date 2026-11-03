@@ -21,7 +21,10 @@ const COEF_DEFAULT={rulesPractice:{ok:1}, review:{
   againMinutes:10, againJitterPct:10,
   hardDelayPct:100, hardJitterPct:10,
   goodDelayPct:100, goodJitterPct:15,
-  easyDelayPct:100, easyJitterPct:20
+  easyDelayPct:100, easyJitterPct:20,
+  level0Hours:12, level1Hours:12,
+  level2Days:1, level3Days:2.5, level4Days:5, level5Days:10,
+  level6Days:17, level7Days:30, level8Days:60, level9Days:120, level10Days:180
 }};
 const COEF_RANGE={
   'rulesPractice.ok':[0,3],
@@ -29,21 +32,34 @@ const COEF_RANGE={
   'review.againMinutes':[1,60], 'review.againJitterPct':[0,50],
   'review.hardDelayPct':[25,200], 'review.hardJitterPct':[0,50],
   'review.goodDelayPct':[25,300], 'review.goodJitterPct':[0,50],
-  'review.easyDelayPct':[25,400], 'review.easyJitterPct':[0,50]
+  'review.easyDelayPct':[25,400], 'review.easyJitterPct':[0,50],
+  'review.level0Hours':[1,72], 'review.level1Hours':[1,72],
+  'review.level2Days':[0.5,3650], 'review.level3Days':[0.5,3650],
+  'review.level4Days':[0.5,3650], 'review.level5Days':[0.5,3650],
+  'review.level6Days':[0.5,3650], 'review.level7Days':[0.5,3650],
+  'review.level8Days':[0.5,3650], 'review.level9Days':[0.5,3650],
+  'review.level10Days':[0.5,3650]
 };
 const COEF_STEP={
   'review.newPerSession':5, 'review.hardPct':5, 'review.easyPct':5, 'review.maxIvl':30,
   'review.againMinutes':1, 'review.againJitterPct':5,
   'review.hardDelayPct':5, 'review.hardJitterPct':5,
   'review.goodDelayPct':5, 'review.goodJitterPct':5,
-  'review.easyDelayPct':5, 'review.easyJitterPct':5
+  'review.easyDelayPct':5, 'review.easyJitterPct':5,
+  'review.level0Hours':1, 'review.level1Hours':1,
+  'review.level2Days':0.5, 'review.level3Days':0.5,
+  'review.level4Days':0.5, 'review.level5Days':0.5,
+  'review.level6Days':0.5, 'review.level7Days':0.5,
+  'review.level8Days':0.5, 'review.level9Days':0.5,
+  'review.level10Days':0.5
 };
 const COEF=JSON.parse(JSON.stringify(COEF_DEFAULT));
 function applyCoef(src){
   Object.keys(COEF_DEFAULT).forEach(g=>Object.keys(COEF_DEFAULT[g]).forEach(k=>{
     const v=src&&src[g]&&src[g][k];
     const rg=COEF_RANGE[g+'.'+k]||[-10,10];
-    COEF[g][k]=(typeof v==='number'&&isFinite(v))?Math.max(rg[0],Math.min(rg[1],Math.round(v))):COEF_DEFAULT[g][k];
+    const step=COEF_STEP[g+'.'+k]||1;
+    COEF[g][k]=(typeof v==='number'&&isFinite(v))?Math.max(rg[0],Math.min(rg[1],Math.round(v/step)*step)):COEF_DEFAULT[g][k];
   }));
 }
 function sgn(n){ return (n>0?'+':n<0?'−':'')+Math.abs(n); }
@@ -933,7 +949,11 @@ const W = (function(){
   // Срок следующего показа — интервал нового уровня (таблица ниже). На уровне 10 интервал продолжает расти.
   const GRADE_MAX=10;
   const GRADE_STEP={again:-2, hard:0, good:1, easy:2};
-  const GRADE_IVL=[0.5,0.5,1,2.5,5,10,17,30,60,120,180]; // дней до показа для уровня 0–10
+  // Custom level intervals: 0–1 in hours, 2–10 in days.
+  function levelDays(l){
+    const level=Math.max(0,Math.min(10,l|0));
+    return level<=1 ? COEF.review['level'+level+'Hours']/24 : COEF.review['level'+level+'Days'];
+  }
   const GRADE_DELAY_PCT={hard:'hardDelayPct', good:'goodDelayPct', easy:'easyDelayPct'};
   const GRADE_JITTER_PCT={again:'againJitterPct', hard:'hardJitterPct', good:'goodJitterPct', easy:'easyJitterPct'};
   // Stable pseudorandom spread per word, answer and review: previews must equal the saved interval.
@@ -952,15 +972,13 @@ const W = (function(){
     // повтор раньше срока (слово ещё не пора показывать): «Хорошо» и «Отлично» не поднимают уровень и не сдвигают срок
     const early=ivl>0 && r[3]>now;
     if(g==='reset'){ return {due:0, ivl:0, ease:2.5, lv:0}; }
-    if(g==='known'){ // «Я знаю»: first 45 days (level 8), then level 9 (90+), then level 10 (180+)
-      // a correctly typed word below level 8 always goes to level 8 — even before its due date
-      // or right after «Забыл»; levels 9 and 10 only come on checks that are due
-      const late=(ivl>0 && r[3] && !early)?Math.max(0,Math.floor((now-r[3])/DAY)):0;
-      if(ivl<45) ivl=45;
-      else if(early) return {due:r[3], ivl, ease, lv:r[0]};
-      else { const gr=Math.max(ivl+1, (ivl+late/2)*ease); ivl=ivl<90?Math.min(179.9,Math.max(90,gr)):ivl<180?Math.max(180,gr):gr; }
-      ivl=cap(Math.round(ivl*10)/10);
-      return {due:dueDay(now, Math.max(1,Math.round(ivl))), ivl, ease:Math.round(ease*100)/100, lv:lvFromIvl(ivl, true)};
+    if(g==='known'){ // «Я знаю»: прыжок на 8, затем переходы на 9 и 10
+      if(cur>=8 && early) return {due:r[3],ivl,ease,lv:cur};
+      const next=cur<8?8:Math.min(10,cur+1);
+      const base=levelDays(next);
+      ivl=next===10 && cur===10 ? Math.max(base,ivl*ease) : base;
+      ivl=cap(Math.round(ivl*1000)/1000);
+      return {due:ivl<1?now+ivl*DAY:dueDay(now,Math.max(1,Math.round(ivl))),ivl,ease:Math.round(ease*100)/100,lv:next};
     }
     if(early && (g==='good' || g==='easy')) return {due:r[3], ivl, ease, lv:cur};
     const lv=Math.max(0,Math.min(GRADE_MAX, cur+(GRADE_STEP[g]||0)));
@@ -971,7 +989,7 @@ const W = (function(){
       ivl=0;
       due=now+Math.max(1,Math.round(R.againMinutes*gradeSpread(r,g,key)))*MIN; // в текущей сессии
     } else {
-      ivl=GRADE_IVL[lv];
+      ivl=levelDays(lv);
       if(lv===GRADE_MAX && cur===GRADE_MAX && g!=='hard' && g!=='again') ivl=Math.max(ivl,(r[4]||0)*ease); // закреплённое слово уходит всё дальше
       ivl=ivl*(GRADE_DELAY_PCT[g]?R[GRADE_DELAY_PCT[g]]:100)/100*gradeSpread(r,g,key);
       ivl=cap(Math.max(0.001,Math.round(ivl*1000)/1000));
@@ -1113,12 +1131,12 @@ const W = (function(){
     footer:'<section><h3>Сессия карточек</h3><ul>'+
       '<li>Клик по карточке темы открывает список слов с примерами и уровнями. Кнопка «Тест» справа запускает сессию карточек из всех невыученных слов темы (если выучены все — из всех слов на повторение): видишь слово по-русски, вспоминаешь английское, открываешь ответ с примером и оцениваешь себя.</li>'+
       '<li>Слова идут в случайном порядке.</li>'+
-      '<li>В списке слов уровень можно поменять вручную: «−» и «+» или клик по шкале. Слово получит интервал этого уровня (например, 7 — повтор через месяц).</li>'+
+      '<li>В списке слов уровень можно поменять вручную: «−» и «+» или клик по шкале. Слово получит интервал выбранного уровня из настроек.</li>'+
       '</ul></section>'+
       '<section><h3>Оценки и уровень</h3><ul>'+
-      '<li>Оценки меняют уровень слова: «Забыл» — −2, «Трудно» — уровень не меняется, «Хорошо» — +1, «Отлично» — +2. Слово вернётся через срок нового уровня (например, уровень 5 — через 10 дней); если после «Забыл» уровень стал 0 или 1 — через 10 минут, ещё раз в этой сессии. Если слово открыто раньше срока, «Хорошо» и «Отлично» уровень не поднимают. Под кнопкой видно, когда слово вернётся и какой у него станет уровень (например, «ур. 2 → 3»).</li>'+
+      '<li>Оценки меняют уровень слова: «Забыл» — −2, «Трудно» — уровень не меняется, «Хорошо» — +1, «Отлично» — +2. Слово вернётся через срок нового уровня из настроек; если после «Забыл» уровень стал 0 или 1 — через заданный короткий интервал в минутах, ещё раз в этой сессии. Если слово открыто раньше срока, «Хорошо» и «Отлично» уровень не поднимают. Под кнопкой видно, когда слово вернётся и какой у него станет уровень (например, «ур. 2 → 3»).</li>'+
       '<li>Уровень 0–10 показывает интервал и степень знания: 0 — новое, 1–4 — изучаю, 5–7 — повторяю, 8–9 — знаю, 10 — закреплено. Уровни 8–9 зелёные, 10 выделен бирюзовым.</li>'+
-      '<li>Кнопка «Я знаю» на лицевой стороне открывает поле: впиши слово по-английски. Если верно — уровень 8 и проверка через 45 дней; на следующих проверках верный ответ поднимает до 9, потом до 10. Верный ответ всегда даёт минимум уровень 8 — даже если срок слова ещё не подошёл или ты его недавно забыл. Если нет — открывается ответ, и слово оцениваешь как обычно. «Обнулить» возвращает слово в новые.</li>'+
+      '<li>Кнопка «Я знаю» на лицевой стороне открывает поле: впиши слово по-английски. Если верно — уровень 8 и проверка через его интервал из настроек; на следующих проверках верный ответ поднимает до 9, потом до 10. Верный ответ всегда даёт минимум уровень 8 — даже если срок слова ещё не подошёл или ты его недавно забыл. Если нет — открывается ответ, и слово оцениваешь как обычно. «Обнулить» возвращает слово в новые.</li>'+
       '<li>«← Предыдущее слово» возвращает к прошлой карточке и отменяет её оценку, чтобы можно было оценить заново.</li>'+
       '<li>Переводы: слово переведено верно — как «Хорошо», с ошибкой — как «Трудно», неверно — как «Забыл».</li>'+
       '</ul></section>'+
@@ -1211,8 +1229,9 @@ const W = (function(){
     const r=rec(id,k);
     if(r[0]===l) return;
     if(!prog[id]) prog[id]={};
-    const now=Date.now(), iv=IVL_FOR_LEVEL[l];
-    prog[id][k]= l===0 ? [0, now, r[2]||0] : [l, now, Math.max(1,r[2]||0), l===1?now:dueDay(now, Math.max(1,Math.round(iv))), iv, r[5]||2.5];
+    const now=Date.now(), iv=levelDays(l);
+    prog[id][k]=l===0?[0,now,r[2]||0]:[l,now,Math.max(1,r[2]||0),
+      iv<1?now+iv*DAY:dueDay(now,Math.max(1,Math.round(iv))),iv,r[5]||2.5];
     const wasOpen=OPEN[okey(id)];
     computeOpen();
     if(OPEN[okey(id)]!==wasOpen) ALL.forEach(paint); else paint(id);
@@ -1478,7 +1497,7 @@ const W = (function(){
       '<button type="button" class="grade know" data-g="easy"'+ti+'>Отлично<small>'+nx('easy')+'</small></button></div>'+
       (S.flipped?'':'<button type="button" class="m-btn show" data-act="flip">Показать ответ</button>')+'</div>'+
       '<div class="fc-row"><button type="button" class="m-btn ghost fc-back" data-act="back"'+(S.hist.length?'':' disabled')+'>← Предыдущее слово</button>'+
-      '<button type="button" class="m-btn fc-know" data-act="kopen"'+(S.flipped||S.kbox?' disabled aria-hidden="true" tabindex="-1"':'')+' title="Впиши слово по-английски: если верно — уровень 8 и проверка через 45 дней, на следующих проверках — 9 и 10">Я знаю</button></div>';
+      '<button type="button" class="m-btn fc-know" data-act="kopen"'+(S.flipped||S.kbox?' disabled aria-hidden="true" tabindex="-1"':'')+' title="Впиши слово по-английски: если верно — уровень 8 с интервалом из настроек, затем уровни 9 и 10">Я знаю</button></div>';
     h+='</div>';
     modal.innerHTML=h; modal.classList.add('fixed');
     const f=modal.querySelector(S.kbox&&!S.flipped?'#knownIn':S.flipped?'.grade.hard':'[data-act="flip"]'); if(f) f.focus({preventScroll:true});
