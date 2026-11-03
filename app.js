@@ -1789,7 +1789,21 @@ const SETTINGS = (function(){
      f:[['ok','Верный ответ']]},
     {key:'review', h:'Лексика · общие интервалы', note:'Максимальный срок до следующего повторения. Настройки оценок ниже влияют только на новые ответы: уже назначенные даты не меняются.',
      f:[['maxIvl','Максимальный интервал, дней']]},
-    {key:'review', h:'Лексика · интервалы по кнопкам', note:'100% = обычный срок для нового уровня. 80% = на 20% раньше, 120% = на 20% позже. Разброс ±% выбирает срок внутри этого диапазона отдельно для каждого слова. «Забыл»: минуты относятся к словам на уровнях 0–1.',
+    {key:'review', h:'Лексика · сроки по уровням знания', note:'Для каждого уровня выбери срок повторения: 0–1 в часах, 2–10 в днях. После «Забыл» на уровнях 0–1 действует короткий таймер, который настраивается ниже.',
+     f:[
+       ['level0Hours','0 · новое, часов'],
+       ['level1Hours','1 · изучаю, часов'],
+       ['level2Days','2 · изучаю, дней'],
+       ['level3Days','3 · изучаю, дней'],
+       ['level4Days','4 · изучаю, дней'],
+       ['level5Days','5 · повторяю, дней'],
+       ['level6Days','6 · повторяю, дней'],
+       ['level7Days','7 · повторяю, дней'],
+       ['level8Days','8 · знаю, дней'],
+       ['level9Days','9 · знаю, дней'],
+       ['level10Days','10 · закреплено, дней']
+     ]},
+    {key:'review', h:'Лексика · поправки по кнопкам', note:'Базовый срок берётся из уровня выше. 100% = без изменений; 80% = на 20% раньше, 120% = на 20% позже. Для каждой кнопки можно задать свой разброс ±%. На уровне 10 интервалы могут расти до указанного максимума.',
      f:[
        ['againMinutes','«Забыл» - повтор через, мин'],
        ['againJitterPct','«Забыл» - разброс, ±%'],
@@ -1807,7 +1821,7 @@ const SETTINGS = (function(){
       '<form id="coefForm" class="set-grid" autocomplete="off">'+GROUPS.map(g=>'<fieldset class="set-card"><legend>'+esc(g.h)+'</legend><p class="set-note">'+esc(g.note)+'</p>'+
         g.f.map(([k,l])=>'<label class="set-row" for="c-'+g.key+'-'+k+'"><span>'+esc(l)+'</span>'+
           '<span class="set-step"><button type="button" class="lvb" data-step="-1" data-for="c-'+g.key+'-'+k+'" aria-label="меньше">−</button>'+
-          '<input type="number" id="c-'+g.key+'-'+k+'" data-g="'+g.key+'" data-k="'+k+'" min="'+(COEF_RANGE[g.key+'.'+k]||[-10,10])[0]+'" max="'+(COEF_RANGE[g.key+'.'+k]||[-10,10])[1]+'" data-step="'+(COEF_STEP[g.key+'.'+k]||1)+'" step="1" value="'+COEF[g.key][k]+'">'+
+          '<input type="number" id="c-'+g.key+'-'+k+'" data-g="'+g.key+'" data-k="'+k+'" min="'+(COEF_RANGE[g.key+'.'+k]||[-10,10])[0]+'" max="'+(COEF_RANGE[g.key+'.'+k]||[-10,10])[1]+'" data-step="'+(COEF_STEP[g.key+'.'+k]||1)+'" step="'+(COEF_STEP[g.key+'.'+k]||1)+'" value="'+COEF[g.key][k]+'">'+
           '<button type="button" class="lvb" data-step="1" data-for="c-'+g.key+'-'+k+'" aria-label="больше">+</button></span></label>').join('')+
         '</fieldset>').join('')+
       '<div class="set-actions"><span class="set-msg" id="coefMsg" role="status">'+esc(msg)+'</span>'+
@@ -1816,7 +1830,7 @@ const SETTINGS = (function(){
     if(db && !ACCOUNT.isAdmin){ root.querySelectorAll('#coefForm button,#coefForm input').forEach(e=>e.disabled=true); }
     ACCOUNT.mount(root);
   }
-  function read(){ const o={}; root.querySelectorAll('input[data-g]').forEach(i=>{ (o[i.dataset.g]=o[i.dataset.g]||{})[i.dataset.k]=i.value!=='' && i.validity.valid ? Math.round(+i.value) : COEF[i.dataset.g][i.dataset.k]; }); return o; }
+  function read(){ const o={}; root.querySelectorAll('input[data-g]').forEach(i=>{ (o[i.dataset.g]=o[i.dataset.g]||{})[i.dataset.k]=i.value!=='' && i.validity.valid ? +i.value : COEF[i.dataset.g][i.dataset.k]; }); return o; }
   function save(o){
     if(db && !ACCOUNT.isAdmin) return;
     msg='Сохраняется…'; setMsg();
