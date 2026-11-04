@@ -9,9 +9,8 @@
   }
   .grade.again::after { content: '1'; }
   .grade.hard::after  { content: '2'; }
-  .grade.same::after  { content: '3'; }
-  .grade.easy::after  { content: '4'; }
-  .grade.know::after  { content: '5'; }
+  .grade.easy::after  { content: '3'; }
+  .grade.know::after  { content: '4'; }
   .fc-know::after     { content: '5'; }
   .fc-back::after     { content: '←'; }
   .m-btn.show::after  { content: 'пробел'; }
