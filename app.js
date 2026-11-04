@@ -1167,7 +1167,7 @@ const W = (function(){
       '<section><h3>Оценки и уровень</h3><ul>'+
       '<li>Четыре оценки: «Снова» - не вспомнил, «Трудно» - вспомнил с усилием, «Хорошо» - вспомнил, «Легко» - ответил без усилий. Новые слова проходят короткие шаги обучения, затем интервалы растут автоматически. На кнопках показан следующий срок: минуты, часы или дни. Клавиши 1-4 выбирают оценку; пробел или Enter показывают ответ, а затем выбирают «Хорошо».</li>'+
       '<li>Если других карточек не осталось, ближайший учебный повтор может появиться раньше срока, в пределах 20 минут. Уровень 0-10 отражает интервал: 0 - новое, 1-4 - изучаю, 5-7 - повторяю, 8-9 - знаю, 10 - закреплено.</li>'+
-      '<li>«Ввести ответ» позволяет проверить написание. После проверки выбери одну из четырёх оценок. «Обнулить» возвращает слово в новые.</li>'+
+      '<li>«Ввести ответ» позволяет проверить написание. После проверки выбери одну из четырёх оценок.</li>'+
       '<li>«← Предыдущее слово» возвращает к прошлой карточке и отменяет её оценку, чтобы можно было оценить заново.</li>'+
       '<li>Переводы: слово переведено верно — как «Хорошо», с ошибкой - как «Трудно», неверно - как «Снова».</li>'+
       '</ul></section>'+
@@ -1499,8 +1499,7 @@ const W = (function(){
       '<div class="fc-foot fc-tools">'+
       (canSpeak?'<label class="auto"><input type="checkbox" id="autoSay"'+(autoSay?' checked':'')+'> озвучивать ответ</label>':'<span></span>')+
       '<span class="fc-foot-right">'+
-      (S.flipped?'<span class="fc-links"><button type="button" class="linkbtn" data-g="reset">Обнулить</button></span>':
-        '<span class="auto kbd-hint">пробел - показать ответ</span>')+
+      (S.flipped?'':'<span class="auto kbd-hint">пробел - показать ответ</span>')+
       '<button type="button" class="linkbtn report-link" data-act="report-word">Пожаловаться на ошибку</button>'+
       '</span></div>'+
       '<div class="fc">'+(w.p?'<span class="pos">'+esc(POS_RU[w.p])+'</span>':'')+
@@ -1805,7 +1804,7 @@ const W = (function(){
       if(ev.key==='ArrowLeft' || ev.key==='Backspace'){ undo(); ev.preventDefault(); return; }
       if(!S.flipped && (ev.key===' ' || ev.key==='Enter')){ flip(); ev.preventDefault(); return; }
       if(S.flipped){
-        const map={'1':'again','2':'hard','3':'good','4':'easy','0':'reset',' ':'good','Enter':'good'};
+        const map={'1':'again','2':'hard','3':'good','4':'easy',' ':'good','Enter':'good'};
         if(map[ev.key]){ grade(map[ev.key]); ev.preventDefault(); }
       }
     },

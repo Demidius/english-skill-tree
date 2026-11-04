@@ -14,11 +14,6 @@
   .fc-know::after     { content: '5'; }
   .fc-back::after     { content: '←'; }
   .m-btn.show::after  { content: 'пробел'; }
-  .fc-links .linkbtn[data-g="reset"]::after {
-    content: '0'; display: inline-block; margin-left: 6px;
-    font: 600 .62rem/1 'IBM Plex Mono', monospace;
-    padding: 2px 5px; border: 1px solid currentColor; border-radius: 5px; opacity: .6;
-  }
 }
 
 /* Блок «Повторение слов» на широком экране: две колонки и ограниченная ширина */

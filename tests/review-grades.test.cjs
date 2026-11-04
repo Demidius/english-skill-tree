@@ -105,6 +105,7 @@ test('rendering exposes four ratings and collapsed examples',()=>{
  for(const b of buttons){assert.match(b[2],/^<small>.*<\/small><span class="grade-label">/);assert.doesNotMatch(b[2],/уровень|ур\./)}
  assert.match(c.modal.innerHTML,/<details class="fc-details">/);
  assert.doesNotMatch(c.modal.innerHTML,/<details[^>]* open/);
+ assert.doesNotMatch(c.modal.innerHTML,/data-g="reset"|Обнулить/);
 });
 test('learning cards are requeued for every short-step rating; mature ratings complete the card',()=>{
  for(const g of ['again','hard','good']){
@@ -145,6 +146,7 @@ test('Space/Enter reveal then rate Good; 1-4 select ratings without a fifth grad
  for(const key of ['1','2','3','4',' ','Enter'])c.onKey({key,preventDefault(){}});
  assert.deepEqual(seen,['again','hard','good','easy','good','good']);
  c.onKey({key:'5'});assert.equal(seen.length,6);
+ c.onKey({key:'0'});assert.equal(seen.length,6);
  c.S.flipped=false;c.onKey({key:' ',preventDefault(){}});assert.equal(c.S.flipped,true);assert.equal(seen.length,6);
 });
 test('reset returns a word to new without losing undo history',()=>{
