@@ -511,14 +511,12 @@ footer.note{color:var(--muted); font-size:.76rem; margin:6px 0 40px; max-width:6
 .grades{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px;}
 .grade{
   border:1px solid var(--line); border-radius:12px; padding:10px 6px 8px; cursor:pointer;
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
-  min-width:0; min-height:76px; text-align:center; line-height:1.2;
+  display:flex; flex-direction:column; align-items:center; gap:3px;
   font-family:'Manrope',sans-serif; font-weight:700; font-size:.9rem; background:var(--surface); color:var(--ink);
 }
-.grade small{margin-top:0; font-family:'IBM Plex Mono',monospace; font-size:.64rem; font-weight:500; line-height:1.2; color:inherit; opacity:.85;}
+.grade small{font-family:'IBM Plex Mono',monospace; font-size:.64rem; font-weight:500; color:var(--muted);}
 .grade.again{border-color:var(--accent-2); color:var(--accent-2); background:color-mix(in srgb, var(--accent-2) 8%, var(--surface));}
-.grade.hard{--grade-hard:color-mix(in srgb, var(--st-review) 60%, #ff8a3d); border-color:var(--grade-hard); color:var(--grade-hard); background:color-mix(in srgb, var(--grade-hard) 9%, var(--surface));}
-.grade.same{border-color:var(--st-review); color:var(--st-review); background:color-mix(in srgb, var(--st-review) 9%, var(--surface));}
+.grade.hard{border-color:var(--st-review); color:var(--st-review); background:color-mix(in srgb, var(--st-review) 9%, var(--surface));}
 .grade.easy{border-color:var(--st-mastered); color:var(--st-mastered); background:color-mix(in srgb, var(--st-mastered) 9%, var(--surface));}
 .grade.know{border-color:var(--st-mastered); color:#fff; background:var(--st-mastered);}
 .grade.know small{color:#fff; opacity:.85;}
@@ -543,10 +541,7 @@ footer.note{color:var(--muted); font-size:.76rem; margin:6px 0 40px; max-width:6
   .fc .front{font-size:1.7rem;}
   .fc .back{font-size:1.7rem;}
   .grade{padding:14px 4px 10px; font-size:.88rem;}
-  .grades{grid-template-columns:repeat(4,minmax(0,1fr)); gap:5px;}
-  .grades .grade{min-width:0; padding:12px 3px;}
-  .grades .grade small{font-size:.65rem;}
-
+  .grades{grid-template-columns:repeat(2,minmax(0,1fr));}
 }
 
 /* header height + status chip stable */
@@ -992,9 +987,3 @@ footer.note{color:var(--muted); font-size:.76rem; margin:6px 0 40px; max-width:6
   .cefr-cap span{font-size:.52rem;}
   .cefr-track{height:9px;}
 }
-
-
-.fc-details{width:100%; text-align:left; margin-top:8px;}
-.fc-details summary{cursor:pointer; color:var(--muted); font-size:.85rem;}
-.fc-details-body{display:grid; gap:10px; padding-top:12px;}
-.kres.yes{color:var(--st-mastered);}
