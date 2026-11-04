@@ -543,9 +543,16 @@ footer.note{color:var(--muted); font-size:.76rem; margin:6px 0 40px; max-width:6
   .fc .front{font-size:1.7rem;}
   .fc .back{font-size:1.7rem;}
   .grade{padding:14px 4px 10px; font-size:.88rem;}
-  .grades{grid-template-columns:repeat(6,minmax(0,1fr)); gap:6px;}
-  .grades .grade{grid-column:span 2; min-width:0;}
-  .grades .grade:nth-child(n+4){grid-column:span 3;}
+  .grades{
+    grid-template-columns:repeat(6,minmax(0,1fr)); gap:6px;
+    grid-template-areas:"hard hard same same good good" "again again again easy easy easy";
+  }
+  .grades .grade{min-width:0;}
+  .grades .grade[data-g="hard"]{grid-area:hard;}
+  .grades .grade[data-g="same"]{grid-area:same;}
+  .grades .grade[data-g="good"]{grid-area:good;}
+  .grades .grade[data-g="again"]{grid-area:again;}
+  .grades .grade[data-g="easy"]{grid-area:easy;}
 }
 
 /* header height + status chip stable */
