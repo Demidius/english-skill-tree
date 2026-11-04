@@ -508,7 +508,7 @@ footer.note{color:var(--muted); font-size:.76rem; margin:6px 0 40px; max-width:6
 .fc .lvlrow{display:flex; align-items:center; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:.68rem; color:var(--muted); margin-top:4px;}
 .fc-actions{margin-top:14px; display:flex; flex-direction:column; gap:10px;}
 .show{width:100%; padding:13px 16px; font-size:.95rem;}
-.grades{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px;}
+.grades{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px;}
 .grade{
   border:1px solid var(--line); border-radius:12px; padding:10px 6px 8px; cursor:pointer;
   display:flex; flex-direction:column; align-items:center; gap:3px;
@@ -517,6 +517,7 @@ footer.note{color:var(--muted); font-size:.76rem; margin:6px 0 40px; max-width:6
 .grade small{font-family:'IBM Plex Mono',monospace; font-size:.64rem; font-weight:500; color:var(--muted);}
 .grade.again{border-color:var(--accent-2); color:var(--accent-2); background:color-mix(in srgb, var(--accent-2) 8%, var(--surface));}
 .grade.hard{border-color:var(--st-review); color:var(--st-review); background:color-mix(in srgb, var(--st-review) 9%, var(--surface));}
+.grade.same{border-color:var(--accent); color:var(--accent); background:color-mix(in srgb, var(--accent) 8%, var(--surface));}
 .grade.easy{border-color:var(--st-mastered); color:var(--st-mastered); background:color-mix(in srgb, var(--st-mastered) 9%, var(--surface));}
 .grade.know{border-color:var(--st-mastered); color:#fff; background:var(--st-mastered);}
 .grade.know small{color:#fff; opacity:.85;}
@@ -541,7 +542,9 @@ footer.note{color:var(--muted); font-size:.76rem; margin:6px 0 40px; max-width:6
   .fc .front{font-size:1.7rem;}
   .fc .back{font-size:1.7rem;}
   .grade{padding:14px 4px 10px; font-size:.88rem;}
-  .grades{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .grades{grid-template-columns:repeat(6,minmax(0,1fr)); gap:6px;}
+  .grades .grade{grid-column:span 2; min-width:0;}
+  .grades .grade:nth-child(n+4){grid-column:span 3;}
 }
 
 /* header height + status chip stable */
@@ -987,3 +990,4 @@ footer.note{color:var(--muted); font-size:.76rem; margin:6px 0 40px; max-width:6
   .cefr-cap span{font-size:.52rem;}
   .cefr-track{height:9px;}
 }
+
