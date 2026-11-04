@@ -190,12 +190,11 @@ test('an early check cannot raise a known word or postpone its due date',()=>{
 test('topic sessions select only new or due words, including due level-10 words',()=>{
  const words=[{k:'new'},{k:'early'},{k:'due'},{k:'mastered'}],now=Date.now();
  const records={new:[0,0,0],early:[8,1,1,now+864e5],due:[2,1,1,now-1],mastered:[10,1,1,now-1]};
- const c={CARDS:{t:{words}},rec:(id,k)=>records[k],isNew:r=>!r[3]&&!r[2]&&!r[0],isDue:(r,n)=>r[3]?r[3]<=n:!!(r[2]||r[0]),shuffle:a=>a,SESSION:Infinity,COEF:{review:{newPerSession:20}}};
+ const c={CARDS:{t:{words}},rec:(id,k)=>records[k],isNew:r=>!r[3]&&!r[2]&&!r[0],isDue:(r,n)=>r[3]?r[3]<=n:!!(r[2]||r[0]),shuffle:a=>a,SESSION:Infinity};
  vm.createContext(c);vm.runInContext(app.slice(app.indexOf('  function pickWords('),app.indexOf('  function openLocked('))+'\nthis.result=pickWords("t");',c);
- assert.deepEqual(json(c.result.words.map(w=>w.k)),['due','mastered','new']);
+ assert.deepEqual(json(c.result.words.map(w=>w.k)),['new','due','mastered']);
 });
 test('empty CEFR filters remain empty after reloading',()=>{
  const expr=app.match(/let rvLv=(.*);\n/)[1],c={lsGet:()=>'',RVKEY:'test',LEVELS:['A1','A2','B1','B2'].map(key=>({key}))};
  assert.deepEqual(json(vm.runInNewContext(expr,c)),[]);
 });
-
