@@ -1031,7 +1031,7 @@ const W = (function(){
     if(g==='good')return result(good);
     return result(easy,ease+0.15);
   }
-  function gradeDaysLabel(sc,now){return whenLabel(sc.ivl,sc.due,now);}
+  function gradeDaysLabel(sc,now){return sc.state===2&&sc.ivl>=1?Math.round(sc.ivl)+' дн.':whenLabel(sc.ivl,sc.due,now);}
   function whenLabel(ivl,due,now){return ivlLabel(Math.max(0,due-now));}
   function ivlLabel(ms){
     if(ms<60*MIN)return Math.max(1,Math.round(ms/MIN))+' мин';

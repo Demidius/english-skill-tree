@@ -82,6 +82,8 @@ test('previews display short learning steps as minutes and mature reviews as day
  assert.equal(api.gradeDaysLabel(api.sched([0,0,0],'hard',now),now),'6 мин');
  assert.equal(api.gradeDaysLabel(api.sched([0,0,0],'good',now),now),'10 мин');
  assert.match(api.gradeDaysLabel(api.sched(mature(),'good',now),now),/дн\.$/);
+ const evening=Date.UTC(2026,10,4,22);
+ assert.equal(api.gradeDaysLabel(api.sched([0,0,0],'easy',evening),evening),'4 дн.');
 });
 function cardFixture(r=mature()){
  const c=fixture(),word={tid:'t',k:'bird',en:'bird',ru:'птица',note:'Подсказка'},saved=[];
