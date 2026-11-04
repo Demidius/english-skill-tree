@@ -511,10 +511,11 @@ footer.note{color:var(--muted); font-size:.76rem; margin:6px 0 40px; max-width:6
 .grades{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px;}
 .grade{
   border:1px solid var(--line); border-radius:12px; padding:10px 6px 8px; cursor:pointer;
-  display:flex; flex-direction:column; align-items:center; gap:3px;
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:3px;
+  min-width:0; text-align:center; line-height:1.2;
   font-family:'Manrope',sans-serif; font-weight:700; font-size:.9rem; background:var(--surface); color:var(--ink);
 }
-.grade small{font-family:'IBM Plex Mono',monospace; font-size:.64rem; font-weight:500; color:var(--muted);}
+.grade small{margin-top:auto; font-family:'IBM Plex Mono',monospace; font-size:.64rem; font-weight:500; line-height:1.2; color:var(--muted);}
 .grade.again{border-color:var(--accent-2); color:var(--accent-2); background:color-mix(in srgb, var(--accent-2) 8%, var(--surface));}
 .grade.hard{border-color:var(--st-review); color:var(--st-review); background:color-mix(in srgb, var(--st-review) 9%, var(--surface));}
 .grade.same{border-color:var(--accent); color:var(--accent); background:color-mix(in srgb, var(--accent) 8%, var(--surface));}
