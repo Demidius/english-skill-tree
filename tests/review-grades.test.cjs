@@ -46,13 +46,13 @@ test('spread is configured separately for all five buttons and remains stable',(
     for(const other of grades.filter(k=>k!==g))assert.equal(api.gradeSpread(r,other,'t|bird'),1);
   }
 });
-test('button labels stay in days for fractions, months and years',()=>{
+test('button labels round fractions, months and years to whole days',()=>{
   const {api}=fixture();
   for(const days of [0.01,0.25,0.5,1,3,60,180,365,3650]){
     const label=api.gradeDaysLabel({ivl:days,due:now+days*DAY},now);
-    assert.match(label,/^[\d\s,]+ дн\.$/u);
+    assert.match(label,/^[\d\s]+ дн\.$/u);
     const amount=Number(label.replace(' дн.','').replace(/\s/g,'').replace(',','.'));
-    assert.equal(amount,days);
+    assert.equal(amount,Math.round(days));
   }
 });
 function cardFixture(){
