@@ -1512,7 +1512,7 @@ const W = (function(){
     }
     if(S.flipped && S.kcorrect)h+='<div class="kres yes">Верно. Оцени, насколько легко вспомнился ответ.</div>';
     if(S.flipped && S.kres){
-      h+='<div class="kres no">Ты написал: <b>'+esc(S.kres)+'</b> — неверно, слово не засчитано. Оцени его как обычно.</div>';
+      h+='<div class="kres no">Ты написал: <b>'+esc(S.kres)+'</b>. Есть отличия в написании. Сравни с правильным ответом и выбери оценку.</div>';
     }
     if(S.flipped){
       h+='<div class="back">'+esc(w.en)+sayBtn(w.en)+'</div>'+

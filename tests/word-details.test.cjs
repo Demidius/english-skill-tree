@@ -84,6 +84,25 @@ test('the data is loaded before the renderer',()=>{
  assert.ok(index.indexOf('word-details-data.js')<index.indexOf('<script src="app.js'));
 });
 
+test('typed mistakes are highlighted without suggesting or focusing a grade',()=>{
+ const Core=require('../learning-core.js');
+ for(const typed of ['fourty four','fourty for','forty']){
+  const observers=[],attrs={};let suggested=0,focused=0;
+  const button={classList:{add(){suggested++}},focus(){focused++}};
+  const fc={querySelector:s=>s==='.back'?{firstChild:{nodeType:3,nodeValue:'forty-four'}}:{textContent:'сорок четыре'},
+   closest:()=>({querySelector:()=>button})};
+  const b={dataset:{},textContent:typed,innerHTML:'',closest:()=>fc,setAttribute:(k,v)=>attrs[k]=v};
+  const document={head:{appendChild(){}},body:{},createElement:()=>({}),addEventListener(){},
+   querySelectorAll:()=>[b]};
+  class MutationObserver{constructor(fn){observers.push(fn)}observe(){}}
+  new Function('document','MutationObserver','SkillCore',read('type-to-know.js'))(document,MutationObserver,Core);
+  observers.forEach(fn=>fn());
+  assert.match(b.innerHTML,/kd-del|kd-ins/);
+  assert.match(attrs['aria-label'],/правильно forty four/);
+  assert.equal(suggested,0);assert.equal(focused,0);
+ }
+});
+
 test('an early flight has a natural paraphrase and contrasting expression',()=>{
  const row=support['efa1-11b-2|an-early-flight'];
  assert.ok(row[1].some(([text])=>/early in the day/.test(text)));
@@ -126,3 +145,4 @@ test('contextual alternatives for two A1 phrases are accepted without hiding pro
  assert.equal(accepts(...coffee,'I want coffee'),false);
  assert.equal(accepts(...coffee,'I want a coffee'),false);
 });
+

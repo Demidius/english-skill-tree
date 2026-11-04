@@ -37,8 +37,7 @@ function cardTranslationAlternatives(en, ru) {
 // «Я знаю», неверный ответ: показываем, какие буквы ошибочны.
 // Опечатка — правильная буква над неверной; слово целиком другое — правильное слово над ним;
 // пропущенное — зелёное над красной чертой; лишнее — зачёркнуто.
-// Мало ошибок внутри слова — сразу предлагаем оценку: 1 опечатка — «Отлично», 2 — «Хорошо».
-// Пропущенное/лишнее целое слово, неправильное слово или сильно отличающийся ответ — без подсказки.
+// Сравниваем написание без рекомендации оценки: оценку воспоминания выбирает ученик.
 (function () {
   const st = document.createElement('style');
   st.textContent =
@@ -49,8 +48,7 @@ function cardTranslationAlternatives(en, ru) {
     '.kd-col>.kd-ins{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);white-space:pre;line-height:1.15;margin-bottom:1px}' +
     '.kd-del{color:var(--accent-2,#ef4b72);text-decoration:line-through;text-decoration-thickness:2px}' +
     '.kd-gap{display:inline-block;width:100%;min-width:.6em;border-bottom:2px solid var(--accent-2,#ef4b72);box-sizing:border-box}' +
-    '.kd-ins{color:var(--st-mastered,#22d39c);background:color-mix(in srgb,var(--st-mastered,#22d39c) 18%,transparent);border-radius:2px;padding:0 1px}' +
-    '.grade.kd-suggest{outline:2px dashed var(--st-mastered,#22d39c);outline-offset:3px}';
+    '.kd-ins{color:var(--st-mastered,#22d39c);background:color-mix(in srgb,var(--st-mastered,#22d39c) 18%,transparent);border-radius:2px;padding:0 1px}';
   document.head.appendChild(st);
 
   const low = s => s.toLowerCase().replace(/[’`ʼ]/g, "'");
@@ -137,21 +135,6 @@ function cardTranslationAlternatives(en, ru) {
     }).join(' ');
     b.setAttribute('aria-label', 'ты написал ' + typed + ', правильно ' + best.r);
 
-    // Подсказка только для небольших опечаток ВНУТРИ слова.
-    // Вставка/удаление целого слова (например, пропущенное "a") и замена слова целиком
-    // не должны подталкивать к конкретной оценке.
-    const onlySmallTyposInsideWords = aligned.every(o => {
-      if (o[0] !== 'w') return false; // целое слово добавлено или пропущено
-      const d = wd(o[1], o[2]);
-      if (d === 0) return true;
-      const maxLen = Math.max(o[1].length, o[2].length);
-      return d <= Math.max(1, Math.floor(maxLen / 3));
-    });
-    // 1 небольшая опечатка -> «Отлично» (+2), 2 -> «Хорошо» (+1).
-    const g = onlySmallTyposInsideWords && best.dist === 1 ? 'easy'
-      : onlySmallTyposInsideWords && best.dist === 2 ? 'good' : '';
-    const btn = g && fc.closest('.modal') && fc.closest('.modal').querySelector('.grade[data-g="' + g + '"]');
-    if (btn) { btn.classList.add('kd-suggest'); btn.focus({ preventScroll: true }); }
   }
   function scan() { document.querySelectorAll('.kres.no b:not([data-diff])').forEach(mark); }
   new MutationObserver(scan).observe(document.body, { childList: true, subtree: true });
@@ -388,5 +371,6 @@ function cardTranslationAlternatives(en, ru) {
     '.kbox-hint b{color:inherit}';
   document.head.appendChild(hs);
 })();
+
 
 
