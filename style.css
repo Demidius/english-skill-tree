@@ -517,7 +517,7 @@ footer.note{color:var(--muted); font-size:.76rem; margin:6px 0 40px; max-width:6
 }
 .grade small{margin-top:auto; font-family:'IBM Plex Mono',monospace; font-size:.64rem; font-weight:500; line-height:1.2; color:var(--muted);}
 .grade.again{border-color:var(--accent-2); color:var(--accent-2); background:color-mix(in srgb, var(--accent-2) 8%, var(--surface));}
-.grade.hard{border-color:var(--st-review); color:var(--st-review); background:color-mix(in srgb, var(--st-review) 9%, var(--surface));}
+.grade.hard{--grade-hard:color-mix(in srgb, var(--st-review) 60%, #ff8a3d); border-color:var(--grade-hard); color:var(--grade-hard); background:color-mix(in srgb, var(--grade-hard) 9%, var(--surface));}
 .grade.same{border-color:var(--accent); color:var(--accent); background:color-mix(in srgb, var(--accent) 8%, var(--surface));}
 .grade.easy{border-color:var(--st-mastered); color:var(--st-mastered); background:color-mix(in srgb, var(--st-mastered) 9%, var(--surface));}
 .grade.know{border-color:var(--st-mastered); color:#fff; background:var(--st-mastered);}
