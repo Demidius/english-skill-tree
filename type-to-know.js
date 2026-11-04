@@ -37,7 +37,7 @@ function cardTranslationAlternatives(en, ru) {
 // «Я знаю», неверный ответ: показываем, какие буквы ошибочны.
 // Опечатка — правильная буква над неверной; слово целиком другое — правильное слово над ним;
 // пропущенное — зелёное над красной чертой; лишнее — зачёркнуто.
-// Сравниваем написание без рекомендации оценки: оценку воспоминания выбирает ученик.
+// Одна опечатка внутри слова предлагает «Хорошо»; оценку подтверждает ученик.
 (function () {
   const st = document.createElement('style');
   st.textContent =
@@ -48,7 +48,8 @@ function cardTranslationAlternatives(en, ru) {
     '.kd-col>.kd-ins{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);white-space:pre;line-height:1.15;margin-bottom:1px}' +
     '.kd-del{color:var(--accent-2,#ef4b72);text-decoration:line-through;text-decoration-thickness:2px}' +
     '.kd-gap{display:inline-block;width:100%;min-width:.6em;border-bottom:2px solid var(--accent-2,#ef4b72);box-sizing:border-box}' +
-    '.kd-ins{color:var(--st-mastered,#22d39c);background:color-mix(in srgb,var(--st-mastered,#22d39c) 18%,transparent);border-radius:2px;padding:0 1px}';
+    '.kd-ins{color:var(--st-mastered,#22d39c);background:color-mix(in srgb,var(--st-mastered,#22d39c) 18%,transparent);border-radius:2px;padding:0 1px}' +
+    '.grade.kd-suggest{outline:2px dashed var(--st-mastered,#22d39c);outline-offset:3px}';
   document.head.appendChild(st);
 
   const low = s => s.toLowerCase().replace(/[’`ʼ]/g, "'");
@@ -134,6 +135,12 @@ function cardTranslationAlternatives(en, ru) {
       return col(sp('kd-del', o[1]), o[2]);
     }).join(' ');
     b.setAttribute('aria-label', 'ты написал ' + typed + ', правильно ' + best.r);
+
+    // Missing/extra whole words and multiple typos do not suggest a grade.
+    const oneTypo = best.dist === 1 && aligned.every(o => o[0] === 'w' &&
+      (wd(o[1], o[2]) === 0 || Math.max(o[1].length, o[2].length) >= 3));
+    const btn = oneTypo && fc.closest('.modal')?.querySelector('.grade[data-g="good"]');
+    if (btn) { btn.classList.add('kd-suggest'); btn.focus({ preventScroll: true }); }
 
   }
   function scan() { document.querySelectorAll('.kres.no b:not([data-diff])').forEach(mark); }

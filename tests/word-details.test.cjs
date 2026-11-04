@@ -84,13 +84,13 @@ test('the data is loaded before the renderer',()=>{
  assert.ok(index.indexOf('word-details-data.js')<index.indexOf('<script src="app.js'));
 });
 
-test('typed mistakes are highlighted without suggesting or focusing a grade',()=>{
+test('one typo suggests Good; multiple typos or missing words do not suggest a grade',()=>{
  const Core=require('../learning-core.js');
  for(const typed of ['fourty four','fourty for','forty']){
-  const observers=[],attrs={};let suggested=0,focused=0;
+  const observers=[],attrs={},selectors=[];let suggested=0,focused=0;
   const button={classList:{add(){suggested++}},focus(){focused++}};
   const fc={querySelector:s=>s==='.back'?{firstChild:{nodeType:3,nodeValue:'forty-four'}}:{textContent:'сорок четыре'},
-   closest:()=>({querySelector:()=>button})};
+   closest:()=>({querySelector:s=>{selectors.push(s);return button}})};
   const b={dataset:{},textContent:typed,innerHTML:'',closest:()=>fc,setAttribute:(k,v)=>attrs[k]=v};
   const document={head:{appendChild(){}},body:{},createElement:()=>({}),addEventListener(){},
    querySelectorAll:()=>[b]};
@@ -99,7 +99,9 @@ test('typed mistakes are highlighted without suggesting or focusing a grade',()=
   observers.forEach(fn=>fn());
   assert.match(b.innerHTML,/kd-del|kd-ins/);
   assert.match(attrs['aria-label'],/правильно forty four/);
-  assert.equal(suggested,0);assert.equal(focused,0);
+  const expected=typed==='fourty four'?1:0;
+  assert.equal(suggested,expected);assert.equal(focused,expected);
+  assert.deepEqual(selectors,expected?['.grade[data-g="good"]']:[]);
  }
 });
 
